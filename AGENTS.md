@@ -1,4 +1,6 @@
-# AGENTS.md
+# Dashboard
+
+Dashboard administrativo moderno com sidebar de navegação, header com breadcrumbs e ações, área de conteúdo com cards de métricas, tabela de dados, gráficos e galeria de itens - desenvolvido com Next.js, React e Playwright para sincronização bidirecional entre design e código.
 
 ## ⚠️ PRIORIDADE MÁXIMA
 

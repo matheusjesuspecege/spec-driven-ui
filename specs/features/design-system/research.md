@@ -2,7 +2,7 @@
 
 ## 1. Visão Geral
 
-O **Design System** estabelece as bases visuais e consistentes para todo o projeto spec-driven-ui. Define tokens de design (cores, tipografia, espaçamento, border-radius) que servem como fonte única de verdade, garantindo coerência visual em todos os componentes e telas. A implementação será feita via Tailwind v4 CSS-first approach.
+O **Design System** estabelece as bases visuais e consistentes para todo o projeto do Dashboard. Define tokens de design (cores, tipografia, espaçamento, border-radius) que servem como fonte única de verdade, garantindo coerência visual em todos os componentes e telas. A implementação será feita via Tailwind v4 CSS-first approach.
 
 ---
 
@@ -21,12 +21,7 @@ O **Design System** estabelece as bases visuais e consistentes para todo o proje
 
 ### Stack Atual
 
-| Tecnologia | Versão |
-|------------|--------|
-| Next.js | 16.1.6 |
-| React | 19.2 |
-| TypeScript | 5.9 |
-| Tailwind CSS | v4.2 |
+- Consulte `AGENTS.md` na seção **Referências**
 
 ### Arquitetura Tailwind v4
 

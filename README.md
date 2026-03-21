@@ -44,6 +44,11 @@ O [Pencil](https://www.pencil.dev/) fornce alguns projetos de exemplo por padrã
 - **Atomic design**: usei o [atomic design](https://atomicdesign.bradfrost.com/) no core deste experimento, acredito que ela se encaixa perfeitamente nesse cenário. além de ser a minha forma preferida de pensar e trabalhar em projetos frontend.
 - **BDD (Behavior Driven-development)**: usei BDD para geração dos cenários de testes e servir de base para a aplicação do TDD.
 > Para mais detalhes leia o arquivo **AGENTS.md** que está na raiz do projeto.
+- **Ralph Wiggun**: Adaptei o ralph loop no subagent **implement-tasks** para o meu cenário mais enxuto e supervisionado.
+
+### Referencias
+
+Utilizei muitas referencias do github [spec-kit](https://github.com/github/spec-kit) e [ralph loop](https://github.com/snarktank/ralph), entendo que são soluções muito boas mas são muito verbosas, entendi o funcionamento e adaptei a ideia para meu cenário mais enxuto. 
 
 ## Context Enginner
 
@@ -101,9 +106,21 @@ Após a revisão do research.md, partimos para a definição do que precisaremos
 
 Esta é a fase de preparação dos testes que serão usados na implementação, os cenários são gerados apartir do **plan.md**, as tarefas são organizadas no formato **Gherkin (bdd)** e são transformadas em cenários de teste para desenvolvimento usando **tdd**.
 
-
 ![BDD](/readme/bdd.png)
 > BDD (.feature) gerado apartir de plan.md
 
 ![TDD](/readme/tdd.png)
 > Testes (gerados apartir do bdd) + dicas de como implementar com referencias
+
+Neste meu cenário estou utilizando **bottom-up** para implementação, portanto preciso gerar todos os atomos que **Sidebar** depende para ser implementado. 
+
+
+### Paralelismo e worktrees
+
+Codificar um componente por vez de maneira sequencial é muito chato, para isso, existe o agente **worktree-mapper**, que analisa o plano e retorna um relatório mostrando quais tarefas podem ser executadas em paralelo (independente). 
+
+Com isso posso delegar para subagentes especializados para implementar as tarefas em suas branchs separadas através do [git worktree](https://git-scm.com/docs/git-worktree) e o subagent **implement-tasks**.
+
+![Diagrama de dependencias](/readme/dependencias-sidebar.png)
+
+> Diagrama mostrando as tarefas que podem ser executadas em paralelo
