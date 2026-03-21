@@ -7,6 +7,10 @@ tools:
   write: true
   edit: true
   read: true
+  pencil_open_document: true
+  pencil_batch_get: true
+  pencil_get_editor_state: true
+  glob: true
 permission:
   edit: allow
 ---
@@ -484,12 +488,99 @@ function generateComponentScenarios(us: UserStory): Scenario[] {
 }
 ```
 
+### Passo 7.6: Obter pencil_id (VINCULAÇÃO COM PENCIL)
+
+Esta etapa obtém o `pencil_id` do componente via fluxo híbrido (automático + fallback).
+
+```typescript
+async function getPencilId(
+  feature: string,
+  research: string,
+  plan: string
+): Promise<{ pencilId: string | null; source: 'research' | 'plan' | 'pencil' | 'user' | 'none' }> {
+  
+  // 1. Verificar se já existe em research.md
+  const researchMatch = research.match(/pencil_id:\s*["']?([\w-]+)/i);
+  if (researchMatch) {
+    return { pencilId: researchMatch[1], source: 'research' };
+  }
+  
+  // 2. Verificar se já existe em plan.md
+  const planMatch = plan.match(/pencil_id:\s*["']?([\w-]+)/i);
+  if (planMatch) {
+    return { pencilId: planMatch[1], source: 'plan' };
+  }
+  
+  // 3. Tentar buscar no Pencil via MCP (automático)
+  try {
+    // Encontrar arquivos .pen no projeto
+    const penFiles = await glob('*.pen');
+    
+    if (penFiles.length > 0) {
+      for (const penFile of penFiles) {
+        // Abrir documento
+        await pencil_open_document(penFile);
+        
+        // Buscar nó pelo nome do componente
+        const nodes = await pencil_batch_get({
+          filePath: penFile,
+          patterns: [{ name: new RegExp(`^${feature}$|^${feature}\\s*\\[PROPOSTA\\]`, 'i'), type: 'frame' }],
+          searchDepth: 3
+        });
+        
+        if (nodes && nodes.length > 0) {
+          return { pencilId: nodes[0].id, source: 'pencil' };
+        }
+      }
+    }
+  } catch (error) {
+    // MCP não disponível ou arquivo não encontrado - continuar para fallback
+    console.log('Pencil MCP não disponível ou componente não encontrado no Pencil');
+  }
+  
+  // 4. Fallback: perguntar ao usuário
+  // Será tratado no fluxo principal que chama esta função
+  return { pencilId: null, source: 'none' };
+}
+```
+
+**Fluxo de decisão:**
+
+```
+getPencilId()
+    │
+    ├─ research.md tem pencil_id? ──sim──→ usar ID do research
+    │
+    ├─ plan.md tem pencil_id? ──sim──→ usar ID do plan
+    │
+    ├─ Pencil MCP disponível? ──sim──→ buscar por nome do componente
+    │                                    │
+    │                                    ├─ encontrou ──→ usar ID do Pencil
+    │                                    └─ não encontrou
+    │
+    └─ não encontrou em lugar nenhum
+           │
+           └─ retornar { pencilId: null, source: 'none' }
+               (fluxo principal pergunta ao usuário)
+```
+
 ### Passo 8: Gerar *.feature
 
 ```typescript
-function generateFeature(feature: string, scenarios: Scenario[]): string {
+function generateFeature(
+  feature: string, 
+  scenarios: Scenario[], 
+  pencilId?: string | null
+): string {
   let output = '@pending\n';
-  output += `Feature: ${formatFeatureName(feature)}\n\n`;
+  output += `Feature: ${formatFeatureName(feature)}\n`;
+  
+  // Adicionar pencil_id se disponível
+  if (pencilId) {
+    output += `  **pencil_id:** "${pencilId}"\n\n`;
+  } else {
+    output += '\n';
+  }
   
   for (const scenario of scenarios) {
     output += `  ${scenario.tags.join(' ')}\n`;
@@ -511,6 +602,72 @@ function generateFeature(feature: string, scenarios: Scenario[]): string {
   }
   
   return output;
+}
+```
+
+### Passo 8.1: Fluxo Principal de Geração
+
+O fluxo completo que integra a obtenção de pencil_id:
+
+```typescript
+async function generateBddFeature(feature: string): Promise<{ success: boolean; pencilId?: string; pencilSource?: string }> {
+  
+  // 1. Verificar pré-requisitos (etapas 0-1)
+  // ...
+  
+  // 2. Ler research.md e plan.md (etapas 2-3)
+  const research = await readFile(researchPath);
+  const plan = await readFile(planPath);
+  
+  // 3. Gerar cenários (etapas 4-7)
+  const scenarios = await generateAllScenarios(research, plan);
+  
+  // 4. Obter pencil_id (etapa 7.6)
+  const { pencilId, source } = await getPencilId(feature, research, plan);
+  
+  // 5. Se não encontrou, perguntar ao usuário
+  let finalPencilId = pencilId;
+  if (!finalPencilId) {
+    const userChoice = await question({
+      question: `O componente "${feature}" já existe no Pencil?`,
+      options: [
+        { label: 'A) Buscar no Pencil', description: 'Tentar encontrar automaticamente' },
+        { label: 'B) Ainda não existe', description: 'Gerar sem pencil_id' },
+        { label: 'C) Informar ID', description: 'Digitar pencil_id manualmente' }
+      ]
+    });
+    
+    switch (userChoice) {
+      case 'A':
+        // Tentar buscar novamente com mais opções
+        const retryResult = await searchPencilByAlternativeNames(feature);
+        if (retryResult) {
+          finalPencilId = retryResult;
+        } else {
+          console.log('⚠️ Componente não encontrado no Pencil. Gerando sem pencil_id.');
+        }
+        break;
+      case 'C':
+        finalPencilId = await question({ question: 'Informe o pencil_id:' });
+        break;
+      case 'B':
+      default:
+        // Manter sem pencil_id
+        break;
+    }
+  }
+  
+  // 6. Gerar arquivo .feature com pencil_id
+  const featureContent = generateFeature(feature, scenarios, finalPencilId);
+  
+  // 7. Salvar (etapa 9)
+  await writeFile(featurePath, featureContent);
+  
+  return { 
+    success: true, 
+    pencilId: finalPencilId,
+    pencilSource: finalPencilId ? source : 'user-declined'
+  };
 }
 ```
 
@@ -628,6 +785,9 @@ Cenários duplicados (ignorados): Z
 Arquivos criados:
 - specs/features/[feature]/features/[feature].feature
 
+pencil_id: [ID] (fonte: [research|pencil|user])
+- Se "não vinculado": componente ainda não existe no Pencil ou usuário optou por não vincular
+
 Cenários gerados: N
 - @desktop: X
 - @mobile: Y
@@ -637,6 +797,7 @@ Próx passos:
 1. Revise os cenários gerados
 2. Aprovar ou ajustar cenários
 3. Execute @tdd-generator para gerar testes
+4. Para verificar consistência com design: diff-design-vs-code --component=[nome]
 ```
 
 ## Validações
@@ -651,6 +812,8 @@ Antes de salvar, verificar:
 - [ ] Cenários @rule estão presentes para operações críticas
 - [ ] Cenários @defensive estão presentes para Lei de Murphy
 - [ ] Cenários @state estão presentes para loading/erro/sucesso
+- [ ] pencil_id foi obtido (via research, plan, Pencil MCP, ou input do usuário)
+- [ ] pencil_id correto foi vinculado ao .feature
 
 ## Regras
 
@@ -663,11 +826,20 @@ Antes de salvar, verificar:
 7. **Proteção (@defensive)** - MANDATÓRIO para Lei de Murphy (double-click, timeout)
 8. **Estados (@state)** - MANDATÓRIO para ações assíncronas (loading, erro, sucesso)
 
+## Regras de Vinculação com Pencil
+
+1. **Prioridade de busca**: research.md → plan.md → Pencil MCP → usuário
+2. **Formato do pencil_id**: `**pencil_id:** "[id]"` na linha 2 do .feature
+3. **Fonte transparente**: informar ao usuário de onde veio o pencil_id
+4. **Fallback para usuário**: se não encontrar, perguntar antes de prosseguir
+5. **Componente não existe no Pencil**: permitir gerar sem pencil_id (vincular depois)
+
 ## Exemplo de Output
 
 ```gherkin
 @pending
 Feature: Header de Navegação
+  **pencil_id:** "header001"
 
   # ═══════════════════════════════════════════════════════════
   # ✅ FLUXO FELIZ - Happy Path
@@ -741,6 +913,8 @@ Feature: Header de Navegação
 | "research.md não encontrado" | Não executou @research-to-plan | Execute @research-to-plan primeiro |
 | "Cenários vazios" | AC não mapeados | Verificar formato do research.md |
 | "Tags duplicadas" | Contexto identificado errado | Ajustar padrões de contexto |
+| "pencil_id não vinculado" | Componente não existe no Pencil | Gerar sem pencil_id ou criar no Pencil primeiro |
+| "Componente não encontrado no Pencil" | Nome diferente no Pencil | Verificar nome correto no Pencil ou informar ID manualmente |
 
 ---
 
@@ -873,32 +1047,18 @@ Funcionalidade: Design Tokens
 3. Gerar design-tokens.feature (sem pencil_id)
 4. Para cada componente no plan.md:
    - Determinar categoria (atom/molecule/organism)
-   - Extrair pencil_id se disponível
+   - Extrair pencil_id usando getPencilId() (mesmo fluxo híbrido)
    - Gerar .feature com pencil_id
 ```
 
 ### Extração de pencil_id
 
-O bdd-generator deve extrair pencil_id de:
-1. research.md (seção de componentes)
-2. plan.md (se existir mapping)
-3. Ou perguntar ao usuário se não encontrado
+O bdd-generator usa a função `getPencilId()` (Passo 7.6) que segue esta ordem de prioridade:
 
-```typescript
-// Prioridade de extração
-const extractPencilId = (componentName: string, research: string, plan: string): string | null => {
-  // 1. Procurar em research.md
-  const researchMatch = research.match(new RegExp(`${componentName}.*pencil_id:\\s*["']?([\\w-]+)`, 'i'));
-  if (researchMatch) return researchMatch[1];
-  
-  // 2. Procurar em plan.md
-  const planMatch = plan.match(new RegExp(`${componentName}.*pencil_id:\\s*["']?([\\w-]+)`, 'i'));
-  if (planMatch) return planMatch[1];
-  
-  // 3. Perguntar ao usuário
-  return null;
-};
-```
+1. **research.md** - pencil_id já documentado
+2. **plan.md** - pencil_id já mapeado
+3. **Pencil MCP** - busca automática pelo nome do componente
+4. **Usuário** - fallback com opções (buscar/ignorar/informar)
 
 ### Cenários Obrigatórios por Categoria
 

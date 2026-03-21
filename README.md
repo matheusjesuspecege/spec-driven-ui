@@ -42,7 +42,7 @@ O [Pencil](https://www.pencil.dev/) fornce alguns projetos de exemplo por padrã
 - **Spec-driven development**:para mais detalhes sobre arquitetura, funcionamento dos subagentes e tudo relacionado ao projeto, acesse a pasta **specs/docs/** e a pasta **.opencode/agents/**.
 - **Extreme programming**: apliquei [extreme programming](https://kentbeck.com/) em todo o processo, utilizando a IA como parceiro de [pair programming](https://martinfowler.com/articles/on-pair-programming.html), seguindo todo o ritual dessa metodologia ágil.
 - **Atomic design**: usei o [atomic design](https://atomicdesign.bradfrost.com/) no core deste experimento, acredito que ela se encaixa perfeitamente nesse cenário. além de ser a minha forma preferida de pensar e trabalhar em projetos frontend.
-
+- **BDD (Behavior Driven-development)**: usei BDD para geração dos cenários de testes e servir de base para a aplicação do TDD.
 > Para mais detalhes leia o arquivo **AGENTS.md** que está na raiz do projeto.
 
 ## Context Enginner
@@ -59,6 +59,14 @@ Existem algumas técnicas para induzir a IA para priorizar dados e informações
 
 O RAG é um processo que possibilita a comunicação direta com a arquitetura das **LLMS** e ajuda a melhorar as respostas da IA, é utilizado técnicas de [Prompt Enginner](https://www.promptingguide.ai/pt) para realizar a **recuperação e pré-processamento** informando dados, referencias, links, e informações relevantes diretamente para o **LLM** que irá ter **atenção** máxima ao material fornecido, realizando **pré-processamentos**, **tokenização**, **embedding**  para gerar respostas mais precisas, e focadas no objetivo.
 
-## Arquitetura
+## Fluxo de trabalho
 
-Para mais detalhes da arquitetura do projeto, função dos arquivos, acesse a pasta **specs/docs/** está tudo documentado no markdown.
+Usei a metodologia **Spec-driven development** no projeto, e tambem a metodologia **RPI (Research -> Plan -> Implement)**. 
+
+![Fluxo de trabalho](/readme/fluxo-trabalho.png)
+
+Para facilitar o processo, criei **subagents especializados** responsáveis para cada uma das etapas do projeto.  
+
+![Os 14 Subagentes de IA (Mapa completo de quem faz o que, quando acionar cada agente)](/readme/subagents.png)
+
+> Irei entrar em mais detalhes do funcionamento deles nos próximos artigos. Você também pode conferir o funcionamento através do código disponivel no repositório do github.

@@ -30,7 +30,6 @@ Leia primeiro: `@specs/docs/guardrails.md`
 | `@diff-design-vs-code` | Compara design com código |
 | `@export-code-to-design` | Exporta código para Pencil |
 | `@import-design-to-code` | Importa design aprovado |
-| `@design-system-builder` | Construção do design system |
 | `@tdd-playwright` | Executa TDD por teste |
 | `@worktree-mapper` | Mapeia dependências entre componentes |
 | `@worktree-runner` | Cria worktrees Git paralelos |

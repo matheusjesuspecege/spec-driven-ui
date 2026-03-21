@@ -287,21 +287,6 @@ Decisões: bottom-up, mock data, Sidebar primeiro, cores #0A0A0B
 
 ---
 
-## design-system-builder
-
-**Purpose:** Construção do design system a partir de `.pen`.
-
-**Quando usar:**
-- Início de novo projeto
-- Necesita estruturar design system
-
-**Como invocar:**
-```
-@design-system-builder Construa o design system a partir de designs/system.pen
-```
-
----
-
 ## 4. Agents Utilitários
 
 ## worktree-runner
@@ -366,7 +351,6 @@ Decisões: bottom-up, mock data, Sidebar primeiro, cores #0A0A0B
 | `export-code-to-design` | Código | .pen | Exportar para design |
 | `import-design-to-code` | .pen | Código | Importar design |
 | `diff-design-vs-code` | .pen + Código | Diff | Comparar design |
-| `design-system-builder` | .pen | Design system | Construir DS |
 | `worktree-runner` | Features | Worktrees | Criar worktrees |
 | `worktree-mapper` | Features | Dependências | Mapear deps |
 
