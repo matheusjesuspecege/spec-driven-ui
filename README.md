@@ -61,12 +61,45 @@ O RAG é um processo que possibilita a comunicação direta com a arquitetura da
 
 ## Fluxo de trabalho
 
-Usei a metodologia **Spec-driven development** no projeto, e tambem a metodologia **RPI (Research -> Plan -> Implement)**. 
+O **extreme programming** possui 4 principais valores (comunicação, simplicidade, feedback, coragem) sendo o respeito o wrapper de todos eles.
+
+![Os 4 valores do xp - a base de tudo](/readme/4-valores-xp.jpg)
+
+**Isso se encaixa perfeitamente no fluxo (RPI)**:
+- **Comunicação:** aqui entra o agente **us-to-research**.
+- **Simplicidade:** aqui entra o agente **research-to-plan**.
+- **Feedback:** aqui entra o GATE (tdd, verify-patterns, typecheck + lint, pre-commit)
+- **Coragem**: aqui entra a pipeline de ci, que verifica se os padroes, testes e as especificações estão consistentes entre o código e a spec.
+
 
 ![Fluxo de trabalho](/readme/fluxo-trabalho.png)
 
-Para facilitar o processo, criei **subagents especializados** responsáveis para cada uma das etapas do projeto.  
+> Para facilitar o processo, criei **14 subagents especializados** responsáveis para cada uma das etapas do projeto.  
 
 ![Os 14 Subagentes de IA (Mapa completo de quem faz o que, quando acionar cada agente)](/readme/subagents.png)
+> Irei entrar em mais detalhes sobre cada um dos subagents nos proximos artigos.
 
-> Irei entrar em mais detalhes do funcionamento deles nos próximos artigos. Você também pode conferir o funcionamento através do código disponivel no repositório do github.
+### O que o usuario precisa ?
+
+No dia a dia, temos um backlog do produto e o **Product Owner** atribui **User Stories** para que possamos desenvolver. Em muitos casos as US são escritas de forma genérica a nível de produto e não a nível de desenvolvimento.
+
+- **us-to-research**: esse agente recebe como input a US escrita pelo PO, e faz perguntas com o objetivo de especificar e converter a US a nivel de produto para nível de desenvolvimento.
+
+![Research.md](/readme/research.png)
+
+> Ao final do processo é gerado um arquivo **research.md** que o dev revisa e refina junto com a equipe até estar aprovado.
+
+### Como vamos fazer?
+
+Após a revisão do research.md, partimos para a definição do que precisaremos de recursos, interfacesm contratos, serviços, apis, onde será armazenado o código e toda a estrutura necessária para desenvolvimento.
+
+![Plan.md](/readme/plan.png)
+
+> Plan.md gerado apartir do research.md
+
+### O que testar?
+
+Esta é a fase de preparação dos testes que serão usados na implementação, os cenários são gerados apartir do **plan.md**, as tarefas são organizadas no formato **Gherkin (bdd)** e são transformadas em cenários de teste para desenvolvimento usando **tdd**.
+
+
+
