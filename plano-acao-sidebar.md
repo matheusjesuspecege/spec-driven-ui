@@ -11,6 +11,7 @@
 - @worktree-runner -> criar uma worktree para codar a feature
 - @implement-tasks -> rodar o subagent na worktree para codar a feature supervisionada
 - @design-tokens-generator -> converte o *.feature e popula o global.css
+- @verify-and-sync-bdd-tdd feature=button -> sincroniza bdd com testes para certificar de que todos os testes estão implementados.
 
 > Obs: use o analyze-inconsistency logo após gerar os cenários de bdd.
 > Não esquecer de reativar os testes no pré-commit (removi porque nao tem testes e não ia dar para comitar)

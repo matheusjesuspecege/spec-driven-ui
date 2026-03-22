@@ -42,7 +42,6 @@
 - Não crie um página de teste para renderizar por meio do método setContent.
 - Não criar CONSTANTS para armazenar os tokens ex: `TOKENS`, use os valores diretamente no código.
 - HELPERS de teste devem ser salvos em `frontend/src/utils/test-utils.ts`
-- Não adicione comentários nos testes.
 
 ```
 frontend/tests/features/[nome]/
@@ -64,3 +63,9 @@ frontend/tests/features/[nome]/
 ## React
 
 - Em loops `map` adicionar a `key` unica no elemento e priorizando a prop do array da iteração no lugar da key 
+
+---
+
+## CSS
+
+- Não adicione comentários nos testes.

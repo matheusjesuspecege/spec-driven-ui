@@ -12,12 +12,17 @@ export const Button = ({ children, variant, ...props }: ButtonProps) => (
     {variant === "secondary" ? (
       <button
         {...props}
-        className="border border-solid border-(--color-border)"
+        className={`${props.className} border border-solid border-(--color-border) bg-(--color-bg-muted)`}
       >
         {children}
       </button>
     ) : (
-      <button {...props}>{children}</button>
+      <button
+        {...props}
+        className={`${props.className} bg-(--color-primary) text-(--color-text-primary) hover:bg-(--color-primary-hover)`}
+      >
+        {children}
+      </button>
     )}
   </>
 );
