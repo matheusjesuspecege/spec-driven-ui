@@ -111,7 +111,12 @@ test.describe("Feature: Button (BDD Source)", () => {
     expect(styles?.cursor).toBe("not-allowed");
   });
 
-  test.skip("Inverse button em loading não responde a cliques", async () => {});
+  test("Inverse button em loading não responde a cliques", async ({
+    page,
+  }) => {
+    const button = page.locator(buttonLoadingInverseID);
+    await button.click({ force: true });
+  });
 
   test.skip("Inverse button em focus tem focus ring visível", async () => {});
 

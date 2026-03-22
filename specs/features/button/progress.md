@@ -20,3 +20,7 @@
 - Classes Tailwind para loading: `cursor-not-allowed`
 - Spinner como children: `{loading ? <span className="btn-spinner">...</span> : children}`
 - Atributos ARIA: `aria-busy={loading}` e `aria-disabled={loading}`
+
+### [2026-03-22] Loading Click Behavior
+- O `aria-disabled={loading}` impede resposta a cliques
+- Mesmo padrão do disabled: usar `click({ force: true })` no teste para forçar clique
