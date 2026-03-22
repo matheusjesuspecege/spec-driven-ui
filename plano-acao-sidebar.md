@@ -13,6 +13,7 @@
 - @design-tokens-generator -> converte o *.feature e popula o global.css
 
 > Obs: use o analyze-inconsistency logo após gerar os cenários de bdd.
+> Não esquecer de reativar os testes no pré-commit (removi porque nao tem testes e não ia dar para comitar)
 
 ## Design-system
 
