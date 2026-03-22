@@ -10,3 +10,7 @@
 ### [2026-03-22] Disabled Accessibility
 - `disabled` attribute nativo do HTML é passado via `{...props}`
 - Não precisa explicitamente `disabled={disabled}` - spread operator já cuida disso
+
+### [2026-03-22] Testing Disabled Button
+- Para testar clique em botão disabled, usar `click({ force: true })`
+- Isso força o clique mesmo em elementos desabilitados pelo HTML
