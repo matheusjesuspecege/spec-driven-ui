@@ -37,6 +37,7 @@
 - Estrutura de spec por componente.
 - Não crie string HTML para testes componentes.
 - Não crie um página de teste para renderizar por meio do método setContent.
+- Não crie constantes para armazenar os tokens ex: `TOKENS`, use os valores diretamente no código.
 
 ```
 frontend/tests/features/[nome]/
