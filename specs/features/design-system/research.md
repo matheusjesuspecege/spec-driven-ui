@@ -79,7 +79,7 @@ O Tailwind v4 utiliza abordagem **CSS-first**, onde a configuração é feita di
 | `--color-primary-hover` | `#ff7a33` | Hover do primary |
 | `--color-primary-muted` | `#ff5c0020` | Backgrounds de primary |
 | `--color-success` | `#22c55e` | Sucesso, confirmações |
-| `--color-success-muted` | `#22c55e20` | Backgrounds de sucesso |
+| `--color-success-muted` | `#22c55e20` | Backgrounds de sucesso (12% alpha) |
 | `--color-error` | `#ef4444` | Erros, validações |
 | `--color-error-muted` | `#ef444420` | Backgrounds de erro |
 
@@ -175,89 +175,9 @@ O Tailwind v4 utiliza abordagem **CSS-first**, onde a configuração é feita di
 
 ---
 
-## 6. Integração com Tailwind v4
+## 6. Implementação
 
-### Mapeamento de Tokens para @theme
-
-```css
-@import "tailwindcss";
-
-@theme {
-  /* ============================================
-   * DESIGN TOKENS - Design System
-   * Source: pencil-demo.pen
-   * ============================================ */
-  
-  /* Colors - Background */
-  --color-bg-base: #0a0a0b;
-  --color-bg-subtle: #111113;
-  --color-bg-elevated: #141417;
-  --color-bg-muted: #1a1a1d;
-  --color-bg-input: #1f1f23;
-  --color-bg-overlay: #2a2a2e;
-  
-  /* Colors - Text */
-  --color-text-primary: #ffffff;
-  --color-text-secondary: #ffffffcc;
-  --color-text-muted: #adadb0;
-  --color-text-subtle: #8b8b90;
-  --color-text-disabled: #6b6b70;
-  --color-text-inverse: #4a4a4e;
-  
-  /* Colors - Semantic */
-  --color-primary: #ff5c00;
-  --color-primary-hover: #ff7a33;
-  --color-primary-muted: #ff5c0020;
-  --color-success: #22c55e;
-  --color-success-muted: #22c55e20;
-  --color-error: #ef4444;
-  --color-error-muted: #ef444420;
-  
-  /* Colors - Border */
-  --color-border: #2a2a2e;
-  --color-border-subtle: #1f1f23;
-  --color-border-focus: #ff5c00;
-  
-  /* Typography - Font Sizes */
-  --text-hero: 38px;
-  --text-h1: 32px;
-  --text-lg: 18px;
-  --text-base: 14px;
-  --text-sm: 13px;
-  --text-xs: 12px;
-  --text-2xs: 11px;
-  --text-3xs: 10px;
-  
-  /* Spacing */
-  --spacing-0: 0px;
-  --spacing-1: 2px;
-  --spacing-2: 4px;
-  --spacing-3: 6px;
-  --spacing-4: 8px;
-  --spacing-5: 10px;
-  --spacing-6: 12px;
-  --spacing-7: 14px;
-  --spacing-8: 16px;
-  --spacing-10: 20px;
-  --spacing-14: 28px;
-  --spacing-16: 32px;
-  
-  /* Border Radius */
-  --radius-none: 0px;
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --radius-xl: 10px;
-  --radius-2xl: 12px;
-  --radius-3xl: 16px;
-  --radius-4xl: 18px;
-  --radius-full: 9999px;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-```
+Consulte `plan.md` para o código completo de implementação do `:root` block.
 
 ---
 
@@ -321,9 +241,7 @@ O Design System é a **base para todos os componentes**:
 
 ## 11. Questões em Aberto
 
-- [ ] Verificar se font-family deve ser customizada ou usar Tailwind default (sans)
-- [ ] Decidir se será usado CSS custom properties com `--` ou direto no @theme
-- [ ] Avaliar necessidade de criar `src/styles/tokens.css` separado vs inline no globals.css
+- Será usado a font `Inter` através no nextjs através de `next/font/google`
 
 ---
 

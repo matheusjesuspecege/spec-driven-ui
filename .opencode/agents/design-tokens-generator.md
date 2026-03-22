@@ -15,16 +15,12 @@ permission:
 ## Como Usar Este Agente
 
 ```
-@design-tokens-generator
-```
 
 ## Visão Geral
 
 Extrai tokens de design dos arquivos `*.feature` e gera:
 - `:root` com tokens globais → `frontend/src/app/globals.css`
 - Tokens específicos de componentes inline ou em arquivos separados
-
-## Modelo Híbrido — Tokens Globais + Componentes
 
 | Tipo | Fonte | Destino |
 |------|-------|---------|
@@ -33,18 +29,13 @@ Extrai tokens de design dos arquivos `*.feature` e gera:
 
 ---
 
-## Fluxo de Execução
-
 ### Etapa 1: Verificar Estrutura
 
 ```typescript
-const designSystemPath = 'specs/features/design-system/features';
-
 if (!await dirExists(designSystemPath)) {
   return { error: 'Estrutura design-system não encontrada. Execute @bdd-generator primeiro.' };
 }
 ```
-
 ### Etapa 2: Ler design-tokens.feature (Globais)
 
 Local: `specs/features/design-system/features/design-tokens.feature`
@@ -145,8 +136,6 @@ const extractSpacing = (line: string): { top: number; bottom: number; left: numb
 ```typescript
 function generateRootCSS(tokens: GlobalTokens): string {
   let css = ':root {\n';
-  
-  // Colors
   css += '  /* Colors */\n';
   for (const [name, value] of Object.entries(tokens.colors.primary)) {
     css += `  --color-primary-${name}: ${value};\n`;
@@ -154,8 +143,6 @@ function generateRootCSS(tokens: GlobalTokens): string {
   for (const [name, value] of Object.entries(tokens.colors.semantic)) {
     css += `  --color-${name}: ${value};\n`;
   }
-  
-  // Typography
   css += '\n  /* Typography */\n';
   for (const [name, value] of Object.entries(tokens.typography.fonts)) {
     css += `  --font-${name}: ${value};\n`;
@@ -163,21 +150,15 @@ function generateRootCSS(tokens: GlobalTokens): string {
   for (const [name, value] of Object.entries(tokens.typography.sizes)) {
     css += `  --text-${name}: ${value};\n`;
   }
-  
-  // Spacing
   css += '\n  /* Spacing */\n';
   for (const [name, value] of Object.entries(tokens.spacing)) {
     css += `  --spacing-${name}: ${value};\n`;
   }
-  
-  // Border Radius
   css += '\n  /* Border Radius */\n';
   for (const [name, value] of Object.entries(tokens.borderRadius)) {
     css += `  --radius-${name}: ${value};\n`;
   }
-  
   css += '}\n';
-  
   return css;
 }
 ```
@@ -297,17 +278,10 @@ O agente deve converter CSS vars para formato Tailwind:
 
 ```typescript
 const CSS_VAR_TO_TAILWIND = {
-  // Colors
   '--color-bg-primary': 'bg-[var(--color-bg-primary)]',
   '--color-text-primary': 'text-[var(--color-text-primary)]',
-  
-  // Spacing
   '--spacing-sm': 'p-[var(--spacing-sm)]',
-  
-  // Border Radius
   '--radius-md': 'rounded-[var(--radius-md)]',
-  
-  // Typography
   '--font-sans': 'font-[var(--font-sans)]',
 };
 ```
@@ -351,7 +325,6 @@ Cenário: Cores primárias definidas corretamente
 
 ```css
 :root {
-  /* Colors */
   --color-bg-primary: #0A0A0B;
   --color-bg-secondary: #141417;
   --color-accent: #FF5C00;

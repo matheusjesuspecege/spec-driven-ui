@@ -23,9 +23,6 @@ Todos os arquivos que serão **criados ou modificados**:
 frontend/src/
 └── app/
     └── globals.css                        # modificado - adiciona :root block
-
-specs/features/design-system/
-└── plan.md                                # criado - este arquivo
 ```
 
 ---
@@ -40,29 +37,18 @@ specs/features/design-system/
 
 ```css
 :root {
-  /* ============================================
-   * DESIGN TOKENS - Design System
-   * Source: pencil-demo.pen
-   * Generated: specs/features/design-system/research.md
-   * ============================================ */
-  
-  /* Colors - Background */
   --color-bg-base: #0a0a0b;
   --color-bg-subtle: #111113;
   --color-bg-elevated: #141417;
   --color-bg-muted: #1a1a1d;
   --color-bg-input: #1f1f23;
   --color-bg-overlay: #2a2a2e;
-  
-  /* Colors - Text */
   --color-text-primary: #ffffff;
   --color-text-secondary: #ffffffcc;
   --color-text-muted: #adadb0;
   --color-text-subtle: #8b8b90;
   --color-text-disabled: #6b6b70;
   --color-text-inverse: #4a4a4e;
-  
-  /* Colors - Semantic */
   --color-primary: #ff5c00;
   --color-primary-hover: #ff7a33;
   --color-primary-muted: #ff5c0020;
@@ -70,13 +56,9 @@ specs/features/design-system/
   --color-success-muted: #22c55e20;
   --color-error: #ef4444;
   --color-error-muted: #ef444420;
-  
-  /* Colors - Border */
   --color-border: #2a2a2e;
   --color-border-subtle: #1f1f23;
   --color-border-focus: #ff5c00;
-  
-  /* Typography - Font Sizes */
   --text-hero: 38px;
   --text-h1: 32px;
   --text-lg: 18px;
@@ -85,20 +67,14 @@ specs/features/design-system/
   --text-xs: 12px;
   --text-2xs: 11px;
   --text-3xs: 10px;
-  
-  /* Typography - Line Heights */
   --leading-tight: 1.1;
   --leading-snug: 1.25;
   --leading-normal: 1.5;
   --leading-relaxed: 1.75;
-  
-  /* Typography - Font Weights */
   --font-normal: 400;
   --font-medium: 500;
   --font-semibold: 600;
   --font-bold: 700;
-  
-  /* Spacing */
   --spacing-0: 0px;
   --spacing-1: 2px;
   --spacing-2: 4px;
@@ -111,8 +87,6 @@ specs/features/design-system/
   --spacing-10: 20px;
   --spacing-14: 28px;
   --spacing-16: 32px;
-  
-  /* Border Radius */
   --radius-none: 0px;
   --radius-sm: 4px;
   --radius-md: 6px;
@@ -207,12 +181,6 @@ Ordem de implementação:
 
 ## 9. Questões em Aberto
 
-Nenhuma — todas as questões foram resolvidas no research:
-
-- [x] Font-family: usa Tailwind default (sans)
-- [x] CSS properties: via `:root` (não custom properties com `--`)
-- [x] Arquivo: inline no `globals.css` (não arquivo separado)
-
 ---
 
 ## 10. Checklist de Implementação
@@ -221,9 +189,9 @@ Nenhuma — todas as questões foram resolvidas no research:
 - [ ] Verificar existência de `frontend/src/app/globals.css`
 
 ### Implementação
-- [ ] Atualizar globals.css atual
+- [ ] Verificar globals.css e adicionar o que não existir
 - [ ] Adicionar `@import "tailwindcss";` no início (se não existir)
-- [ ] Inserir bloco `:root` completo conforme seção 3.1
+- [ ] Inserir bloco `:root` completo conforme seção 3.1 
 - [ ] Adicionar `html { scroll-behavior: smooth; }` ao final
 
 ### Validação

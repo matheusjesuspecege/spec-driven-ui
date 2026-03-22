@@ -1,5 +1,19 @@
 # Plano de ação sidebar
 
+> Anotar toda a sequencia de passos executada para gerar o resultado, para servir de 'cola' para gerar tudo novamente quinta para apresentar para o time linka.
+
+- @us-to-research -> gerar o research.md e revisa-lo.
+- @research-to-plan -> gerar o plan.md e revisa-lo.
+- @bdd-generator -> gerar o *.feature e revisa-lo.
+- @analyze-consistency -> verificar consistencia e fazer as correções necessárias.
+- @tdd-generator -> gerar cenarios de testes apartir do bdd e revisa-los.
+- @worktree-mapper -> verificar quais tarefas podem ser feitas em paralelo nas worktrees
+- @worktree-runner -> criar uma worktree para codar a feature
+- @implement-tasks -> rodar o subagent na worktree para codar a feature supervisionada
+- @design-tokens-generator -> converte o *.feature e popula o global.css
+
+> Obs: use o analyze-inconsistency logo após gerar os cenários de bdd.
+
 ## Design-system
 
 **Research -> Plan**
