@@ -123,25 +123,43 @@ if (!match) {
 ### Pergunta 1: Ativar teste
 ```
 "Ativar e implementar [nome-do-teste]?"
+
+Opções obrigatórias:
+1. SIM - ativar e continuar implementação
+2. NÃO - aguardar suas diretrizes antes de prosseguir
+3. ENCERRAR - parar completamente
+
 - Mostrar cenário BDD correspondente
 - Mostrar aprendizados relevantes do progress.md
-- SIM → continuar
-- NÃO → aguardar diretrizes
+- ESPERAR input explícito do humano
+- NUNCA assumir resposta padrão
 ```
 
 ### Pergunta 2: Revisar código
 ```
 "Teste verde. Revisar código?"
+
+Opções obrigatórias:
+1. CORRIGIR - há problemas, guiar correção
+2. APROVAR - código aprovado, continuar
+3. ENCERRAR - parar completamente
+
 - Mostrar: git diff
-- CORRIGIR → voltar ao TDD
-- APROVAR → continuar
+- ESPERAR input explícito do humano
+- NUNCA assumir resposta padrão
 ```
 
 ### Pergunta 3: Próximo teste
 ```
-"Continuar para próximo?"
-- SIM → loop
-- NÃO → encerrar
+"Continuar para próximo teste?"
+
+Opções obrigatórias:
+1. SIM - implementar próximo teste
+2. NÃO - encerrar sessão
+3. ENCERRAR - parar completamente
+
+- ESPERAR input explícito do humano
+- NUNCA assumir resposta padrão
 ```
 
 ---
@@ -308,6 +326,7 @@ Opções:
 | Regra | Detalhe |
 |-------|---------|
 | **TDD First** | Sempre RED → GREEN → REFACTOR |
+| **Input Obrigatório** | Nunca assumir resposta. Aguardar input explícito do humano. |
 | **Aprovação** | Perguntar em 3 pontos: ativar, revisar, próximo |
 | **Gate** | @verify-patterns antes do commit |
 | **Progress** | Registrar após aprovação, categorizado |
@@ -376,6 +395,40 @@ test(button): implement disabled state tests
 feat(button): implement loading state with aria attributes
 refactor(button): improve className merging pattern
 ```
+
+---
+
+## Formato de Perguntas
+
+### Usar tool `question`
+
+Sempre usar a tool `question` para interação humana:
+
+```typescript
+{
+  "questions": [
+    {
+      "header": "ação",
+      "question": "Mensagem clara com contexto",
+      "multiple": false,
+      "options": [
+        { "label": "SIM", "description": "ação se confirmado" },
+        { "label": "NÃO", "description": "ação se negado" },
+        { "label": "ENCERRAR", "description": "parar sessão" }
+      ]
+    }
+  ]
+}
+```
+
+### Regras Obrigatórias
+
+1. **multiple: false** - apenas uma escolha
+2. **options com exatamente 3 escolhas** - SIM/NÃO/ENCERRAR
+3. **NUNCA usar boolean** ou YES/NO primitivo
+4. **description em cada opção** - explicar consequência
+5. **header curto** ≤ 30 caracteres
+6. **ESPERAR resposta** - nunca prosseguir sem input
 
 ---
 
