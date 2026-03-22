@@ -4,22 +4,15 @@ interface ButtonProps extends React.DetailedHTMLProps<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
   HTMLButtonElement
 > {
-  variant?: "secondary";
+  variant?: "inverse";
 }
 
 export const Button = ({ children, variant, ...props }: ButtonProps) => (
   <>
-    {variant === "secondary" ? (
+    {variant === "inverse" && (
       <button
         {...props}
-        className={`${props.className} border border-solid border-(--color-border) bg-(--color-bg-muted)`}
-      >
-        {children}
-      </button>
-    ) : (
-      <button
-        {...props}
-        className={`${props.className} bg-(--color-primary) text-(--color-text-primary) hover:bg-(--color-primary-hover)`}
+        className={`${props.className} bg-(--color-text-primary) text-(--color-primary) hover:bg-(--color-primary-hover)`}
       >
         {children}
       </button>

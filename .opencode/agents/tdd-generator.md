@@ -40,6 +40,42 @@ permission:
 
 ---
 
+## NOMENCLATURA DE TESTES
+
+### Regra: Usar texto do Cenário BDD completo como nome do teste
+
+O nome do teste deve ser exatamente o texto do `Cenário` do arquivo `.feature`, com as seguintes exceções para sanitização:
+
+| Caractere | Substituição | Exemplo |
+|-----------|--------------|---------|
+| `"` (aspas duplas) | removido | `type="button"` → `type-button` |
+| `'` (aspas simples) | removido | - |
+| `(` e `)` | removido | `(sm-like)` → `sm-like` |
+| `#` | removido | - |
+| `/` | substituído por `ou` | - |
+| `.` à esquerda | removido | `.btn-spinner` → `btn-spinner` |
+
+### Exemplo de Conversão
+
+```
+BDD (.feature):
+  Cenário: Inverse button type="button" não submete formulário inadvertidamente
+
+TDD (.spec.ts):
+  test('Inverse button type-button não submete formulário inadvertidamente', async ({ page }) => {
+    ...
+  });
+```
+
+### Regras Importantes
+
+1. **Manter texto completo em português** - não abreviar
+2. **Preservar acentos** - ç, ã, é, etc. são mantidos
+3. **1:1 com cenário BDD** - cada cenário = 1 teste
+4. **Primeira letra maiúscula** - seguir padrão do cenário BDD
+
+---
+
 ## PADRÃO DE UNIFICAÇÃO
 
 ### ANTES (redundante):
@@ -314,6 +350,137 @@ test.describe('Feature: Button', () => {
 3. Gerar spec.ts com **1 RF = 1 teste unificado**
 4. Gerar spec.docs.md com código para passar cada RF
 5. Primeiro teste ATIVO, demais SKIP
+
+---
+
+## ESTRUTURA COMPLETA DO SPEC.DOCS.MD
+
+O arquivo `.spec.docs.md` deve conter TODAS as informações necessárias para o desenvolvedor implementar os testes. Não é apenas uma lista - é um **guia completo de referência**.
+
+### Estrutura Obrigatória
+
+```markdown
+# [Feature]: Documentação de Implementação dos Testes
+
+> **FONTE DA VERDADE: `specs/features/[feature]/features/[feature].feature`**
+> TDD sincronizado com BDD - cada teste corresponde a um cenário BDD
+
+---
+
+## 1. Metodologia
+### BDD → TDD Sync Rules
+### Status dos Testes
+
+---
+
+## 2. Testes (Sincronizados com BDD)
+### [Categoria]
+| Teste | Tags | Status |
+|-------|------|--------|
+| `Nome do teste` | @tag | ✅ ATIVO / ⏭️ SKIP |
+
+#### Snippet - `Nome do teste`
+\`\`\`typescript
+// @tag - STATUS
+test('Nome do teste', async ({ page }) => {
+  // código completo do teste
+});
+\`\`\`
+
+---
+
+## 3. Resumo
+Tabela com totais por categoria
+
+---
+
+## 4. Design Tokens
+Tabela com todos os tokens usados
+
+---
+
+## 5. Comandos
+Scripts úteis para executar os testes
+
+---
+
+## 6. Referências de Documentação
+### 6.1 Playwright API
+| Método | Descrição | Uso |
+|--------|-----------|-----|
+| `page.locator()` | Seleciona elemento | Seletores CSS/data-testid |
+| ... | ... | ... |
+
+### 6.2 Utils Customizadas
+| Função | Arquivo | Descrição |
+|--------|---------|-----------|
+| `getComputedStyles()` | @/utils/test-utils | Extrai CSS computado |
+| `hexToRgb()` | @/utils/utils | Converte hex para rgb |
+
+### 6.3 WAI-ARIA
+| Atributo | Descrição | Quando Usar |
+|----------|-----------|--------------|
+| `aria-busy` | Indica elemento em processamento | Estado loading |
+| `aria-disabled` | Indica elemento desabilitado | Estado disabled |
+| `role="button"` | Define semântica de botão | Acessibilidade |
+
+---
+
+## 7. Dicas de Design Patterns
+### 7.1 Clean Code (Robert Martin)
+
+| Princípio | Aplicação nos Testes |
+|-----------|---------------------|
+| **Nomes significativos** | Nome descreve comportamento, não implementação |
+| **Funções pequenas** | Cada teste verifica um cenário específico |
+| **DRY** | TOKENS centraliza valores repetidos |
+| **Arrange-Act-Assert** | Setup → Ação → Verificação |
+| **Sem comentários desnecessários** | Código auto-explicativo |
+
+### 7.2 Testing Patterns
+
+| Pattern | Exemplo |
+|---------|---------|
+| **Given-When-Then (BDD)** | Segue estrutura do .feature |
+| **Test Isolation** | `beforeEach` reseta estado |
+| **Descriptive Test Names** | Nome descreve comportamento |
+| **Single Assertion Focus** | Assertions agrupadas logicamente |
+
+### 7.3 Acessibilidade (WCAG)
+
+| Princípio | Como Testar |
+|-----------|-------------|
+| **Keyboard Navigation** | `page.keyboard.press('Tab')` |
+| **Focus Visibility** | `expect(button).toBeFocused()` |
+| **ARIA Attributes** | `aria-busy`, `aria-disabled`, `role` |
+| **Touch Target Size** | `expect(box?.width).toBeGreaterThanOrEqual(44)` |
+
+### 7.4 Design System Patterns
+
+| Pattern | Implementação |
+|--------|--------------|
+| **Design Tokens** | `TOKENS` object centralizado |
+| **Semantic Colors** | `primary`, `bgMuted`, `borderFocus` |
+| **Consistent Selectors** | `data-testid` para todos os elementos |
+```
+
+---
+
+## REGRAS DE GERAÇÃO
+
+### O .spec.docs.md DEVE:
+
+1. **Snippets completos** - Todo código necessário para implementar o teste
+2. **Referências documentadas** - Links para documentação oficial
+3. **Design patterns** - Boas práticas de código e testes
+4. **Sync com BDD** - Nomes sincronizados com cenários
+5. **Status correto** - @smoke = test(), outros = test.skip()
+
+### O .spec.docs.md NÃO DEVE:
+
+1. **Perder snippets durante sync** - Manter código mesmo ao renomear
+2. **Ter código genérico** - Cada snippet deve ser específico
+3. **Faltar referências** - Documentar todas as APIs usadas
 
 ---
 
