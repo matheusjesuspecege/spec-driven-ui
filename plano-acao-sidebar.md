@@ -17,13 +17,9 @@
 ## Design-system
 
 **Research -> Plan**
-- Ler e atualizar o research.md
-- Ler e atualizar o plan.md
-- Ler e atualizar o bdd
-- Gerar o global.css apartir do bdd
-- Atualizar AGENTS.md
-- Destilar conhecimento global e remover o que não precisa.
 - Ler a doc do opencode sobre **skills, rules, command** e ver se faz sentido a implementação.
+    - https://opencode.ai/docs/pt-br/commands/  
+    - https://opencode.ai/docs/pt-br/skills/
 - Analisar se o subagent `@design-tokens-generator` se encaixa na categoria `skill` ou `command` porque ele só é acionado pelo orchestrator (void).
 - Atualizar prints no readme do artigo
 
