@@ -32,18 +32,15 @@ test.describe("Feature: Button (BDD Source)", () => {
     const button = page.locator(buttonInverseID);
     await expect(button).toBeVisible();
     await button.hover();
-    const backgroundColor = await button.evaluate((el) =>
-      window.getComputedStyle(el).getPropertyValue("background-color"),
-    );
-    expect(backgroundColor).toBe(hexToRgb(TOKENS.bgMuted));
+    const styles = await getComputedStyles(page, buttonInverseID)
+    expect(styles?.backgroundColor).toBe(hexToRgb(TOKENS.bgMuted));
   });
 
   test("Inverse button em estado active", async ({ page }) => {
     const button = page.locator(buttonInverseID);
     await expect(button).toBeVisible();
-    await page.mouse.down();
+    await button.click()
     const styles = await getComputedStyles(page, buttonInverseID);
-    await page.mouse.up();
     /* XXX:
      * o assert de opacity está como 1, porém no código está (0.95) que é o correto.
      * tive que fazer esse falso positivo, porque está conflitando com a className 'rounded-md' do tailwind.
