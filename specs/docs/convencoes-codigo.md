@@ -7,6 +7,7 @@
 - Props de componentes devem ser nomeadas de maneira descritiva para props `ComponentProps`
 - Props que utilizam `ForwardRef` devem tipar as suas interfaces de maneira descritiva para ref `ComponentRef`.
 - Não use `any` faça a tipagem correta.
+- Função devem ser criadas com `arrow functions`
 
 ---
 
@@ -14,6 +15,8 @@
 
 - Arquivos devem respeitar o maximo de 500 linhas, acima disso deverá ser criado em arquivo separado e importado onde é utizado.
 - Pastas devem ser criadas em lowercase, separado por `-` quando necessário.
+- Utilitários devem ser salvos em `frontend/src/utils/utils.ts`
+
 ---
 
 ## Identação
@@ -37,7 +40,9 @@
 - Estrutura de spec por componente.
 - Não crie string HTML para testes componentes.
 - Não crie um página de teste para renderizar por meio do método setContent.
-- Não crie constantes para armazenar os tokens ex: `TOKENS`, use os valores diretamente no código.
+- Não criar CONSTANTS para armazenar os tokens ex: `TOKENS`, use os valores diretamente no código.
+- HELPERS de teste devem ser salvos em `frontend/src/utils/test-utils.ts`
+- Não adicione comentários nos testes.
 
 ```
 frontend/tests/features/[nome]/

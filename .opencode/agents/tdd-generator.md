@@ -99,29 +99,6 @@ function generateSpecTs(ctx: FeatureContext): string {
  * Complexity: ${ctx.complexity}
  */
 
-// ============================================================================
-// CONSTANTS
-// ============================================================================
-
-const FEATURE_NAME = '${ctx.featureName}';
-const TEST_URL = '/test-${ctx.featureName.toLowerCase()}';
-
-// Design Tokens
-${generateTokenConstants(ctx)}
-
-// Sizes
-${generateSizeConstants(ctx)}
-
-// ============================================================================
-// HELPERS
-// ============================================================================
-
-${generateHelperFunctions(ctx)}
-
-// ============================================================================
-// TEST SUITE
-// ============================================================================
-
 test.describe('Feature: ${ctx.featureName}', () => {
 
   test.beforeEach(async ({ page }) => {
@@ -430,48 +407,9 @@ import { test, expect, Page } from '@playwright/test';
  * Complexity: low
  */
 
-// ============================================================================
-// CONSTANTS
-// ============================================================================
-
-const FEATURE_NAME = 'Badge';
-const TEST_URL = '/test-badge';
-
-const TOKEN_PRIMARY = '#FF5C00';
-const TOKEN_ERROR = '#EF4444';
-
-const SIZES = {
-  sm: { fontSize: 12 },
-  md: { fontSize: 13 },
-  lg: { fontSize: 14 },
-} as const;
-
-// ============================================================================
-// HELPERS
-// ============================================================================
-
-function createBadgeHTML(overrides = {}): string {
-  const props = { variant: 'primary', size: 'md', children: 'Badge', ...overrides };
-  const disabledAttr = overrides.disabled ? 'disabled' : '';
-  return `<span class="badge badge-${props.variant} badge-${props.size}${overrides.disabled ? ' badge-disabled' : ''}" data-testid="badge" ${disabledAttr}>${props.children}</span>`;
-}
-
-async function getComputedStyles(page: Page, selector: string) {
-  return page.evaluate((sel) => {
-    const el = document.querySelector(sel) as HTMLElement;
-    const styles = window.getComputedStyle(el);
-    return { backgroundColor: styles.backgroundColor, color: styles.color, fontSize: parseInt(styles.fontSize), opacity: parseFloat(styles.opacity), cursor: styles.cursor };
-  }, selector);
-}
-
-// ============================================================================
-// TEST SUITE
-// ============================================================================
-
 test.describe('Feature: Badge', () => {
   test.beforeEach(async ({ page }) => { await page.goto(TEST_URL); });
-
-  // RF-01: Variant Primary
+ 
   test('RF-01 - deve renderizar badge visível', async ({ page }) => {
     await page.setContent(createBadgeHTML({ variant: 'primary' }));
     await expect(page.locator('[data-testid="badge"]')).toBeVisible();
@@ -482,13 +420,11 @@ test.describe('Feature: Badge', () => {
     expect(styles.backgroundColor).toBe('rgb(255, 92, 0)');
   });
 
-  // RF-02: Variant Secondary
   test.skip('RF-02 - deve ter border e background transparente', async ({ page }) => {
     const styles = await getComputedStyles(page, '[data-testid="badge"]');
     expect(styles.backgroundColor).toBe('rgba(0, 0, 0, 0)');
   });
 
-  // RF-09: Disabled
   test.skip('RF-09 - deve ter opacity 50% quando disabled', async ({ page }) => {
     const styles = await getComputedStyles(page, '[data-testid="badge"]');
     expect(styles.opacity).toBe(0.5);

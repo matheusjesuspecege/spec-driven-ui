@@ -1,4 +1,6 @@
-import { test, expect, Page } from '@playwright/test';
+import { getComputedStyles } from '@/utils/test-utils';
+import { hexToRgb } from '@/utils/utils';
+import { test, expect } from '@playwright/test';
 
 /**
  * Button Component - Playwright E2E Tests
@@ -10,13 +12,8 @@ import { test, expect, Page } from '@playwright/test';
  * @see button.spec.docs.md for implementation documentation
  */
 
-// ============================================================================
-// CONSTANTS
-// ============================================================================
-
 const TEST_URL = '/';
 
-// Design Tokens (from globals.css)
 const TOKENS = {
   primary: '#ff5c00',
   primaryHover: '#ff7a33',
@@ -28,80 +25,25 @@ const TOKENS = {
   borderFocus: '#ff5c00',
 } as const;
 
-
-// ============================================================================
-// HELPERS
-// ============================================================================
-
-/**
- * Get computed styles from an element
- */
-async function getComputedStyles(page: Page, selector: string) {
-  return page.evaluate((sel) => {
-    const el = document.querySelector(sel) as HTMLElement;
-    if (!el) return null;
-    const styles = window.getComputedStyle(el);
-    return {
-      backgroundColor: styles.backgroundColor,
-      color: styles.color,
-      fontSize: parseInt(styles.fontSize),
-      fontWeight: parseInt(styles.fontWeight),
-      height: parseInt(styles.height),
-      paddingTop: parseInt(styles.paddingTop),
-      paddingBottom: parseInt(styles.paddingBottom),
-      paddingLeft: parseInt(styles.paddingLeft),
-      paddingRight: parseInt(styles.paddingRight),
-      opacity: parseFloat(styles.opacity),
-      cursor: styles.cursor,
-      borderRadius: parseInt(styles.borderRadius),
-      outlineWidth: parseInt(styles.outlineWidth),
-      outlineColor: styles.outlineColor,
-      width: styles.width,
-      display: styles.display,
-    };
-  }, selector);
-}
-
-/**
- * Convert hex to rgb format (e.g., "#ff5c00" -> "rgb(255, 92, 0)")
- */
-function hexToRgb(hex: string): string {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `rgb(${r}, ${g}, ${b})`;
-}
-
-// ============================================================================
-// TEST SUITE
-// ============================================================================
-
 test.describe('Feature: Button', () => {
+  test.beforeEach(async ({ page }) => await page.goto(TEST_URL));
 
-  test.beforeEach(async ({ page }) => {
-    await page.goto(TEST_URL);
-  });
-
-  // ==========================================================================
-  // RF-01: Renderizar botão com variant "primary"
-  // ==========================================================================
-  
   test('RF-01 - deve renderizar botão primary visível', async ({ page }) => {
     const button = page.locator('[data-testid="button"]');
     await expect(button).toBeVisible();
   });
 
-  test.skip('RF-01 - deve ter background primary (orange)', async ({ page }) => {
+  test('RF-01 - deve ter background primary (orange)', async ({ page }) => {
     const styles = await getComputedStyles(page, '[data-testid="button"]');
     expect(styles?.backgroundColor).toBe(hexToRgb(TOKENS.primary));
   });
 
-  test.skip('RF-01 - deve ter texto branco', async ({ page }) => {
+  test('RF-01 - deve ter texto branco', async ({ page }) => {
     const styles = await getComputedStyles(page, '[data-testid="button"]');
     expect(styles?.color).toBe(hexToRgb(TOKENS.textPrimary));
   });
 
-  test.skip('RF-01 - deve aplicar hover com cor mais clara', async ({ page }) => {
+  test('RF-01 - deve aplicar hover com cor mais clara', async ({ page }) => {
     const button = page.locator('[data-testid="button"]');
     await button.hover();
     const styles = await getComputedStyles(page, '[data-testid="button"]');
@@ -112,11 +54,11 @@ test.describe('Feature: Button', () => {
   // RF-02: Renderizar botão com variant "secondary"
   // ==========================================================================
   
-  test.skip('RF-02 - deve renderizar botão secondary com border', async ({ page }) => {
+  test('RF-02 - deve renderizar botão secondary com border', async ({ page }) => {
     const button = page.locator('[data-testid="button"]');
     await expect(button).toBeVisible();
-    const styles = await getComputedStyles(page, '[data-testid="button"]');
-    expect(styles?.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+    const styles = await getComputedStyles(page, '[data-testid="button-secondary"]');
+    expect(styles?.border).toBe(`1px solid ${hexToRgb('#2a2a2e')}`)
   });
 
   test.skip('RF-02 - deve ter border com cor border (#2a2a2e)', async ({ page }) => {
