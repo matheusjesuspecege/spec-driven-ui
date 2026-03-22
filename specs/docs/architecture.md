@@ -36,7 +36,7 @@
 
 ### specs/features/ — Estrutura de Features
 
-Cada feature/componente tem **pasta própria** com fluxo RPI completo:
+Cada feature tem **pasta própria** com fluxo RPI completo:
 
 ```
 specs/features/
@@ -44,35 +44,12 @@ specs/features/
 │   ├── research.md
 │   ├── plan.md
 │   └── features/
-│       └── design-tokens.feature  # Tokens GLOBAIS
-│
-├── [nome-do-componente]/      # Cada componente = 1 pasta
-│   ├── research.md
-│   ├── plan.md
-│   └── features/
-│       └── [nome].feature
-│
+│       └── design-tokens.feature  # Tokens GLOBAIS│
 ├── [nome-da-feature]/          # Features normais
 │   ├── research.md
 │   ├── plan.md
 │   └── features/
 │       └── [nome].feature
-```
-
-> **Importante**: Cada componente possui pasta própria com research, plan e *.feature. Arquivos de componentes **NUNCA** ficam em subpastas de outra feature (ex: não usar `design-system/features/atoms/`).
-
-### Ordem de Implementação (Atomic Design)
-
-Implementar sempre **bottom-up** seguindo a dependência de componentes:
-
-```
-1. Design System (tokens globais)
-   ↓
-2. Atoms (base: icon, button, avatar, logo, etc)
-   ↓
-3. Molecules (compostas de atoms: nav-list, card, etc)
-   ↓
-4. Organisms (compostos de molecules: sidebar, header, etc)
 ```
 
 ### frontend/src/components/ — Estrutura de Componentes
@@ -81,28 +58,6 @@ Componentes em **pasta plana** (sem separação por tipo):
 
 ```
 frontend/src/components/
-├── icon/
-│   └── Icon.tsx
-├── button/
-│   └── Button.tsx
 ├── nav-item/
-│   └── NavItem.tsx
-├── avatar/
-│   └── Avatar.tsx
-├── logo/
-│   └── Logo.tsx
-├── nav-list/
-│   └── NavList.tsx
-├── sidebar/
-│   └── Sidebar.tsx
+│   └── nav-item.tsx
 ```
-
-### Fluxo: Design System vs Features vs Componentes
-
-| Aspecto | Design System | Componentes (RPI) | Features Normais |
-|---------|---------------|------------------|------------------|
-| **Source of Truth** | `design-tokens.feature` | `*.feature` por componente | `*.feature` |
-| **Testes** | Não gera | Gera via @tdd-generator | Gera via @tdd-generator |
-| **Output CSS** | `globals.css` via @design-tokens-generator | Componente.tsx | N/A |
-| **Propósito** | Tokens globais | UI components | Funcionalidades |
-

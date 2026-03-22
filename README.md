@@ -106,14 +106,10 @@ Após a revisão do research.md, partimos para a definição do que precisaremos
 
 Esta é a fase de preparação dos testes que serão usados na implementação, os cenários são gerados apartir do **plan.md**, as tarefas são organizadas no formato **Gherkin (bdd)** e são transformadas em cenários de teste para desenvolvimento usando **tdd**.
 
-![BDD](/readme/bdd.png)
-> BDD (.feature) gerado apartir de plan.md
-
-![TDD](/readme/tdd.png)
-> Testes (gerados apartir do bdd) + dicas de como implementar com referencias
+![BDD/TDD gerados](/readme/bdd-tdd.png)
+> BDD (.feature) gerado apartir de plan.md e testes gerados para refletir o BDD
 
 Neste meu cenário estou utilizando **bottom-up** para implementação, portanto preciso gerar todos os atomos que **Sidebar** depende para ser implementado. 
-
 
 ### Paralelismo e worktrees
 
