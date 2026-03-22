@@ -8,6 +8,7 @@
 - Props que utilizam `ForwardRef` devem tipar as suas interfaces de maneira descritiva para ref `ComponentRef`.
 - Não use `any` faça a tipagem correta.
 - Função devem ser criadas com `arrow functions`
+- Se um valor repetir mais de uma vez na mesma função, ou teste, armazene em uma constante mais acima que possa ser reaproveitada em todos os locais de uso.
 
 ---
 
@@ -41,7 +42,9 @@
 - Não crie string HTML para testes componentes.
 - Não crie um página de teste para renderizar por meio do método setContent.
 - Não criar CONSTANTS para armazenar os tokens ex: `TOKENS`, use os valores diretamente no código.
-- HELPERS de teste devem ser salvos em `frontend/src/utils/test-utils.ts`
+- HELPERS de teste abstratos que podem ser reutilizados entre os testes devem estar em `frontend/src/utils/test-utils.ts` (use eles)
+- Se for usar `data-testid`, use nomes relacionados ao teste que está trabalhando
+- O arquivo de instancia dos componentes atomicos que precisam ser instanciados para fazer o teste passar, está localizado em `frontend/src/app/test-ds/page.ts` 
 
 ```
 frontend/tests/features/[nome]/

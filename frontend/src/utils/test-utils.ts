@@ -22,7 +22,8 @@ export const getComputedStyles = async (page: Page, selector: string) => {
       outlineColor: styles.outlineColor,
       width: styles.width,
       display: styles.display,
-      border: styles.border
+      border: styles.border,
+      screenWidth: window.screen.width
     };
   }, selector);
 }

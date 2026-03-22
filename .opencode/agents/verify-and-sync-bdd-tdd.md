@@ -34,6 +34,7 @@ permission:
 | TDD sem BDD | ⚠️ **REPORTAR** - você decide |
 | BDD sem TDD | ⚠️ **REPORTAR** - você decide |
 | Status diferente | ⚠️ **REPORTAR** - você decide |
+| Assertions incompletas | ⚠️ **REPORTAR** - você decide |
 
 ---
 
@@ -55,7 +56,7 @@ permission:
 ```
 PASSO 1: Parse BDD (.feature)
   ├── Extrair TODOS os cenários com tags
-  ├── Mapear: scenarioName → { tags, given, when, then }
+  ├── Mapear: scenarioName → { tags, given, when, then, steps }
   └── Contar cenários
 
 PASSO 2: Parse TDD (.spec.ts)
@@ -73,7 +74,18 @@ PASSO 3: Validar Contra BDD
   └── Verificar status: @smoke = ativo, outros = skip
        └── ❌ DIFERENTE → REPORTAR
 
-PASSO 4: Gerar Relatório
+PASSO 4: Validar Completude de Assertions (ANTI-FALSO-POSITIVO)
+  ├── Para cada cenário BDD:
+  │   ├── Contar steps "Então" + "E" (assertions esperadas)
+  │   └── Ignorar: "Dado que", "Quando" (são setup/ação)
+  ├── Para cada teste TDD:
+  │   ├── Contar assertions: expect(...)
+  │   └── Mapear por tipo de verificação
+  └── Comparar:
+      ├── TDD assertions < BDD steps → ⚠️ REPORTAR
+      └── TDD assertions >= BDD steps → ✅ OK
+
+PASSO 5: Gerar Relatório
   ├── Exit code: 0=synced, 1=diff
   └── Lista de ações manuais necessárias
 ```
@@ -100,6 +112,77 @@ PASSO 4: Gerar Relatório
 | `@testid` | `test.skip()` |
 | `@classname` | `test.skip()` |
 | `@children` | `test.skip()` |
+
+---
+
+## MAPEAMENTO: STEPS BDD → ASSERTIONS TDD (PASSO 4)
+
+### Regras de Contagem
+
+| Keyword | Count | Motivo |
+|---------|-------|--------|
+| `Dado que` | 0 | Pré-condição / Setup |
+| `Quando` | 0 | Ação / Trigger |
+| `Então` | 1 | Assertion principal |
+| `E` (após Então) | 1 | Assertion adicional |
+
+### Mapeamento Semântico (para detecção de padrão)
+
+| Pattern BDD | Assertion TDD Esperada |
+|-------------|----------------------|
+| `deve ter background #X` | `expect(...).toBe(rgb(X))` |
+| `deve ter texto com cor #X` | `expect(...).toBe(rgb(X))` |
+| `não deve ter borda` | `expect(...border...).toBe(...)` ou `toBeFalsy()` |
+| `deve ter opacity de X%` | `expect(...).toBe(X)` |
+| `deve ter cursor X` | `expect(...).toBe('X')` |
+| `deve ter outline de Xpx` | `expect(...outlineWidth...).toBe(X)` |
+| `deve ter font-size de Xpx` | `expect(...fontSize...).toBe(X)` |
+| `deve ter font-weight de X` | `expect(...fontWeight...).toBe(X)` |
+| `deve ter border-radius de Xpx` | `expect(...borderRadius...).toBe(X)` |
+| `deve ter width de X` | `expect(...width...).toBe('X')` ou `.toBe(X)` |
+| `deve ter padding vertical de Xpx` | `expect(...padding...).toBe(X)` |
+| `deve ter atributo X="Y"` | `expect(...).toHaveAttribute('X', 'Y')` |
+| `o atributo X deve ser "Y"` | `expect(...).toHaveAttribute('X', 'Y')` |
+| `aria-busy deve ser "true"` | `expect(...).toHaveAttribute('aria-busy', 'true')` |
+| `aria-disabled deve ser "true"` | `expect(...).toHaveAttribute('aria-disabled', 'true')` |
+| `deve exibir spinner` | `expect(...).toBeVisible()` |
+| `não deve ser disparado` | Sem assertion direta (verificado por contraprova) |
+| `o texto "X" deve estar visível` | `expect(...).toContainText('X')` |
+| `deve incluir a classe "X"` | `expect(...).toHaveClass(/X/)` |
+| `papel (role) deve ser "button"` | `expect(...).toHaveAttribute('role', 'button')` |
+| `área de toque mínima de XxYpx` | `expect(box?.width).toBeGreaterThanOrEqual(X)` |
+| `layout não deve saltar` | `expect(styles?.width).toBeDefined()` |
+| `deve manter dimensões` | `expect(styles?.width).toBeDefined()` |
+
+### Exemplos de Contagem
+
+```
+# BDD:
+Cenário: Inverse button tem estilo correto
+    Dado que o componente Button é renderizado com variant="inverse"   → 0
+    Quando visível na página                                          → 0
+    Então deve ter background #FFFFFF                                  → 1
+     E deve ter texto com cor primary (#FF5C00)                       → 1
+     E não deve ter borda                                              → 1
+# Total esperado: 3 assertions
+```
+
+```
+# TDD:
+test('Inverse button tem estilo correto', async ({ page }) => {
+    expect(styles?.backgroundColor).toBe(...);  // 1
+    expect(styles?.color).toBe(...);             // 2
+    // FALTANDO: borda
+});
+# Total encontrado: 2 assertions
+# RESULTADO: ⚠️ ASSERTIONS INCOMPLETAS (esperado 3, encontrado 2)
+```
+
+### Limitações (Basic Mode)
+
+1. **Contagem simples**: Não valida se a assertion corresponde ao step específico
+2. **Pode haver falsos-negativos**: Se o dev usar `expect` para setup (ex: `expect(button).toBeVisible()` como Given)
+3. **Não detecta mapeamento incorreto**: Se verificar `background` onde deveria verificar `border`
 
 ---
 
@@ -189,6 +272,22 @@ Ao verificar sincronia, normalizar ambos os nomes (remover pontuação, normaliz
 │    → Ação: Mudar test() → test.skip() no .spec.ts            │
 └────────────────────────────────────────────────────────────────┘
 
+┌────────────────────────────────────────────────────────────────┐
+│ ⚠️ ASSERTIONS INCOMPLETAS (ANTI-FALSO-POSITIVO):              │
+├────────────────────────────────────────────────────────────────┤
+│ 1. "Inverse button tem estilo correto"                        │
+│    → BDD: 3 steps (background, cor, borda)                   │
+│    → TDD: 2 assertions                                        │
+│    → FALTANDO: 1 assertion                                     │
+│    → Step: "não deve ter borda" sem assert no TDD            │
+│    → Ação: Adicionar expect para borda no .spec.ts           │
+│                                                                │
+│ 2. "Upgrade button tem dimensões do inverse sm-like"         │
+│    → BDD: 4 steps (font-size, font-weight, radius, padding)  │
+│    → TDD: 5 assertions (inclui paddingTop + paddingBottom)   │
+│    → ✅ OK - assertions suficientes                            │
+└────────────────────────────────────────────────────────────────┘
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📝 AÇÕES MANUAIS NECESSÁRIAS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -197,16 +296,18 @@ button.spec.ts:
   ❌ REMOVER: [lista de testes sem BDD]
   ⚠️ GERAR: [lista de testes faltando]
   ~ AJUSTAR STATUS: [lista de status diferentes]
+  ⚠️ COMPLETAR ASSERTIONS: [lista de testes + steps faltando]
 
 button.feature:
   ❌ (Nenhuma ação - BDD é fonte da verdade)
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ✅ FIM DO RELATÓRIO
    TDD sem BDD: [N]
    BDD sem TDD: [N]
    Status diferente: [N]
+   Assertions incompletas: [N]
    Total divergências: [N]
 
 Exit: 1 (diferenças encontradas)
@@ -263,6 +364,16 @@ Exit: 1 (diferenças encontradas)
 │    → Ação: Mudar test.skip() → test() no .spec.ts            │
 └────────────────────────────────────────────────────────────────┘
 
+┌────────────────────────────────────────────────────────────────┐
+│ ⚠️ ASSERTIONS INCOMPLETAS:                                   │
+├────────────────────────────────────────────────────────────────┤
+│ 1. "Inverse button tem estilo correto"                        │
+│    → BDD: 3 assertions esperadas                              │
+│    → TDD: 2 assertions encontradas                            │
+│    → FALTANDO: "não deve ter borda"                          │
+│    → Ação: Adicionar expect para borda                       │
+└────────────────────────────────────────────────────────────────┘
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📝 AÇÕES MANUAIS NECESSÁRIAS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -271,17 +382,19 @@ button.spec.ts:
   ❌ REMOVER: primary-button, secondary-button, ghost-button
   ⚠️ GERAR: inverse-button-em-active, double-click-protection
   ~ AJUSTAR: inverse-button-tem-estilo-correto (skip → ativo)
+  ⚠️ COMPLETAR: Inverse button tem estilo correto (faltando borda)
 
 button.feature:
   ❌ (Nenhuma ação - BDD é fonte da verdade)
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ✅ FIM DO RELATÓRIO
    TDD sem BDD: 3
    BDD sem TDD: 2
    Status diferente: 1
-   Total divergências: 6
+   Assertions incompletas: 1
+   Total divergências: 7
 
 Exit: 1 (diferenças encontradas)
 ```
@@ -304,6 +417,7 @@ Exit: 1 (diferenças encontradas)
 - Você decide manualmente o que fazer
 - BDD é intocável - é a fonte da verdade
 - Após ajustar manualmente, rode novamente para verificar
+- **Assertions incompletas = FALSO POSITIVO**: Um teste pode passar sem verificar todos os steps do BDD
 
 ---
 

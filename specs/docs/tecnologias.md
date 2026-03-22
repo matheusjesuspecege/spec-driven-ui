@@ -19,6 +19,8 @@
 - [TypeScript](https://www.typescriptlang.org/)
 - [React](https://react.dev/)
 - [Conventional Commits](https://www.conventionalcommits.org/)
+- [Playwright](https://playwright.de)
+- [MDN](https://developer.mozilla.org/pt-BR/)
 
 ### Artigos
 
