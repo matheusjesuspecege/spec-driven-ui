@@ -14,3 +14,9 @@
 ### [2026-03-22] Testing Disabled Button
 - Para testar clique em botão disabled, usar `click({ force: true })`
 - Isso força o clique mesmo em elementos desabilitados pelo HTML
+
+### [2026-03-22] Loading State Pattern
+- Prop `loading?: boolean` deve ser explicitamente declarada na interface
+- Classes Tailwind para loading: `cursor-not-allowed`
+- Spinner como children: `{loading ? <span className="btn-spinner">...</span> : children}`
+- Atributos ARIA: `aria-busy={loading}` e `aria-disabled={loading}`

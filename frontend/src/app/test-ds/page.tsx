@@ -16,5 +16,8 @@ const Buttons = () => (
     <Button data-testid="button-disabled-inverse" variant="inverse" fullWidth disabled>
       Upgrade Now
     </Button>
+    <Button data-testid="button-loading-inverse" variant="inverse" fullWidth loading>
+      Upgrade Now
+    </Button>
   </div>
 );

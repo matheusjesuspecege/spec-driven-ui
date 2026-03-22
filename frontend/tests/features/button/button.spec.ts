@@ -15,6 +15,7 @@ const TOKENS = {
 
 const buttonInverseID = '[data-testid="button-inverse"]';
 const buttonDisabledInverseID = '[data-testid="button-disabled-inverse"]';
+const buttonLoadingInverseID = '[data-testid="button-loading-inverse"]';
 
 test.describe("Feature: Button (BDD Source)", () => {
   test.beforeEach(async ({ page }) => {
@@ -93,7 +94,22 @@ test.describe("Feature: Button (BDD Source)", () => {
     await button.click({ force: true });
   });
 
-  test.skip("Inverse button em loading exibe spinner e desabilita interação", async () => {});
+  test("Inverse button em loading exibe spinner e desabilita interação", async ({
+    page,
+  }) => {
+    const button = page.locator(buttonLoadingInverseID);
+    await expect(button).toHaveAttribute("aria-busy", "true");
+    await expect(button).toHaveAttribute("aria-disabled", "true");
+    const spinner = page.locator(
+      `${buttonLoadingInverseID} .btn-spinner`,
+    );
+    await expect(spinner).toBeVisible();
+    const styles = await getComputedStyles(
+      page,
+      buttonLoadingInverseID,
+    );
+    expect(styles?.cursor).toBe("not-allowed");
+  });
 
   test.skip("Inverse button em loading não responde a cliques", async () => {});
 
