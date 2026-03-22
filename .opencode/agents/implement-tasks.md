@@ -28,7 +28,20 @@ permission:
 
 1. Ler `specs/docs/convencoes-codigo.md`
 2. Ler `specs/docs/guardrails.md`
-3. Ler `specs/features/[nome-da-feature]/progress.md` (crie se não existir)
+3. Verificar se `specs/features/[nome-da-feature]/progress.md` existe:
+   - Se **EXISTE** → ler conteúdo
+   - Se **NÃO EXISTE** → criar arquivo com template vazio:
+     ```markdown
+     # Progress: [Feature]
+
+     ## CSS Patterns
+
+     ## Accessibility
+
+     ## Component
+
+     ## React
+     ```
 4. Identificar a feature a trabalhar
 
 ---
