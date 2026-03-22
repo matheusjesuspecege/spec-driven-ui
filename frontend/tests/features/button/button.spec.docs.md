@@ -1,8 +1,8 @@
 # Button: Documentação de Implementação dos Testes
 
-> Generated from: specs/features/button/plan.md
+> Generated from: `specs/features/button/plan.md`
 > TDD Strategy: Red-Green-Refactor with incremental test activation
-> Complexity: medium (16 RFs)
+> Complexity: medium
 
 ---
 
@@ -10,45 +10,43 @@
 
 ### 1.1 TDD Cycle (Red-Green-Refactor)
 
-1. **Red**: Escreva teste que falha para RF-01
-2. **Green**: Implemente código mínimo para passar
-3. **Refactor**: Melhore código mantendo testes passando
-4. **Avance**: Ative próximo teste e repita
+1. **Red**: Escreva teste que falha - primeiro teste já está ativo (RF-01)
+2. **Green**: Código mínimo para passar - implementar CSS + componente
+3. **Refactor**: Melhore código mantendo testes - remover duplicações
 
 ### 1.2 Testing Best Practices
 
-- **AAA Pattern**: Arrange-Act-Assert
-- **F.I.R.S.T. Principles**:
-  - **F**ast: Testes executam rapidamente
-  - **I**ndependent: Cada teste é isolado
-  - **R**epeatable: Resultados consistentes
-  - **S**elf-Validating: Passa ou falha automaticamente
-  - **T**imely: Escritos antes do código
+- **AAA**: Arrange-Act-Assert
+  ```typescript
+  test('deve renderizar botão primary', async ({ page }) => {
+    // Arrange: preparar HTML com botão primary
+    await setupTestPage(page, createButtonHTML({ variant: 'primary' }));
+    
+    // Act: selecionar elemento
+    const button = page.locator('[data-testid="button"]');
+    
+    // Assert: verificar visibilidade
+    await expect(button).toBeVisible();
+  });
+  ```
 
-### 1.3 Test Organization
+- **F.I.R.S.T.**: Fast, Independent, Repeatable, Self-Validating, Timely
+  - Testes são rápidos (sem requests de rede)
+  - Independentes (cada teste cria seu próprio HTML)
+  - Repetíveis (mesmo resultado sempre)
+  - Auto-validadores (assertions claras)
+  - Oportunos (criados antes da implementação)
 
-```typescript
-test.describe('Feature: Button', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto(TEST_URL);
-  });
-  
-  // RF-01: Primeiro teste ATIVO
-  test('RF-01 - deve renderizar botão primary visível', async ({ page }) => {
-    // ...
-  });
-  
-  // RF-02 a RF-16: SKIPPED
-  test.skip('RF-02 - ...', async ({ page }) => {
-    // ...
-  });
-});
-```
+### 1.3 Estratégia de Testes
+
+| Fase | Status | Objetivo |
+|------|--------|----------|
+| RF-01 (Red) | ✅ ATIVO | Validar renderização básica |
+| RF-02 a RF-16 | ⏭️ SKIP | Gradualmente ativar conforme implementação |
 
 **Referências:**
 - [TDD Guide - MDN](https://developer.mozilla.org/en-US/docs/learn/TDD)
 - [Playwright Best Practices](https://playwright.dev/docs/best-practices)
-- [Testing Trophy](https://kentcdodds.com/blog/the-testing-trophy-and-testing-classifications)
 
 ---
 
@@ -57,61 +55,44 @@ test.describe('Feature: Button', () => {
 ### 2.1 Significado dos Nomes
 
 ```typescript
-// Types para type safety
+// Tipos descritivos
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'destructive' | 'inverse';
 type ButtonSize = 'sm' | 'md' | 'lg';
 type IconPosition = 'left' | 'right' | 'icon-only';
 
-// Props interface com valores default explícitos
+// Interface com props bem nomeadas
 interface ButtonProps {
-  variant?: ButtonVariant;      // default: 'primary'
-  size?: ButtonSize;           // default: 'md'
-  iconPosition?: IconPosition;  // default: 'left'
-  loading?: boolean;            // default: false
-  disabled?: boolean;           // default: false
-  fullWidth?: boolean;           // default: false
-  children: ReactNode;
-  onClick?: () => void;
+  variant?: ButtonVariant;      // Variante visual
+  size?: ButtonSize;            // Tamanho
+  iconPosition?: IconPosition;  // Posição do ícone
+  loading?: boolean;            // Estado de carregamento
+  disabled?: boolean;           // Estado desabilitado
+  fullWidth?: boolean;          // Ocupa 100% largura
+  children: ReactNode;          // Conteúdo (obrigatório)
+  onClick?: () => void;        // Callback de clique
   type?: 'button' | 'submit' | 'reset';
-  className?: string;
-  'aria-label'?: string;
-  'data-testid'?: string;
 }
 ```
 
-### 2.2 Funções Limpo
+### 2.2 Funções com Responsabilidade Única
 
 ```typescript
-// Helper com responsabilidade única: criar HTML do botão
-function createButtonHTML(overrides: ButtonProps = {}): string {
-  const { variant = 'primary', size = 'md', ... } = overrides;
-  const classes = ['btn', `btn-${variant}`, `btn-${size}`].filter(Boolean).join(' ');
-  return `<button class="${classes}">...</button>`;
-}
-
-// Helper para extrair computed styles
-async function getComputedStyles(page: Page, selector: string): Promise<CSSStyleDeclaration> {
-  return page.evaluate((sel) => window.getComputedStyle(document.querySelector(sel)!), selector);
-}
-
-// Helper para comparar cores com tolerância
-function colorsMatch(color1: string, color2: string, tolerance = 5): boolean {
-  const rgb1 = hexToRgb(color1);
-  const rgb2 = hexToRgb(color2);
-  if (!rgb1 || !rgb2) return color1 === color2;
-  return Math.abs(rgb1.r - rgb2.r) <= tolerance && ...;
-}
+// Cada função faz uma coisa
+function createButtonHTML(options) { /* cria HTML */ }
+async function getComputedStyles(page, selector) { /* obtém estilos */ }
+function hexToRgb(hex: string): string { /* converte cor */ }
+async function setupTestPage(page, buttonHTML) { /* configura página */ }
 ```
 
 ### 2.3 SOLID Principles
 
-| Princípio | Button Implementation | Exemplo |
-|-----------|----------------------|---------|
-| **S**ingle Responsibility | Cada função faz uma coisa | `createButtonHTML()` só cria HTML |
+| Princípio | Button | Exemplo |
+|-----------|--------|---------|
+| **S**ingle Responsibility | Cada função uma coisa | `getComputedStyles()` só obtém estilos |
 | **O**pen/Closed | Aberto para extensão | Adicionar novo variant sem modificar código |
-| **L**iskov Substitution | Subtipos substituíveis | Button pode usar qualquer variant |
-| **I**nterface Segregation | Props específicas | `iconPosition` separado de `variant` |
-| **D**ependency Inversion | Depende de abstrações | Usa tokens CSS, não valores hardcoded |
+| **L**iskov Substitution | Todos variants intercambiáveis | Qualquer variant funciona como Button |
+| **I**nterface Segregation | Props mínimas necessárias | Só props relevantes para botão |
+| **D**ependency Inversion | Depende de abstrações | Usa tokens, não valores hardcoded |
 
 **Referências:**
 - [Clean Code Book - Robert C. Martin](https://www.amazon.com/dp/0132350882)
@@ -121,112 +102,85 @@ function colorsMatch(color1: string, color2: string, tolerance = 5): boolean {
 
 ## 3. Design Patterns
 
-### 3.1 Compound Components Pattern
+### 3.1 Composable Props
 
-```tsx
-// Alternativa A: Compound Components
-<Button variant="primary">
-  <Button.Icon><PlusIcon /></Button.Icon>
-  <Button.Text>New Report</Button.Text>
-</Button>
+```typescript
+// Props são composáveis para diferentes casos de uso
+<Button variant="primary" size="md" icon={<Plus />} />
+<Button variant="secondary" size="sm" loading={isSubmitting} />
+<Button variant="destructive" fullWidth onClick={handleDelete} />
 ```
 
-### 3.2 Polymorphic Component (asChild)
+### 3.2 Estado Declarativo
 
-```tsx
-// Alternativa B: Polymorphic via Radix Slot
-import { Slot } from '@radix-ui/react-slot';
-
-function Button({ asChild, children, ...props }: ButtonProps) {
-  const Comp = asChild ? Slot : 'button';
-  return <Comp {...props}>{children}</Comp>;
-}
-
-// Uso: Link que parece botão
-<Button asChild>
-  <Link to="/dashboard">Go to Dashboard</Link>
-</Button>
+```typescript
+// Estados são declarados via props
+const Button = ({ loading, disabled, ...props }) => (
+  <button 
+    disabled={disabled || loading}
+    aria-busy={loading}
+    aria-disabled={loading}
+    {...props}
+  />
+);
 ```
 
-### 3.3 Controlled vs Uncontrolled
+### 3.3 CSS com Tokens
 
-```tsx
-// Controlled: estado gerenciado externamente
-<Button loading={isSubmitting} onClick={handleSubmit}>
-  Submit
-</Button>
-
-// Uncontrolled: estado interno
-<Button onClick={handleClick}>Click me</Button>
-```
-
-### 3.4 Presenter Pattern
-
-```tsx
-// Helper para testes: cria HTML isolado
-function createButtonHTML(props: ButtonProps): string {
-  const classes = getButtonClasses(props);
-  return `<button class="${classes}" data-testid="button">${props.children}</button>`;
+```css
+/* Usa tokens, não valores hardcoded */
+.btn-primary {
+  background: var(--color-primary);
+  color: var(--color-text-primary);
 }
 ```
 
 **Referências:**
-- [Radix UI Primitives](https://www.radix-ui.com/)
-- [Compound Components - Kent C. Dodds](https://kentcdodds.com/blog/compound-components-with-react-hooks)
-- [Polymorphic Components](https://blog.logrocket.com/build-polymorphic-components-react-typescript/)
+- [Radix UI Button](https://radix-ui.com/primitives/docs/components/button)
+- [WAI-ARIA Button Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/button/)
 
 ---
 
 ## 4. Alternative Implementations
 
-### Alternative A: Compound Components com Context API
-
-**Pros:**
-- API declarativa e flexível
-- Estado encapsulado no componente
-- Fácil de estender
-
-**Cons:**
-- Overhead de React Context
-- Mais arquivos para manter
-- Curva de aprendizado maior
-
-**Quando usar:** Máxima flexibilidade e API declarativa
+### Alternative A: Compound Components
 
 ```tsx
-<Button variant="primary" size="md">
-  <Button.Icon><Icon /></Button.Icon>
-  <Button.Text>Text</Button.Text>
-  <Button.Suffix><Badge>New</Badge></Button.Suffix>
+<Button>
+  <Button.Icon><Plus /></Button.Icon>
+  <Button.Text>Save</Button.Text>
 </Button>
 ```
 
-### Alternative B: CSS Modules + Props Diretas (IMPLEMENTAÇÃO ATUAL)
+**Pros:** API declarativa,拆分开/compact toggle
+**Cons:** Overhead de Context, mais arquivos
+**Quando usar:** Máxima flexibilidade, temas complexos
 
-**Pros:**
-- Simplicidade e performance
-- CSS Modules previnem conflitos
-- Testes E2E diretos
+### Alternative B: CSS-in-JS (IMPLEMENTAÇÃO ATUAL)
 
-**Cons:**
-- API menos flexível
-- Props podem crescer com variantes
+```tsx
+<button className={getButtonClasses(variant, size, state)}>
+  {children}
+</button>
+```
 
-**Quando usar:** Projetos com requisitos estáveis
+**Pros:** Simplicidade, performance, tokens CSS
+**Cons:** Menos type-safe que styled-components
+**Quando usar:** Projetos com CSS Modules/Tailwind
 
-### Alternative C: Tailwind + Composable
+### Alternative C: Polymorphic (asChild)
 
-**Pros:**
-- Utilidades pré-definidas
-- Não requer arquivos CSS
-- Hot reload rápido
+```tsx
+import { Slot } from '@radix-ui/react-slot';
 
-**Cons:**
-- Classes longas no JSX
-- Requer configuração de custom tokens
-- Vendor lock-in com Tailwind
+<Button asChild>
+  <Link href="/dashboard">Dashboard</Link>
+</Button>
+```
 
-**Quando usar:** Times com experiência em Tailwind
+**Pros:**Flexibilidade máxima
+**Cons:** Overhead de Radix, complexidade
+**Quando usar:** Link + Button intercambiáveis
 
 ---
 
@@ -234,35 +188,64 @@ function createButtonHTML(props: ButtonProps): string {
 
 ### Código para Passar
 
-**CSS (button.module.css):**
+**CSS (`button.module.css`):**
+
 ```css
-.btn-primary {
-  background: var(--color-primary);  /* #FF5C00 */
-  color: var(--color-text-primary); /* #FFFFFF */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: var(--color-text-primary);
 }
 
 .btn-primary:hover {
-  background: var(--color-primary-hover); /* #FF7A33 */
+  background: var(--color-primary-hover);
 }
 
 .btn-primary:active {
-  background: color-mix(in srgb, var(--color-primary) 90%, black);
+  background: #e54d00;
+}
+
+.btn:focus {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
 }
 ```
 
-**TypeScript (Button.tsx):**
+**React (`Button.tsx`):**
+
 ```tsx
+import React from 'react';
 import styles from './button.module.css';
 
 interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'ghost' | 'destructive' | 'inverse';
-  children: ReactNode;
+  size?: 'sm' | 'md' | 'lg';
+  children: React.ReactNode;
+  'data-testid'?: string;
 }
 
-function Button({ variant = 'primary', children }: ButtonProps) {
+export function Button({ 
+  variant = 'primary', 
+  size = 'md', 
+  children,
+  ...props 
+}: ButtonProps) {
+  const className = `${styles.btn} ${styles[`btn-${variant}`]} ${styles[`btn-${size}`]}`;
+  
   return (
-    <button className={`${styles.btn} ${styles[`btn-${variant}`]}`} data-testid="button">
+    <button className={className} data-testid="button">
       {children}
     </button>
   );
@@ -271,7 +254,7 @@ function Button({ variant = 'primary', children }: ButtonProps) {
 
 **Referências:**
 - [toBeVisible](https://playwright.dev/docs/test-assertions#expect-locator-to-be-visible)
-- [CSS Modules](https://github.com/css-modules/css-modules)
+- [CSS Custom Properties](https://developer.mozilla.org/en-US/docs/Web/CSS/--*)
 
 ---
 
@@ -279,22 +262,21 @@ function Button({ variant = 'primary', children }: ButtonProps) {
 
 ### Código para Passar
 
-**CSS:**
 ```css
 .btn-secondary {
   background: transparent;
-  border: 1px solid var(--color-border); /* #2A2A2E */
   color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
 }
 
 .btn-secondary:hover {
-  background: var(--color-bg-muted); /* #1A1A1D */
+  background: var(--color-bg-muted);
+}
+
+.btn-secondary:active {
+  background: #151517;
 }
 ```
-
-**Referências:**
-- [hover](https://playwright.dev/docs/api/class-locator#locator-hover)
-- [toHaveClass](https://playwright.dev/docs/test-assertions#expect-locator-to-have-class)
 
 ---
 
@@ -302,11 +284,9 @@ function Button({ variant = 'primary', children }: ButtonProps) {
 
 ### Código para Passar
 
-**CSS:**
 ```css
 .btn-ghost {
   background: transparent;
-  border: none;
   color: var(--color-text-primary);
 }
 
@@ -321,20 +301,18 @@ function Button({ variant = 'primary', children }: ButtonProps) {
 
 ### Código para Passar
 
-**CSS:**
 ```css
 .btn-destructive {
-  background: var(--color-error); /* #EF4444 */
+  background: var(--color-error);
   color: var(--color-text-primary);
-  border: none;
 }
 
 .btn-destructive:hover {
-  background: color-mix(in srgb, var(--color-error) 90%, black);
+  background: #dc2626;
 }
 
 .btn-destructive:active {
-  background: color-mix(in srgb, var(--color-error) 85%, black);
+  background: #b91c1c;
 }
 ```
 
@@ -344,320 +322,307 @@ function Button({ variant = 'primary', children }: ButtonProps) {
 
 ### Código para Passar
 
-**CSS:**
 ```css
 .btn-inverse {
-  background: #FFFFFF;
-  color: var(--color-primary); /* #FF5C00 */
-  border: none;
+  background: #ffffff;
+  color: var(--color-primary);
+  border-radius: var(--radius-md);
 }
 
 .btn-inverse:hover {
   background: var(--color-bg-muted);
 }
+
+/* Para upgrade button: */
+.btn-inverse.btn-sm {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}
 ```
 
 ---
 
-## 10. RF-06 a RF-08: Sizes (sm, md, lg)
+## 10. RF-06: Size sm
 
 ### Código para Passar
 
-**CSS:**
 ```css
 .btn-sm {
   height: 32px;
   padding: 6px 12px;
-  font-size: var(--text-xs);  /* 12px */
-  gap: 6px;
-  border-radius: var(--radius-md); /* 6px */
-}
-
-.btn-md {
-  height: 40px;
-  padding: 10px 16px;
-  font-size: var(--text-sm);  /* 13px */
-  gap: 8px;
-  border-radius: var(--radius-lg); /* 8px */
-}
-
-.btn-lg {
-  height: 48px;
-  padding: 12px 20px;
-  font-size: var(--text-base); /* 14px */
-  gap: 10px;
-  border-radius: var(--radius-lg); /* 8px */
+  font-size: var(--font-size-xs);
+  border-radius: var(--radius-md);
 }
 ```
 
-**Referências:**
-- [boundingBox](https://playwright.dev/docs/api/class-locator#locator-bounding-box)
-- [toBeCloseTo](https://jestjs.io/docs/expect#tobeclosetonumber-numdigits)
-
 ---
 
-## 11. RF-09 a RF-11: Icon Positions
+## 11. RF-07: Size md (DEFAULT)
 
 ### Código para Passar
 
-**CSS:**
 ```css
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.btn-md {
+  height: 40px;
+  padding: 10px 16px;
+  font-size: var(--font-size-sm);
+  border-radius: var(--radius-lg);
 }
+```
 
+---
+
+## 12. RF-08: Size lg
+
+### Código para Passar
+
+```css
+.btn-lg {
+  height: 48px;
+  padding: 12px 20px;
+  font-size: var(--font-size-base);
+  border-radius: var(--radius-lg);
+}
+```
+
+---
+
+## 13. RF-09: Icon Left
+
+### Código para Passar
+
+```css
 .btn-icon {
-  display: inline-flex;
-  align-items: center;
+  flex-shrink: 0;
 }
 
 .btn-icon-left {
-  margin-right: 8px; /* gap para md */
+  margin-right: 8px;
 }
 
+.btn-text {
+  white-space: nowrap;
+}
+```
+
+```tsx
+<button className={className}>
+  {icon && iconPosition === 'left' && (
+    <span className={`${styles['btn-icon']} ${styles['btn-icon-left']}`}>
+      {icon}
+    </span>
+  )}
+  <span className={styles['btn-text']}>{children}</span>
+</button>
+```
+
+---
+
+## 14. RF-10: Icon Right
+
+### Código para Passar
+
+```css
 .btn-icon-right {
   margin-left: 8px;
 }
+```
 
+---
+
+## 15. RF-11: Icon Only
+
+### Código para Passar
+
+```css
 .btn-icon-only {
-  padding: 10px; /* padding simétrico */
+  padding: 10px;
   min-width: 44px;
   min-height: 44px;
 }
 ```
 
-**TypeScript:**
 ```tsx
-function Button({ icon, iconPosition = 'left', children, ...props }: ButtonProps) {
-  return (
-    <button {...props}>
-      {iconPosition === 'left' && icon}
-      {children}
-      {iconPosition === 'right' && icon}
-      {iconPosition === 'icon-only' && icon}
-    </button>
-  );
-}
+<button 
+  className={className}
+  aria-label={ariaLabel}
+>
+  {icon}
+</button>
 ```
 
 **Referências:**
-- [aria-label](https://www.w3.org/WAI/WCAG21/Understanding/label-in-name)
+- [WCAG 2.1 Touch Target Size](https://www.w3.org/WAI/WCAG21/Understanding/target-size-minimum.html)
 
 ---
 
-## 12. RF-12: Loading State
+## 16. RF-12: Loading State
 
 ### Código para Passar
 
-**CSS:**
 ```css
 .btn-loading {
-  position: relative;
-  pointer-events: none;
-}
-
-.btn-spinner {
-  display: inline-flex;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-```
-
-**TypeScript:**
-```tsx
-function Button({ loading = false, disabled, children, ...props }: ButtonProps) {
-  const isDisabled = disabled || loading;
-  
-  return (
-    <button 
-      {...props} 
-      disabled={isDisabled}
-      aria-disabled={loading}
-      aria-busy={loading}
-      className={`${styles.btn} ${loading ? styles['btn-loading'] : ''}`}
-    >
-      {loading && <span className={styles['btn-spinner']}><Spinner /></span>}
-      {!loading && children}
-    </button>
-  );
-}
-```
-
-**Referências:**
-- [aria-busy](https://www.w3.org/WAI/WCAG21/Understanding/status-messages)
-- [aria-disabled](https://www.w3.org/WAI/WCAG21/Understanding/name-role-value)
-
----
-
-## 13. RF-13: Disabled State
-
-### Código para Passar
-
-**CSS:**
-```css
-.btn-disabled,
-.btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
 }
 ```
 
-**TypeScript:**
 ```tsx
-function Button({ disabled = false, children, ...props }: ButtonProps) {
-  return (
-    <button 
-      {...props} 
-      disabled={disabled}
-      aria-disabled={disabled}
-      className={`${styles.btn} ${disabled ? styles['btn-disabled'] : ''}`}
-    >
-      {children}
-    </button>
-  );
+<button 
+  disabled={loading || disabled}
+  aria-busy={loading}
+  aria-disabled={loading}
+>
+  {loading && <span className={styles['btn-spinner']} />}
+  {children}
+</button>
+```
+
+**Referências:**
+- [aria-busy](https://www.w3.org/TR/wai-aria-1.2/#aria-busy)
+- [aria-disabled](https://www.w3.org/TR/wai-aria-1.2/#aria-disabled)
+
+---
+
+## 17. RF-13: Disabled State
+
+### Código para Passar
+
+```css
+.btn-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
 }
+```
+
+```tsx
+<button disabled={disabled} aria-disabled={disabled}>
+  {children}
+</button>
 ```
 
 ---
 
-## 14. RF-14: Focus Ring
+## 18. RF-14: Focus Ring
 
 ### Código para Passar
 
-**CSS:**
 ```css
-.btn:focus-visible {
-  outline: 2px solid var(--color-border-focus); /* #3B82F6 */
+.btn:focus {
+  outline: 2px solid var(--color-border-focus);
   outline-offset: 2px;
 }
 
-/* Remove outline padrão do browser */
 .btn:focus:not(:focus-visible) {
   outline: none;
 }
+
+.btn:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
 ```
 
 **Referências:**
-- [:focus-visible](https://css-tricks.com/almanac/selectors/f/focus-visible/)
-- [WAI-ARIA focus](https://www.w3.org/WAI/WCAG21/Understanding/focus-visible)
+- [:focus-visible](https://developer.mozilla.org/en-US/docs/Web/CSS/:focus-visible)
 
 ---
 
-## 15. RF-15: Full Width
+## 19. RF-15: Full Width
 
 ### Código para Passar
 
-**CSS:**
 ```css
 .btn-full-width {
   width: 100%;
-}
-```
-
-**TypeScript:**
-```tsx
-function Button({ fullWidth = false, children, ...props }: ButtonProps) {
-  return (
-    <button 
-      {...props} 
-      className={`${styles.btn} ${fullWidth ? styles['btn-full-width'] : ''}`}
-    >
-      {children}
-    </button>
-  );
+  padding-left: 0;
+  padding-right: 0;
 }
 ```
 
 ---
 
-## 16. RF-16: Accessibility
+## 20. RF-16: Accessibility
 
 ### Código para Passar
 
-**Acessibilidade implementada em todos os estados:**
-
-| Atributo | Valor | Condição |
-|----------|-------|----------|
-| `disabled` | `true` | `disabled={true}` |
-| `aria-disabled` | `"true"` | `loading={true}` |
-| `aria-busy` | `"true"` | `loading={true}` |
-| `aria-label` | `string` | `iconPosition="icon-only"` |
-| `role` | `"button"` | Sempre (default HTML) |
-
-**Touch targets:**
-```css
-/* Garante mínimo 44x44px para touch */
-.btn-icon-only {
-  min-width: 44px;
-  min-height: 44px;
-  padding: 10px;
-}
-
-.btn-sm,
-.btn-md,
-.btn-lg {
-  min-height: 44px; /* Touch target mínimo */
-}
+```tsx
+<button
+  type={type}
+  disabled={disabled}
+  aria-disabled={loading || disabled}
+  aria-busy={loading}
+  aria-label={ariaLabel}
+  onClick={disabled || loading ? undefined : onClick}
+>
+  {children}
+</button>
 ```
+
+### Checklist Acessibilidade
+
+| Critério | Implementação |
+|----------|---------------|
+| ✅ role="button" | `<button>` nativo já tem |
+| ✅ Keyboard navigation | Tab + Enter/Space |
+| ✅ Focus indicator | outline 2px visible |
+| ✅ aria-busy | Para loading |
+| ✅ aria-disabled | Para disabled/loading |
+| ✅ aria-label | Para icon-only |
+| ✅ Touch target | min 44x44px |
+| ✅ Color contrast | >= 4.5:1 |
 
 **Referências:**
 - [WAI-ARIA Button Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/button/)
-- [Touch Target Size](https://www.w3.org/WAI/WCAG21/Understanding/target-size-minimum)
-- [Keyboard Navigation](https://webaim.org/techniques/keyboard/)
+- [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/)
 
 ---
 
-## 17. Defensive Tests (Murphy's Law)
+## 21. Design Tokens
 
-### Double-Click Protection
+### Cores
 
-```tsx
-// Implementação com debounce
-function useDebouncedCallback<T extends (...args: unknown[]) => void>(
-  callback: T,
-  delay: number
-): T {
-  const timeoutRef = useRef<NodeJS.Timeout>();
-  
-  return useCallback(
-    (...args: unknown[]) => {
-      if (timeoutRef.current) return; // Ignora se já há clique pendente
-      callback(...args);
-      timeoutRef.current = setTimeout(() => {
-        timeoutRef.current = undefined;
-      }, delay);
-    },
-    [callback, delay]
-  ) as T;
-}
-```
+| Token | Valor | Uso |
+|-------|-------|-----|
+| `--color-primary` | `#ff5c00` | Primary background/text |
+| `--color-primary-hover` | `#ff7a33` | Primary hover |
+| `--color-error` | `#ef4444` | Destructive background |
+| `--color-border` | `#2a2a2e` | Secondary border |
+| `--color-bg-muted` | `#1a1a1d` | Hover background |
+| `--color-text-primary` | `#ffffff` | Default text |
+| `--color-border-focus` | `#ff5c00` | Focus ring |
 
-### Type Attribute
+### Espaçamento
 
-```tsx
-function Button({ type = 'button', children, ...props }: ButtonProps) {
-  return (
-    <button type={type} {...props}>
-      {children}
-    </button>
-  );
-}
-```
+| Token | Valor | Uso |
+|-------|-------|-----|
+| `--spacing-6` | `6px` | sm vertical padding |
+| `--spacing-8` | `8px` | md gap, padding |
+| `--spacing-10` | `10px` | lg vertical padding |
+| `--spacing-12` | `12px` | sm horizontal padding |
+| `--spacing-16` | `16px` | md horizontal padding |
+| `--spacing-20` | `20px` | lg horizontal padding |
 
-**Referências:**
-- [Form Submission](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/button#attr-formaction)
-- [Debounce Pattern](https://underscorejs.org/#debounce)
+### Border Radius
+
+| Token | Valor | Uso |
+|-------|-------|-----|
+| `--radius-md` | `6px` | sm buttons |
+| `--radius-lg` | `8px` | md/lg buttons |
+
+### Tipografia
+
+| Token | Valor | Uso |
+|-------|-------|-----|
+| `--font-size-xs` | `12px` | sm buttons |
+| `--font-size-sm` | `13px` | md buttons |
+| `--font-size-base` | `14px` | lg buttons |
 
 ---
 
-## 18. Referências Completas
+## 22. Referências Completas
 
 ### Playwright
 
@@ -667,12 +632,11 @@ function Button({ type = 'button', children, ...props }: ButtonProps) {
 | toBeVisible | https://playwright.dev/docs/test-assertions#expect-locator-to-be-visible |
 | toHaveAttribute | https://playwright.dev/docs/test-assertions#expect-locator-to-have-attribute |
 | toHaveClass | https://playwright.dev/docs/test-assertions#expect-locator-to-have-class |
-| hover | https://playwright.dev/docs/api/class-locator#locator-hover |
-| click | https://playwright.dev/docs/api/class-locator#locator-click |
+| toContainText | https://playwright.dev/docs/test-assertions#expect-locator-to-contain-text |
 | focus | https://playwright.dev/docs/api/class-locator#locator-focus |
+| hover | https://playwright.dev/docs/api/class-locator#locator-hover |
 | boundingBox | https://playwright.dev/docs/api/class-locator#locator-bounding-box |
 | setContent | https://playwright.dev/docs/api/class-page#page-set-content |
-| keyboard.press | https://playwright.dev/docs/api/class-keyboard |
 
 ### React
 
@@ -681,88 +645,99 @@ function Button({ type = 'button', children, ...props }: ButtonProps) {
 | Docs | https://react.dev/ |
 | Components | https://react.dev/learn/your-first-component |
 | Props | https://react.dev/learn/passing-props-to-a-component |
-| useState | https://react.dev/reference/react/useState |
-| useCallback | https://react.dev/reference/react/useCallback |
-
-### TypeScript
-
-| Recurso | Link |
-|---------|------|
-| Handbook | https://www.typescriptlang.org/docs/ |
-| Generic Types | https://www.typescriptlang.org/docs/handbook/2/generics.html |
-| Utility Types | https://www.typescriptlang.org/docs/handbook/utility-types.html |
+| TypeScript | https://react.dev/learn/typescript |
 
 ### CSS
 
 | Recurso | Link |
 |---------|------|
+| Custom Properties | https://developer.mozilla.org/en-US/docs/Web/CSS/--* |
+| :focus-visible | https://developer.mozilla.org/en-US/docs/Web/CSS/:focus-visible |
 | CSS Modules | https://github.com/css-modules/css-modules |
-| Custom Properties | https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties |
-| color-mix | https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color-mix |
 
-### Accessibility
+### Acessibilidade
 
 | Recurso | Link |
 |---------|------|
 | WAI-ARIA Button | https://www.w3.org/WAI/ARIA/apg/patterns/button/ |
-| Focus Visible | https://www.w3.org/WAI/WCAG21/Understanding/focus-visible |
-| Touch Targets | https://www.w3.org/WAI/WCAG21/Understanding/target-size-minimum |
-
-### Design System
-
-| Recurso | Link |
-|---------|------|
-| Radix UI | https://www.radix-ui.com/primitives/docs/components/button |
-| Slot | https://www.radix-ui.com/primitives/docs/utilities/slot |
-| Lucide Icons | https://lucide.dev/ |
+| WCAG Contrast | https://webaim.org/resources/contrastchecker/ |
+| Touch Targets | https://www.w3.org/WAI/WCAG21/Understanding/target-size-minimum.html |
 
 ---
 
-## 19. Estrutura de Arquivos
+## 23. Estrutura de Arquivos
 
 ```
 frontend/
 ├── src/
-│   ├── components/
-│   │   └── button/
-│   │       ├── Button.tsx              # Componente principal
-│   │       ├── Button.module.css       # Estilos CSS Modules
-│   │       └── index.ts                # Barrel export
 │   ├── app/
+│   │   ├── globals.css          # Design tokens CSS
+│   │   ├── layout.tsx
+│   │   ├── page.tsx
 │   │   └── test-button/
-│   │       └── page.tsx                # Página de testes
-│   └── styles/
-│       └── globals.css                 # Design tokens
+│   │       └── page.tsx         # Página de testes E2E
+│   └── components/
+│       └── button/
+│           ├── Button.tsx        # Componente principal
+│           ├── button.module.css # Estilos CSS Modules
+│           └── index.ts          # Barrel export
 └── tests/
     └── features/
         └── button/
-            ├── button.spec.ts          # Testes E2E Playwright
-            └── button.spec.docs.md     # Esta documentação
+            ├── button.spec.ts   # Testes Playwright (ESTE ARQUIVO)
+            └── button.spec.docs.md # Documentação (ESTE ARQUIVO)
 ```
 
 ---
 
-## 20. Checklist de Testes
+## 24. Roadmap de Implementação
 
-### RF Coverage
+### Fase 1: Foundation (RF-01, RF-07, RF-13)
+- [ ] Criar `Button.tsx` com variant="primary" e size="md" default
+- [ ] Criar `button.module.css` com classes base
+- [ ] Implementar estado disabled
+- [ ] ✅ Teste RF-01 já ativo
 
-| RF | Descrição | Teste |
-|----|-----------|-------|
-| RF-01 | variant="primary" | ✅ ACTIVE |
-| RF-02 | variant="secondary" | ⏳ SKIPPED |
-| RF-03 | variant="ghost" | ⏳ SKIPPED |
-| RF-04 | variant="destructive" | ⏳ SKIPPED |
-| RF-05 | variant="inverse" | ⏳ SKIPPED |
-| RF-06 | size="sm" | ⏳ SKIPPED |
-| RF-07 | size="md" (default) | ⏳ SKIPPED |
-| RF-08 | size="lg" | ⏳ SKIPPED |
-| RF-09 | iconPosition="left" | ⏳ SKIPPED |
-| RF-10 | iconPosition="right" | ⏳ SKIPPED |
-| RF-11 | iconPosition="icon-only" | ⏳ SKIPPED |
-| RF-12 | loading state | ⏳ SKIPPED |
-| RF-13 | disabled state | ⏳ SKIPPED |
-| RF-14 | focus ring | ⏳ SKIPPED |
-| RF-15 | fullWidth | ⏳ SKIPPED |
-| RF-16 | accessibility | ⏳ SKIPPED |
+### Fase 2: Variants (RF-02 a RF-05)
+- [ ] Implementar secondary
+- [ ] Implementar ghost
+- [ ] Implementar destructive
+- [ ] Implementar inverse
 
-### Total: 16 RFs | 1 ACTIVE | 30+ Test Cases
+### Fase 3: Sizes (RF-06, RF-08)
+- [ ] Implementar sm
+- [ ] Implementar lg
+
+### Fase 4: Icons (RF-09 a RF-11)
+- [ ] Implementar ícone left
+- [ ] Implementar ícone right
+- [ ] Implementar icon-only com aria-label
+
+### Fase 5: States (RF-12, RF-14)
+- [ ] Implementar loading state
+- [ ] Implementar focus ring
+
+### Fase 6: Polish (RF-15, RF-16)
+- [ ] Implementar fullWidth
+- [ ] Verificar acessibilidade completa
+
+---
+
+## 25. Comandos Úteis
+
+```bash
+# Executar todos os testes
+npm test
+
+# Executar com UI
+npm run test:ui
+
+# Executar apenas botão
+npx playwright test button.spec.ts
+
+# Executar apenas primeiro teste
+npx playwright test button.spec.ts --grep "RF-01"
+
+# Ativar próximo teste (remover .skip)
+npx playwright test button.spec.ts --grep "RF-02" --grep-invert "skip"
+```

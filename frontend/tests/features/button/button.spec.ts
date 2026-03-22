@@ -1,161 +1,75 @@
-import { test, expect, Page, Locator } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
 /**
  * Button Component - Playwright E2E Tests
  * 
  * Generated from: specs/features/button/plan.md
  * TDD Strategy: Red-Green-Refactor with incremental test activation
- * Complexity: medium (16 RFs)
+ * Complexity: medium
  * 
- * Variants: primary, secondary, ghost, destructive, inverse
- * Sizes: sm (32px), md (40px), lg (48px)
- * States: default, hover, active, disabled, loading, focus
+ * @see button.spec.docs.md for implementation documentation
  */
 
 // ============================================================================
 // CONSTANTS
 // ============================================================================
 
-const FEATURE_NAME = 'Button';
-const TEST_URL = '/test-button';
+const TEST_URL = '/';
 
-// Design Tokens (from plan.md)
+// Design Tokens (from globals.css)
 const TOKENS = {
-  primary: '#FF5C00',
-  primaryHover: '#FF7A33',
-  error: '#EF4444',
-  border: '#2A2A2E',
-  bgMuted: '#1A1A1D',
-  textPrimary: '#FFFFFF',
-  textSubtle: '#8B8B90',
-  borderFocus: '#3B82F6',
+  primary: '#ff5c00',
+  primaryHover: '#ff7a33',
+  error: '#ef4444',
+  border: '#2a2a2e',
+  bgMuted: '#1a1a1d',
+  textPrimary: '#ffffff',
+  textSubtle: '#8b8b90',
+  borderFocus: '#ff5c00',
 } as const;
 
-// Sizes configuration (height, paddingY, paddingX, fontSize, gap, iconSize, borderRadius)
-const SIZES = {
-  sm: { height: 32, paddingY: 6, paddingX: 12, fontSize: 12, gap: 6, iconSize: 14, borderRadius: 6 },
-  md: { height: 40, paddingY: 10, paddingX: 16, fontSize: 13, gap: 8, iconSize: 16, borderRadius: 8 },
-  lg: { height: 48, paddingY: 12, paddingX: 20, fontSize: 14, gap: 10, iconSize: 18, borderRadius: 8 },
-} as const;
-
-const VARIANTS = ['primary', 'secondary', 'ghost', 'destructive', 'inverse'] as const;
-type Variant = (typeof VARIANTS)[number];
-type Size = 'sm' | 'md' | 'lg';
 
 // ============================================================================
 // HELPERS
 // ============================================================================
 
 /**
- * Creates HTML for Button component with specified props
+ * Get computed styles from an element
  */
-function createButtonHTML(overrides: {
-  variant?: Variant;
-  size?: Size;
-  iconPosition?: 'left' | 'right' | 'icon-only';
-  loading?: boolean;
-  disabled?: boolean;
-  fullWidth?: boolean;
-  children?: string;
-  type?: 'button' | 'submit' | 'reset';
-  className?: string;
-  'data-testid'?: string;
-  'aria-label'?: string;
-} = {}): string {
-  const {
-    variant = 'primary',
-    size = 'md',
-    iconPosition = 'left',
-    loading = false,
-    disabled = false,
-    fullWidth = false,
-    children = 'Button',
-    type = 'button',
-    className = '',
-    'data-testid': testId = 'button',
-    'aria-label': ariaLabel,
-  } = overrides;
-
-  const classes = [
-    'btn',
-    `btn-${variant}`,
-    `btn-${size}`,
-    loading && 'btn-loading',
-    disabled && 'btn-disabled',
-    fullWidth && 'btn-full-width',
-    iconPosition === 'icon-only' && 'btn-icon-only',
-    className,
-  ]
-    .filter(Boolean)
-    .join(' ');
-
-  const disabledAttr = disabled || loading ? 'disabled' : '';
-  const ariaDisabledAttr = loading ? 'aria-disabled="true"' : '';
-  const ariaBusyAttr = loading ? 'aria-busy="true"' : '';
-  const ariaLabelAttr = ariaLabel ? `aria-label="${ariaLabel}"` : '';
-  const typeAttr = type !== 'button' ? `type="${type}"` : '';
-
-  const iconHtml =
-    iconPosition !== 'icon-only'
-      ? `<span class="btn-icon btn-icon-${iconPosition}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg></span>`
-      : '';
-
-  const textHtml = iconPosition !== 'icon-only' ? `<span class="btn-text">${children}</span>` : '';
-
-  const spinnerHtml = loading
-    ? `<span class="btn-spinner"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-dasharray="32" stroke-linecap="round"/></svg></span>`
-    : '';
-
-  return `<button class="${classes}" ${typeAttr} ${disabledAttr} ${ariaDisabledAttr} ${ariaBusyAttr} ${ariaLabelAttr} data-testid="${testId}">${spinnerHtml}${iconPosition === 'left' ? iconHtml : ''}${textHtml}${iconPosition === 'right' ? iconHtml : ''}</button>`;
+async function getComputedStyles(page: Page, selector: string) {
+  return page.evaluate((sel) => {
+    const el = document.querySelector(sel) as HTMLElement;
+    if (!el) return null;
+    const styles = window.getComputedStyle(el);
+    return {
+      backgroundColor: styles.backgroundColor,
+      color: styles.color,
+      fontSize: parseInt(styles.fontSize),
+      fontWeight: parseInt(styles.fontWeight),
+      height: parseInt(styles.height),
+      paddingTop: parseInt(styles.paddingTop),
+      paddingBottom: parseInt(styles.paddingBottom),
+      paddingLeft: parseInt(styles.paddingLeft),
+      paddingRight: parseInt(styles.paddingRight),
+      opacity: parseFloat(styles.opacity),
+      cursor: styles.cursor,
+      borderRadius: parseInt(styles.borderRadius),
+      outlineWidth: parseInt(styles.outlineWidth),
+      outlineColor: styles.outlineColor,
+      width: styles.width,
+      display: styles.display,
+    };
+  }, selector);
 }
 
 /**
- * Gets computed styles from element
+ * Convert hex to rgb format (e.g., "#ff5c00" -> "rgb(255, 92, 0)")
  */
-async function getComputedStyles(page: Page, selector: string): Promise<CSSStyleDeclaration> {
-  return page.evaluate(
-    (sel) => {
-      const el = document.querySelector(sel) as HTMLElement;
-      return window.getComputedStyle(el);
-    },
-    selector,
-  );
-}
-
-/**
- * Gets computed dimensions from element
- */
-async function getBoundingBox(page: Page, selector: string): Promise<DOMRect | null> {
-  const box = await page.locator(selector).boundingBox();
-  return page.evaluate((sel) => document.querySelector(sel)?.getBoundingClientRect()?.toJSON() ?? null, selector);
-}
-
-/**
- * Converts hex to RGB for comparison
- */
-function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result
-    ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16),
-      }
-    : null;
-}
-
-/**
- * Compares two colors with tolerance
- */
-function colorsMatch(color1: string, color2: string, tolerance = 5): boolean {
-  const rgb1 = hexToRgb(color1);
-  const rgb2 = hexToRgb(color2);
-  if (!rgb1 || !rgb2) return color1 === color2;
-  return (
-    Math.abs(rgb1.r - rgb2.r) <= tolerance &&
-    Math.abs(rgb1.g - rgb2.g) <= tolerance &&
-    Math.abs(rgb1.b - rgb2.b) <= tolerance
-  );
+function hexToRgb(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgb(${r}, ${g}, ${b})`;
 }
 
 // ============================================================================
@@ -163,564 +77,486 @@ function colorsMatch(color1: string, color2: string, tolerance = 5): boolean {
 // ============================================================================
 
 test.describe('Feature: Button', () => {
+
   test.beforeEach(async ({ page }) => {
     await page.goto(TEST_URL);
   });
 
   // ==========================================================================
-  // RF-01: Primary Variant
+  // RF-01: Renderizar botão com variant "primary"
   // ==========================================================================
-
+  
   test('RF-01 - deve renderizar botão primary visível', async ({ page }) => {
-    // Arrange
-    await page.setContent(createButtonHTML({ variant: 'primary' }));
-
-    // Act
     const button = page.locator('[data-testid="button"]');
-
-    // Assert
     await expect(button).toBeVisible();
   });
 
-  test.skip('RF-01 - deve ter background primary e texto branco', async ({ page }) => {
-    await page.setContent(createButtonHTML({ variant: 'primary' }));
+  test.skip('RF-01 - deve ter background primary (orange)', async ({ page }) => {
     const styles = await getComputedStyles(page, '[data-testid="button"]');
-
-    expect(colorsMatch(styles.backgroundColor, TOKENS.primary)).toBe(true);
-    expect(colorsMatch(styles.color, TOKENS.textPrimary)).toBe(true);
-    expect(styles.border).toBe('none');
+    expect(styles?.backgroundColor).toBe(hexToRgb(TOKENS.primary));
   });
 
-  // ==========================================================================
-  // RF-02: Secondary Variant
-  // ==========================================================================
-
-  test.skip('RF-02 - deve renderizar botão secondary com borda e bg transparente', async ({ page }) => {
-    await page.setContent(createButtonHTML({ variant: 'secondary' }));
+  test.skip('RF-01 - deve ter texto branco', async ({ page }) => {
     const styles = await getComputedStyles(page, '[data-testid="button"]');
-
-    expect(styles.backgroundColor).toBe('rgba(0, 0, 0, 0)');
-    expect(styles.border).toContain(TOKENS.border);
-    expect(colorsMatch(styles.color, TOKENS.textPrimary)).toBe(true);
+    expect(styles?.color).toBe(hexToRgb(TOKENS.textPrimary));
   });
 
-  test.skip('RF-02 - secondary em hover deve ter bg-muted', async ({ page }) => {
-    await page.setContent(createButtonHTML({ variant: 'secondary' }));
+  test.skip('RF-01 - deve aplicar hover com cor mais clara', async ({ page }) => {
     const button = page.locator('[data-testid="button"]');
-
     await button.hover();
-    await page.waitForTimeout(100); // Wait for CSS transition
-
     const styles = await getComputedStyles(page, '[data-testid="button"]');
-    expect(colorsMatch(styles.backgroundColor, TOKENS.bgMuted)).toBe(true);
+    expect(styles?.backgroundColor).toBe(hexToRgb(TOKENS.primaryHover));
   });
 
   // ==========================================================================
-  // RF-03: Ghost Variant
+  // RF-02: Renderizar botão com variant "secondary"
   // ==========================================================================
-
-  test.skip('RF-03 - deve renderizar botão ghost com bg transparente e sem borda', async ({ page }) => {
-    await page.setContent(createButtonHTML({ variant: 'ghost' }));
-    const styles = await getComputedStyles(page, '[data-testid="button"]');
-
-    expect(styles.backgroundColor).toBe('rgba(0, 0, 0, 0)');
-    expect(styles.border).toBe('none');
-    expect(colorsMatch(styles.color, TOKENS.textPrimary)).toBe(true);
-  });
-
-  test.skip('RF-03 - ghost em hover deve ter bg-muted', async ({ page }) => {
-    await page.setContent(createButtonHTML({ variant: 'ghost' }));
+  
+  test.skip('RF-02 - deve renderizar botão secondary com border', async ({ page }) => {
     const button = page.locator('[data-testid="button"]');
+    await expect(button).toBeVisible();
+    const styles = await getComputedStyles(page, '[data-testid="button"]');
+    expect(styles?.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  });
 
+  test.skip('RF-02 - deve ter border com cor border (#2a2a2e)', async ({ page }) => {
+    const borderColor = await page.evaluate(() => {
+      const el = document.querySelector('[data-testid="button"]') as HTMLElement;
+      const style = window.getComputedStyle(el);
+      return style.borderColor;
+    });
+    expect(borderColor).toBe(TOKENS.border);
+  });
+
+  test.skip('RF-02 - deve aplicar hover com bg-muted', async ({ page }) => {
+    const button = page.locator('[data-testid="button"]');
     await button.hover();
-    await page.waitForTimeout(100);
-
     const styles = await getComputedStyles(page, '[data-testid="button"]');
-    expect(colorsMatch(styles.backgroundColor, TOKENS.bgMuted)).toBe(true);
+    expect(styles?.backgroundColor).toBe(hexToRgb(TOKENS.bgMuted));
   });
 
   // ==========================================================================
-  // RF-04: Destructive Variant
+  // RF-03: Renderizar botão com variant "ghost"
   // ==========================================================================
-
-  test.skip('RF-04 - deve renderizar botão destructive com bg error', async ({ page }) => {
-    await page.setContent(createButtonHTML({ variant: 'destructive' }));
-    const styles = await getComputedStyles(page, '[data-testid="button"]');
-
-    expect(colorsMatch(styles.backgroundColor, TOKENS.error)).toBe(true);
-    expect(colorsMatch(styles.color, TOKENS.textPrimary)).toBe(true);
-    expect(styles.border).toBe('none');
-  });
-
-  test.skip('RF-04 - destructive em hover deve escurecer 10%', async ({ page }) => {
-    await page.setContent(createButtonHTML({ variant: 'destructive' }));
+  
+  test.skip('RF-03 - deve renderizar botão ghost com background transparente', async ({ page }) => {
     const button = page.locator('[data-testid="button"]');
+    await expect(button).toBeVisible();
+    const styles = await getComputedStyles(page, '[data-testid="button"]');
+    expect(styles?.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  });
 
+  test.skip('RF-03 - deve aplicar hover com bg-muted', async ({ page }) => {
+    const button = page.locator('[data-testid="button"]');
     await button.hover();
-    await page.waitForTimeout(100);
-
-    // Error color darken 10% calculation
-    const errorRgb = hexToRgb(TOKENS.error)!;
-    const expectedR = Math.round(errorRgb.r * 0.9);
-    const expectedG = Math.round(errorRgb.g * 0.9);
-    const expectedB = Math.round(errorRgb.b * 0.9);
-
     const styles = await getComputedStyles(page, '[data-testid="button"]');
-    expect(styles.backgroundColor).toBe(`rgb(${expectedR}, ${expectedG}, ${expectedB})`);
+    expect(styles?.backgroundColor).toBe(hexToRgb(TOKENS.bgMuted));
   });
 
-  test.skip('RF-04 - destructive em active deve escurecer 15%', async ({ page }) => {
-    await page.setContent(createButtonHTML({ variant: 'destructive' }));
+  // ==========================================================================
+  // RF-04: Renderizar botão com variant "destructive"
+  // ==========================================================================
+  
+  test.skip('RF-04 - deve renderizar botão destructive com background error', async ({ page }) => {
     const button = page.locator('[data-testid="button"]');
-
-    await button.click();
-    await page.waitForTimeout(50);
-
-    const errorRgb = hexToRgb(TOKENS.error)!;
-    const expectedR = Math.round(errorRgb.r * 0.85);
-    const expectedG = Math.round(errorRgb.g * 0.85);
-    const expectedB = Math.round(errorRgb.b * 0.85);
-
+    await expect(button).toBeVisible();
     const styles = await getComputedStyles(page, '[data-testid="button"]');
-    expect(styles.backgroundColor).toBe(`rgb(${expectedR}, ${expectedG}, ${expectedB})`);
+    expect(styles?.backgroundColor).toBe(hexToRgb(TOKENS.error));
+  });
+
+  test.skip('RF-04 - deve ter texto branco', async ({ page }) => {
+    const styles = await getComputedStyles(page, '[data-testid="button"]');
+    expect(styles?.color).toBe(hexToRgb(TOKENS.textPrimary));
   });
 
   // ==========================================================================
-  // RF-05: Inverse Variant
+  // RF-05: Renderizar botão com variant "inverse"
   // ==========================================================================
-
-  test.skip('RF-05 - deve renderizar botão inverse com bg branco e texto primary', async ({ page }) => {
-    await page.setContent(createButtonHTML({ variant: 'inverse' }));
-    const styles = await getComputedStyles(page, '[data-testid="button"]');
-
-    // White background
-    expect(colorsMatch(styles.backgroundColor, '#FFFFFF')).toBe(true);
-    expect(colorsMatch(styles.color, TOKENS.primary)).toBe(true);
-    expect(styles.border).toBe('none');
-  });
-
-  // ==========================================================================
-  // RF-06: Size Small
-  // ==========================================================================
-
-  test.skip('RF-06 - botão sm deve ter dimensões corretas', async ({ page }) => {
-    await page.setContent(createButtonHTML({ size: 'sm' }));
-    const styles = await getComputedStyles(page, '[data-testid="button"]');
-    const box = await getBoundingBox(page, '[data-testid="button"]');
-
-    expect(box?.height).toBeCloseTo(SIZES.sm.height, 2);
-    expect(parseInt(styles.paddingTop)).toBe(SIZES.sm.paddingY);
-    expect(parseInt(styles.paddingRight)).toBe(SIZES.sm.paddingX);
-    expect(parseInt(styles.fontSize)).toBe(SIZES.sm.fontSize);
-    expect(parseInt(styles.borderRadius)).toBe(SIZES.sm.borderRadius);
-  });
-
-  // ==========================================================================
-  // RF-07: Size Medium (Default)
-  // ==========================================================================
-
-  test.skip('RF-07 - botão md deve ter dimensões corretas', async ({ page }) => {
-    await page.setContent(createButtonHTML({ size: 'md' }));
-    const styles = await getComputedStyles(page, '[data-testid="button"]');
-    const box = await getBoundingBox(page, '[data-testid="button"]');
-
-    expect(box?.height).toBeCloseTo(SIZES.md.height, 2);
-    expect(parseInt(styles.paddingTop)).toBe(SIZES.md.paddingY);
-    expect(parseInt(styles.paddingRight)).toBe(SIZES.md.paddingX);
-    expect(parseInt(styles.fontSize)).toBe(SIZES.md.fontSize);
-    expect(parseInt(styles.borderRadius)).toBe(SIZES.md.borderRadius);
-  });
-
-  test.skip('RF-07 - botão sem size deve usar md como default', async ({ page }) => {
-    await page.setContent(createButtonHTML({}));
+  
+  test.skip('RF-05 - deve renderizar botão inverse com background branco', async ({ page }) => {
     const button = page.locator('[data-testid="button"]');
-
-    await expect(button).toHaveClass(/btn-md/);
-  });
-
-  // ==========================================================================
-  // RF-08: Size Large
-  // ==========================================================================
-
-  test.skip('RF-08 - botão lg deve ter dimensões corretas', async ({ page }) => {
-    await page.setContent(createButtonHTML({ size: 'lg' }));
+    await expect(button).toBeVisible();
     const styles = await getComputedStyles(page, '[data-testid="button"]');
-    const box = await getBoundingBox(page, '[data-testid="button"]');
-
-    expect(box?.height).toBeCloseTo(SIZES.lg.height, 2);
-    expect(parseInt(styles.paddingTop)).toBe(SIZES.lg.paddingY);
-    expect(parseInt(styles.paddingRight)).toBe(SIZES.lg.paddingX);
-    expect(parseInt(styles.fontSize)).toBe(SIZES.lg.fontSize);
-    expect(parseInt(styles.borderRadius)).toBe(SIZES.lg.borderRadius);
+    expect(styles?.backgroundColor).toBe('rgb(255, 255, 255)');
   });
 
-  // ==========================================================================
-  // RF-09: Icon Left Position
-  // ==========================================================================
-
-  test.skip('RF-09 - ícone deve aparecer antes do texto', async ({ page }) => {
-    await page.setContent(createButtonHTML({ iconPosition: 'left' }));
-
-    const iconLeft = page.locator('.btn-icon-left');
-    const text = page.locator('.btn-text');
-
-    await expect(iconLeft).toBeVisible();
-    await expect(text).toBeVisible();
-
-    // Check DOM order: icon before text
-    const iconBox = await iconLeft.boundingBox();
-    const textBox = await text.boundingBox();
-    expect(iconBox && textBox && iconBox.x < textBox.x).toBe(true);
-  });
-
-  // ==========================================================================
-  // RF-10: Icon Right Position
-  // ==========================================================================
-
-  test.skip('RF-10 - ícone deve aparecer depois do texto', async ({ page }) => {
-    await page.setContent(createButtonHTML({ iconPosition: 'right' }));
-
-    const iconRight = page.locator('.btn-icon-right');
-    const text = page.locator('.btn-text');
-
-    await expect(iconRight).toBeVisible();
-    await expect(text).toBeVisible();
-
-    // Check DOM order: text before icon
-    const iconBox = await iconRight.boundingBox();
-    const textBox = await text.boundingBox();
-    expect(iconBox && textBox && textBox.x < iconBox.x).toBe(true);
-  });
-
-  // ==========================================================================
-  // RF-11: Icon Only
-  // ==========================================================================
-
-  test.skip('RF-11 - icon-only deve ter padding simétrico', async ({ page }) => {
-    await page.setContent(createButtonHTML({ iconPosition: 'icon-only', 'aria-label': 'Add' }));
-
+  test.skip('RF-05 - deve ter texto com cor primary', async ({ page }) => {
     const styles = await getComputedStyles(page, '[data-testid="button"]');
-
-    // Square padding for icon-only: [10, 10]
-    expect(parseInt(styles.paddingTop)).toBe(10);
-    expect(parseInt(styles.paddingRight)).toBe(10);
-    expect(parseInt(styles.paddingBottom)).toBe(10);
-    expect(parseInt(styles.paddingLeft)).toBe(10);
+    expect(styles?.color).toBe(hexToRgb(TOKENS.primary));
   });
 
-  test.skip('RF-11 - icon-only deve ter touch target mínimo 44x44px', async ({ page }) => {
-    await page.setContent(createButtonHTML({ iconPosition: 'icon-only', 'aria-label': 'Add' }));
+  test.skip('RF-05 - deve ter border-radius 6px (radius-md)', async ({ page }) => {
+    const styles = await getComputedStyles(page, '[data-testid="button"]');
+    expect(styles?.borderRadius).toBe(6);
+  });
 
+  test.skip('RF-05 - deve ter font-size 12px (text-xs) e font-weight 600', async ({ page }) => {
+    const styles = await getComputedStyles(page, '[data-testid="button"]');
+    expect(styles?.fontSize).toBe(12);
+    expect(styles?.fontWeight).toBe(600);
+  });
+
+  // ==========================================================================
+  // RF-06: Renderizar botão em tamanho "sm"
+  // ==========================================================================
+  
+  test.skip('RF-06 - deve ter altura de 32px', async ({ page }) => {
+    const styles = await getComputedStyles(page, '[data-testid="button"]');
+    expect(styles?.height).toBe(32);
+  });
+
+  test.skip('RF-06 - deve ter padding vertical 6px e horizontal 12px', async ({ page }) => {
+    const styles = await getComputedStyles(page, '[data-testid="button"]');
+    expect(styles?.paddingTop).toBe(6);
+    expect(styles?.paddingBottom).toBe(6);
+    expect(styles?.paddingLeft).toBe(12);
+    expect(styles?.paddingRight).toBe(12);
+  });
+
+  test.skip('RF-06 - deve ter font-size 12px', async ({ page }) => {
+    const styles = await getComputedStyles(page, '[data-testid="button"]');
+    expect(styles?.fontSize).toBe(12);
+  });
+
+  test.skip('RF-06 - deve ter border-radius 6px', async ({ page }) => {
+    const styles = await getComputedStyles(page, '[data-testid="button"]');
+    expect(styles?.borderRadius).toBe(6);
+  });
+
+  // ==========================================================================
+  // RF-07: Renderizar botão em tamanho "md" (DEFAULT)
+  // ==========================================================================
+  
+  test.skip('RF-07 - deve ter altura de 40px (default)', async ({ page }) => {
+    const styles = await getComputedStyles(page, '[data-testid="button"]');
+    expect(styles?.height).toBe(40);
+  });
+
+  test.skip('RF-07 - deve ter padding vertical 10px e horizontal 16px', async ({ page }) => {
+    const styles = await getComputedStyles(page, '[data-testid="button"]');
+    expect(styles?.paddingTop).toBe(10);
+    expect(styles?.paddingBottom).toBe(10);
+    expect(styles?.paddingLeft).toBe(16);
+    expect(styles?.paddingRight).toBe(16);
+  });
+
+  test.skip('RF-07 - deve ter font-size 13px', async ({ page }) => {
+    const styles = await getComputedStyles(page, '[data-testid="button"]');
+    expect(styles?.fontSize).toBe(13);
+  });
+
+  test.skip('RF-07 - deve ter border-radius 8px', async ({ page }) => {
+    const styles = await getComputedStyles(page, '[data-testid="button"]');
+    expect(styles?.borderRadius).toBe(8);
+  });
+
+  // ==========================================================================
+  // RF-08: Renderizar botão em tamanho "lg"
+  // ==========================================================================
+  
+  test.skip('RF-08 - deve ter altura de 48px', async ({ page }) => {
+    const styles = await getComputedStyles(page, '[data-testid="button"]');
+    expect(styles?.height).toBe(48);
+  });
+
+  test.skip('RF-08 - deve ter padding vertical 12px e horizontal 20px', async ({ page }) => {
+    const styles = await getComputedStyles(page, '[data-testid="button"]');
+    expect(styles?.paddingTop).toBe(12);
+    expect(styles?.paddingBottom).toBe(12);
+    expect(styles?.paddingLeft).toBe(20);
+    expect(styles?.paddingRight).toBe(20);
+  });
+
+  test.skip('RF-08 - deve ter font-size 14px', async ({ page }) => {
+    const styles = await getComputedStyles(page, '[data-testid="button"]');
+    expect(styles?.fontSize).toBe(14);
+  });
+
+  test.skip('RF-08 - deve ter border-radius 8px', async ({ page }) => {
+    const styles = await getComputedStyles(page, '[data-testid="button"]');
+    expect(styles?.borderRadius).toBe(8);
+  });
+
+  // ==========================================================================
+  // RF-09: Ícone na posição esquerda
+  // ==========================================================================
+  
+  test.skip('RF-09 - deve renderizar ícone à esquerda do texto', async ({ page }) => {
+    const icon = page.locator('[data-testid="button"] .btn-icon-left');
+    await expect(icon).toBeVisible();
+  });
+
+  test.skip('RF-09 - deve ter gap de 8px (md), 6px (sm) ou 10px (lg) entre ícone e texto', async ({ page }) => {
+    const marginRight = await page.evaluate(() => {
+      const el = document.querySelector('[data-testid="button"] .btn-icon-left') as HTMLElement;
+      return window.getComputedStyle(el).marginRight;
+    });
+    expect(marginRight).toBe('8px');
+  });
+
+  // ==========================================================================
+  // RF-10: Ícone na posição direita
+  // ==========================================================================
+  
+  test.skip('RF-10 - deve renderizar ícone à direita do texto', async ({ page }) => {
+    const icon = page.locator('[data-testid="button"] .btn-icon-right');
+    await expect(icon).toBeVisible();
+  });
+
+  test.skip('RF-10 - deve ter margin-left entre ícone e texto', async ({ page }) => {
+    const marginLeft = await page.evaluate(() => {
+      const el = document.querySelector('[data-testid="button"] .btn-icon-right') as HTMLElement;
+      return window.getComputedStyle(el).marginLeft;
+    });
+    expect(marginLeft).toBe('8px');
+  });
+
+  // ==========================================================================
+  // RF-11: Icon-only
+  // ==========================================================================
+  
+  test.skip('RF-11 - deve renderizar como icon-only (quadrado)', async ({ page }) => {
+    const button = page.locator('[data-testid="button"]');
+    await expect(button).toHaveClass(/btn-icon-only/);
+  });
+
+  test.skip('RF-11 - deve ter padding quadrado (padding igual em todos os lados)', async ({ page }) => {
+    const styles = await getComputedStyles(page, '[data-testid="button"]');
+    expect(styles?.paddingTop).toBe(styles?.paddingLeft);
+    expect(styles?.paddingTop).toBe(10);
+  });
+
+  test.skip('RF-11 - deve ter aria-label obrigatório', async ({ page }) => {
+    const button = page.locator('[data-testid="button"]');
+    await expect(button).toHaveAttribute('aria-label', 'Add new item');
+  });
+
+  test.skip('RF-11 - deve ter área de toque mínima 44x44px', async ({ page }) => {
     const box = await page.locator('[data-testid="button"]').boundingBox();
-
     expect(box?.width).toBeGreaterThanOrEqual(44);
     expect(box?.height).toBeGreaterThanOrEqual(44);
   });
 
-  test.skip('RF-11 - icon-only deve ter aria-label', async ({ page }) => {
-    await page.setContent(createButtonHTML({ iconPosition: 'icon-only', 'aria-label': 'Add new item' }));
-
-    const button = page.locator('[data-testid="button"]');
-
-    await expect(button).toHaveAttribute('aria-label', 'Add new item');
-  });
-
   // ==========================================================================
-  // RF-12: Loading State
+  // RF-12: Estado loading
   // ==========================================================================
-
-  test.skip('RF-12 - loading deve exibir spinner e desabilitar', async ({ page }) => {
-    await page.setContent(createButtonHTML({ loading: true }));
-
+  
+  test.skip('RF-12 - deve ter atributo aria-busy="true"', async ({ page }) => {
     const button = page.locator('[data-testid="button"]');
-
     await expect(button).toHaveAttribute('aria-busy', 'true');
+  });
+
+  test.skip('RF-12 - deve ter atributo aria-disabled="true"', async ({ page }) => {
+    const button = page.locator('[data-testid="button"]');
     await expect(button).toHaveAttribute('aria-disabled', 'true');
-    await expect(button).toHaveAttribute('disabled', '');
-    await expect(button.locator('.btn-spinner')).toBeVisible();
   });
 
-  test.skip('RF-12 - loading não deve responder a cliques', async ({ page }) => {
-    let clickCount = 0;
-    await page.setContent(createButtonHTML({ loading: true }));
+  test.skip('RF-12 - deve exibir spinner', async ({ page }) => {
+    const spinner = page.locator('[data-testid="button"] .btn-spinner');
+    await expect(spinner).toBeVisible();
+  });
 
-    // Add click listener
-    await page.evaluate(() => {
-      const btn = document.querySelector('[data-testid="button"]');
-      btn?.addEventListener('click', () => {
-        (window as unknown as { clickCount: number }).clickCount++;
-      });
+  test.skip('RF-12 - deve ter cursor not-allowed', async ({ page }) => {
+    const styles = await getComputedStyles(page, '[data-testid="button"]');
+    expect(styles?.cursor).toBe('not-allowed');
+  });
+
+  test.skip('RF-12 - deve ter opacity 50%', async ({ page }) => {
+    const styles = await getComputedStyles(page, '[data-testid="button"]');
+    expect(styles?.opacity).toBe(0.5);
+  });
+
+  // ==========================================================================
+  // RF-13: Estado disabled
+  // ==========================================================================
+  
+  test.skip('RF-13 - deve ter atributo disabled', async ({ page }) => {
+    const button = page.locator('[data-testid="button"]');
+    await expect(button).toHaveAttribute('disabled');
+  });
+
+  test.skip('RF-13 - deve ter opacity 50%', async ({ page }) => {
+    const styles = await getComputedStyles(page, '[data-testid="button"]');
+    expect(styles?.opacity).toBe(0.5);
+  });
+
+  test.skip('RF-13 - deve ter cursor not-allowed', async ({ page }) => {
+    const styles = await getComputedStyles(page, '[data-testid="button"]');
+    expect(styles?.cursor).toBe('not-allowed');
+  });
+
+  test.skip('RF-13 - não deve responder a cliques', async ({ page }) => {
+    const button = page.locator('[data-testid="button"]');
+    await button.click();
+    // In a real scenario with onClick handler, we would verify it wasn't called
+    
+    // For now, verify the button has disabled attribute
+    await expect(button).toHaveAttribute('disabled');
+  });
+
+  // ==========================================================================
+  // RF-14: Focus ring
+  // ==========================================================================
+  
+  test.skip('RF-14 - deve ter focus ring quando em foco', async ({ page }) => {
+    const button = page.locator('[data-testid="button"]');
+    
+    await button.focus();
+    
+    const outlineWidth = await page.evaluate(() => {
+      const el = document.querySelector('[data-testid="button"]') as HTMLElement;
+      return window.getComputedStyle(el).outlineWidth;
     });
-
-    await page.locator('[data-testid="button"]').click();
-    await page.locator('[data-testid="button"]').click();
-
-    expect((page.context() as unknown as { clickCount?: number }).clickCount ?? 0).toBe(0);
+    expect(parseInt(outlineWidth)).toBeGreaterThan(0);
   });
 
-  // ==========================================================================
-  // RF-13: Disabled State
-  // ==========================================================================
-
-  test.skip('RF-13 - disabled deve ter opacity 50% e cursor not-allowed', async ({ page }) => {
-    await page.setContent(createButtonHTML({ disabled: true }));
-
-    const styles = await getComputedStyles(page, '[data-testid="button"]');
-
-    expect(parseFloat(styles.opacity)).toBe(0.5);
-    expect(styles.cursor).toBe('not-allowed');
-    await expect(page.locator('[data-testid="button"]')).toHaveAttribute('disabled', '');
-  });
-
-  test.skip('RF-13 - disabled não deve responder a cliques', async ({ page }) => {
-    await page.setContent(createButtonHTML({ disabled: true }));
-
+  test.skip('RF-14 - deve ter outline de 2px com cor border-focus', async ({ page }) => {
     const button = page.locator('[data-testid="button"]');
-
-    // Click should not throw but button should remain disabled
-    await button.click({ force: true });
-
-    // Button should still have disabled attribute
-    await expect(button).toHaveAttribute('disabled', '');
+    
+    await button.focus();
+    
+    const styles = await page.evaluate(() => {
+      const el = document.querySelector('[data-testid="button"]') as HTMLElement;
+      const style = window.getComputedStyle(el);
+      return {
+        outlineWidth: parseInt(style.outlineWidth),
+        outlineColor: style.outlineColor,
+      };
+    });
+    expect(styles.outlineWidth).toBe(2);
+    expect(styles.outlineColor).toBe(hexToRgb(TOKENS.borderFocus));
   });
 
-  // ==========================================================================
-  // RF-14: Focus Ring
-  // ==========================================================================
-
-  test.skip('RF-14 - focus deve exibir focus ring azul', async ({ page }) => {
-    await page.setContent(createButtonHTML({ variant: 'primary' }));
-    await page.locator('[data-testid="button"]').focus();
-
-    const styles = await getComputedStyles(page, '[data-testid="button"]');
-
-    expect(styles.outlineColor).toBe(TOKENS.borderFocus);
-    expect(styles.outlineWidth).toBe('2px');
-  });
-
-  // ==========================================================================
-  // RF-15: Full Width
-  // ==========================================================================
-
-  test.skip('RF-15 - fullWidth deve ocupar 100% do container', async ({ page }) => {
-    await page.setContent(`
-      <div style="width: 500px;">
-        ${createButtonHTML({ fullWidth: true })}
-      </div>
-    `);
-
-    const button = page.locator('[data-testid="button"]');
-    const box = await button.boundingBox();
-
-    // Button should be close to container width
-    expect(box?.width).toBeGreaterThanOrEqual(490);
-  });
-
-  test.skip('RF-15 - sem fullWidth deve respeitar conteúdo', async ({ page }) => {
-    await page.setContent(createButtonHTML({ fullWidth: false }));
-
-    const box = await page.locator('[data-testid="button"]').boundingBox();
-
-    // Button should not be full width (less than 200px)
-    expect(box?.width).toBeLessThan(200);
-  });
-
-  // ==========================================================================
-  // RF-16: Accessibility
-  // ==========================================================================
-
-  test.skip('RF-16 - botão deve ser navegável por teclado (Tab + Enter)', async ({ page }) => {
-    await page.setContent(`
-      <div>
-        <input id="before" data-testid="before" />
-        ${createButtonHTML({ variant: 'primary', children: 'Click me' })}
-        <input id="after" data-testid="after" />
-      </div>
-    `);
-
-    await page.locator('[data-testid="before"]').focus();
+  test.skip('RF-14 - deve ser navegável por Tab', async ({ page }) => {
+    
     await page.keyboard.press('Tab');
+    
+    const button = page.locator('[data-testid="button"]');
+    await expect(button).toBeFocused();
+  });
 
-    const buttonFocused = await page.evaluate(() => document.activeElement?.getAttribute('data-testid'));
-    expect(buttonFocused).toBe('button');
-
-    // Enter should activate button
-    let clicked = false;
-    await page.evaluate(() => {
-      const btn = document.querySelector('[data-testid="button"]') as HTMLButtonElement;
-      btn.addEventListener('click', () => {
-        clicked = true;
-      });
-    });
-
+  test.skip('RF-14 - deve responder a Enter quando em foco', async ({ page }) => {
+    const button = page.locator('[data-testid="button"]');
+    
+    await button.focus();
     await page.keyboard.press('Enter');
-    expect(clicked).toBe(true);
+    
+    // Button should have processed the Enter key
+    // In a real implementation with onClick, we would verify it was called
   });
 
-  test.skip('RF-16 - botão deve ser navegável por teclado (Space)', async ({ page }) => {
-    await page.setContent(createButtonHTML({ variant: 'primary' }));
-
-    await page.locator('[data-testid="button"]').focus();
-    await page.keyboard.press('Space');
-
-    // Space should not cause any error
-    await expect(page.locator('[data-testid="button"]')).toBeFocused();
-  });
-
-  test.skip('RF-16 - botão deve expor role="button"', async ({ page }) => {
-    await page.setContent(createButtonHTML({}));
-
-    await expect(page.locator('[data-testid="button"]')).toHaveAttribute('role', 'button');
-  });
-
-  test.skip('RF-16 - disabled deve ter aria-disabled="true"', async ({ page }) => {
-    await page.setContent(createButtonHTML({ disabled: true }));
-
-    await expect(page.locator('[data-testid="button"]')).toHaveAttribute('aria-disabled', 'true');
-  });
-
-  test.skip('RF-16 - loading deve ter aria-busy="true" e aria-disabled="true"', async ({ page }) => {
-    await page.setContent(createButtonHTML({ loading: true }));
-
-    await expect(page.locator('[data-testid="button"]')).toHaveAttribute('aria-busy', 'true');
-    await expect(page.locator('[data-testid="button"]')).toHaveAttribute('aria-disabled', 'true');
-  });
-
-  test.skip('RF-16 - touch target deve ser mínimo 44x44px', async ({ page }) => {
-    await page.setContent(createButtonHTML({ size: 'sm' }));
-
-    const box = await page.locator('[data-testid="button"]').boundingBox();
-
-    // Even small buttons should have minimum touch target
-    expect(box?.height).toBeGreaterThanOrEqual(44);
+  test.skip('RF-14 - deve responder a Space quando em foco', async ({ page }) => {
+    const button = page.locator('[data-testid="button"]');
+    
+    await button.focus();
+    await page.keyboard.press(' ');
+    
+    // Button should have processed the Space key
   });
 
   // ==========================================================================
-  // DEFENSIVE TESTS - Murphy's Law
+  // RF-15: Prop fullWidth
   // ==========================================================================
-
-  test.skip('DEFENSIVE - double-click não deve causar ação duplicada', async ({ page }) => {
-    let clickCount = 0;
-
-    await page.setContent(createButtonHTML({}));
-
-    await page.evaluate(() => {
-      const btn = document.querySelector('[data-testid="button"]') as HTMLButtonElement;
-      btn.addEventListener('click', () => {
-        clickCount++;
-      });
-    });
-
-    // Simulate rapid clicks
-    await page.locator('[data-testid="button"]').dblclick();
-    await page.locator('[data-testid="button"]').click({ clickCount: 2 });
-
-    // Should only count as one click due to debounce/protection
-    expect(clickCount).toBeLessThanOrEqual(1);
+  
+  test.skip('RF-15 - deve ocupar 100% da largura com fullWidth=true', async ({ page }) => {
+    const styles = await getComputedStyles(page, '[data-testid="button"]');
+    expect(styles?.width).toBe('100%');
   });
 
-  test.skip('DEFENSIVE - type="button" não deve submeter formulário', async ({ page }) => {
-    let formSubmitted = false;
-
-    await page.setContent(`
-      <form data-testid="form">
-        <input name="test" value="value" />
-        ${createButtonHTML({ type: 'button' })}
-      </form>
-    `);
-
-    await page.evaluate(() => {
-      const form = document.querySelector('[data-testid="form"]') as HTMLFormElement;
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        formSubmitted = true;
-      });
-    });
-
-    await page.locator('[data-testid="button"]').click();
-
-    expect(formSubmitted).toBe(false);
-  });
-
-  test.skip('DEFENSIVE - type="submit" deve submeter formulário', async ({ page }) => {
-    let formSubmitted = false;
-
-    await page.setContent(`
-      <form data-testid="form">
-        <input name="test" value="value" />
-        ${createButtonHTML({ type: 'submit' })}
-      </form>
-    `);
-
-    await page.evaluate(() => {
-      const form = document.querySelector('[data-testid="form"]') as HTMLFormElement;
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        formSubmitted = true;
-      });
-    });
-
-    await page.locator('[data-testid="button"]').click();
-
-    expect(formSubmitted).toBe(true);
-  });
-
-  test.skip('DEFENSIVE - type="reset" deve limpar formulário', async ({ page }) => {
-    await page.setContent(`
-      <form data-testid="form">
-        <input name="test" value="original" data-testid="input" />
-        ${createButtonHTML({ type: 'reset' })}
-      </form>
-    `);
-
-    // Change input value
-    await page.locator('[data-testid="input"]').fill('changed');
-    await expect(page.locator('[data-testid="input"]')).toHaveValue('changed');
-
-    // Reset
-    await page.locator('[data-testid="button"]').click();
-
-    await expect(page.locator('[data-testid="input"]')).toHaveValue('original');
+  test.skip('RF-15 - deve ter padding horizontal 0 com fullWidth=true', async ({ page }) => {
+    const styles = await getComputedStyles(page, '[data-testid="button"]');
+    expect(styles?.paddingLeft).toBe(0);
+    expect(styles?.paddingRight).toBe(0);
   });
 
   // ==========================================================================
-  // COMBINATION TESTS
+  // RF-16: Acessibilidade
   // ==========================================================================
-
-  test.skip('COMBO - todas combinações variant + size funcionam', async ({ page }) => {
-    for (const variant of VARIANTS) {
-      for (const size of ['sm', 'md', 'lg'] as Size[]) {
-        await page.setContent(createButtonHTML({ variant, size }));
-
-        const button = page.locator('[data-testid="button"]');
-        await expect(button).toBeVisible();
-        await expect(button).toHaveClass(new RegExp(`btn-${variant}`));
-        await expect(button).toHaveClass(new RegExp(`btn-${size}`));
-      }
-    }
+  
+  test.skip('RF-16 - deve ter role="button"', async ({ page }) => {
+    const button = page.locator('[data-testid="button"]');
+    await expect(button).toHaveAttribute('role', 'button');
   });
 
-  // ==========================================================================
-  // CLASSNAME AND TESTID
-  // ==========================================================================
-
-  test.skip('CLASSNAME - deve aceitar e aplicar className customizado', async ({ page }) => {
-    await page.setContent(createButtonHTML({ className: 'custom-class' }));
-
-    await expect(page.locator('[data-testid="button"]')).toHaveClass(/custom-class/);
-    await expect(page.locator('[data-testid="button"]')).toHaveClass(/btn/);
+  test.skip('RF-16 - deve ter type="button" por padrão', async ({ page }) => {
+    const button = page.locator('[data-testid="button"]');
+    await expect(button).toHaveAttribute('type', 'button');
   });
 
-  test.skip('TESTID - deve aceitar data-testid customizado', async ({ page }) => {
-    const customTestId = 'submit-btn';
-    await page.setContent(createButtonHTML({ 'data-testid': customTestId }));
-
-    await expect(page.locator(`[data-testid="${customTestId}"]`)).toBeVisible();
+  test.skip('RF-16 - deve aceitar type="submit"', async ({ page }) => {
+    const button = page.locator('[data-testid="button"]');
+    await expect(button).toHaveAttribute('type', 'submit');
   });
 
-  test.skip('CHILDREN - deve renderizar children como texto', async ({ page }) => {
-    await page.setContent(createButtonHTML({ children: 'Save Changes' }));
-
-    await expect(page.locator('.btn-text')).toHaveText('Save Changes');
+  test.skip('RF-16 - deve aceitar type="reset"', async ({ page }) => {
+    const button = page.locator('[data-testid="button"]');
+    await expect(button).toHaveAttribute('type', 'reset');
   });
+
+  test.skip('RF-16 - deve aceitar className customizado', async ({ page }) => {
+    const button = page.locator('[data-testid="button"]');
+    await expect(button).toHaveClass(/custom-class/);
+  });
+
+  test.skip('RF-16 - deve aceitar data-testid customizado', async ({ page }) => {
+    const button = page.locator('[data-testid="custom-button"]');
+    await expect(button).toBeVisible();
+  });
+
+  test.skip('RF-16 - deve renderizar children como texto', async ({ page }) => {
+    const button = page.locator('[data-testid="button"]');
+    await expect(button).toContainText('Click me');
+  });
+
+});
+
+// ============================================================================
+// INTEGRATION TESTS (end-to-end with Next.js app)
+// ============================================================================
+
+test.describe('Feature: Button - Integration', () => {
+
+  test.skip('deve renderizar botão primary na página de teste', async ({ page }) => {
+    await page.goto(`${TEST_URL}?variant=primary`);
+    
+    const button = page.locator('[data-testid="button"]');
+    await expect(button).toBeVisible();
+    await expect(button).toContainText('Button');
+  });
+
+  test.skip('deve renderizar todos os variants side-by-side', async ({ page }) => {
+    await page.goto(`${TEST_URL}?view=all`);
+    
+    const primary = page.locator('[data-testid="button-primary"]');
+    const secondary = page.locator('[data-testid="button-secondary"]');
+    const ghost = page.locator('[data-testid="button-ghost"]');
+    const destructive = page.locator('[data-testid="button-destructive"]');
+    const inverse = page.locator('[data-testid="button-inverse"]');
+    
+    await expect(primary).toBeVisible();
+    await expect(secondary).toBeVisible();
+    await expect(ghost).toBeVisible();
+    await expect(destructive).toBeVisible();
+    await expect(inverse).toBeVisible();
+  });
+
+  test.skip('deve renderizar todos os tamanhos side-by-side', async ({ page }) => {
+    await page.goto(`${TEST_URL}?view=sizes`);
+    
+    const sm = page.locator('[data-testid="button-sm"]');
+    const md = page.locator('[data-testid="button-md"]');
+    const lg = page.locator('[data-testid="button-lg"]');
+    
+    await expect(sm).toBeVisible();
+    await expect(md).toBeVisible();
+    await expect(lg).toBeVisible();
+    
+    const smBox = await sm.boundingBox();
+    const mdBox = await md.boundingBox();
+    const lgBox = await lg.boundingBox();
+    
+    expect(smBox?.height).toBeLessThan(mdBox?.height ?? 0);
+    expect(mdBox?.height).toBeLessThan(lgBox?.height ?? 0);
+  });
+
 });

@@ -34,7 +34,9 @@
 - Testes não devem fazer exportações, cada teste deve ser isolado com responsabilidade unica - **single responsability - solid**
 - Classes **page object** e **constantes globais** gerais devem ficar no final do arquivo de teste
 - Cada componente/feature tem **spec próprio**: `frontend/tests/features/[nome]/[nome].spec.ts`
-- Estrutura de spec por componente:
+- Estrutura de spec por componente.
+- Não crie string HTML para testes componentes.
+- Não crie um página de teste para renderizar por meio do método setContent.
 
 ```
 frontend/tests/features/[nome]/

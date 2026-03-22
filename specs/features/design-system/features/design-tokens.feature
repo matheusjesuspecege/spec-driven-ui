@@ -73,7 +73,7 @@ Funcionalidade: Design Tokens Globais
       | token_name      | hex_value |
       | border          | #2a2a2e   |
       | border-subtle   | #1f1f23   |
-      | border-focus    | #ff5c00   |
+      | border-focus    | #3b82f6   |
     Então todas as cores de borda devem estar disponíveis
 
   # ============================================
