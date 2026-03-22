@@ -25,6 +25,7 @@ Leia primeiro: `@specs/docs/guardrails.md`
 | `@research-to-plan` | Gera plano de ação |
 | `@bdd-generator` | Gera cenários BDD (*.feature) |
 | `@tdd-generator` | Gera testes *.spec.ts |
+| `@verify-and-sync-bdd-tdd` | Sincroniza BDD com testes |
 | `@implement-tasks` | Implementa código via TDD |
 | `@verify-patterns` | Valida padrões e convenções |
 | `@analyze-consistency` | Analisa consistência entre artefatos |
@@ -32,7 +33,6 @@ Leia primeiro: `@specs/docs/guardrails.md`
 | `@diff-design-vs-code` | Compara design com código |
 | `@export-code-to-design` | Exporta código para Pencil |
 | `@import-design-to-code` | Importa design aprovado |
-| `@tdd-playwright` | Executa TDD por teste |
 | `@worktree-mapper` | Mapeia dependências entre componentes |
 | `@worktree-runner` | Cria worktrees Git paralelos |
 

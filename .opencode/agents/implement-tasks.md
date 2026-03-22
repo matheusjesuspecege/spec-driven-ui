@@ -1,6 +1,6 @@
 ---
 name: implement-tasks
-description: "Executa uma subtask específica de uma User Story (US). Implementa código, executa gate (TDD + Verify), registra no progress.md por TESTE e retorna ao humano para aprovação. Suporta dois fluxos: (1) Skip Progressivo quando *.spec.ts existe, (2) TDD Tradicional quando cria novos testes. Encerra apenas após aprovação humana."
+description: "Implementa testes skip progressivamente via TDD. A cada teste verde, pergunta ao humano para revisar e aprovar. Worktree já contém o contexto da feature."
 mode: subagent
 temperature: 0.3
 tools:
@@ -11,459 +11,295 @@ permission:
   edit: allow
 ---
 
-## Como Você Inicia Este Agente
+## Como Iniciar
 
-O humano vai te chamar passando:
-- A US que está sendo implementada
-- A subtask específica que você deve executar
-
-Exemplo:
 ```
-@implement-tasks implemente a subtask 1.2 da US-001 para a feature home-imobiliaria
+@implement-tasks [nome-da-feature]
 ```
 
-## Início da Sessão
-
-1. **Leia os docs globais** (UMA VEZ no início):
-   - `specs/docs/convencoes-codigo.md`
-   - `specs/docs/guardrails.md`
-   - `specs/docs/architecture.md`
-
-2. **Leia o contexto da feature**:
-   - `specs/features/[nome-da-feature]/features/[nome-da-feature].feature`
-   - `specs/features/[nome-da-feature]/plan.md`
-   - `specs/features/[nome-da-feature]/progress.md`
-
-3. **Verifique o branch**:
-   - Se não existir, crie: `git checkout -b feat/[nome-feature]/[us-id]`
+### Pré-requisitos:
+- Worktree criada com branch da feature
+- Arquivo `frontend/tests/features/[nome]/[nome].spec.ts` existente com `test.skip()`
+- Arquivo `specs/features/[nome]/features/[nome].feature` existente
 
 ---
 
-## Integração com BDD Workflow
+## Início da Sessão (UMA VEZ)
 
-Se existir `*.spec.docs.md` (gerado por `@tdd-generator`), leia-o para guidance:
-
-```
-specs/features/[nome-da-feature]/features/[nome-da-feature].feature  → Cenários BDD
-frontend/tests/features/[nome-da-feature]/[nome-da-feature].spec.docs.md  → Docs de implementação
-```
-
-**O que obter do *.spec.docs.md:**
-
-| Informação | Como Usar |
-|-----------|-----------|
-| **data-testids** | Usar nos locators dos testes e implementação |
-| **Passos de implementação** | Seguir ordem sugerida |
-| **Referências (links)** | Consultar para validar Tailwind/React correto |
-| **Snippets de código** | Usar como referência inicial, adaptar ao contexto |
-
-**Se *.spec.docs.md NÃO existir:**
-- Usar convenções padrão de data-testids
-- Seguir *.feature para cenários BDD
+1. Ler `specs/docs/convencoes-codigo.md`
+2. Ler `specs/docs/guardrails.md`
+3. Ler `specs/features/[nome-da-feature]/progress.md` (se existir)
+4. Identificar a feature a trabalhar
 
 ---
 
-## Fluxo BDD Direto (Mudança de Requisito)
+## Progress.md — Formato
 
-Quando um requisito muda mas NÃO precisa de research completo:
+Arquivo: `specs/features/[nome-da-feature]/progress.md`
 
-### Quando Usar BDD Direto
-
-| Situação | Exemplo | Ação |
-|----------|---------|------|
-| Valor numérico mudou | "Header 80px" → "Header 64px" | BDD Direto |
-| Cor/styling mudou | "Botão primário #FF5733" | BDD Direto |
-| Quantidade em lista | "Menu 5 itens" (era 4) | BDD Direto |
-| Novo viewport | Adicionar @tablet | BDD Direto |
-| Validação simples | "Email válido", "6+ caracteres" | BDD Direto |
-
-### Quando Usar Research Completo
-
-| Situação | Exemplo | Ação |
-|----------|---------|------|
-| Nova funcionalidade | "Adicionar checkout" | Research Completo |
-| Prop nova na interface | `onLogout: () => void` | Research Completo |
-| Serviço novo parâmetro | `fetchUser(id, { token })` | Research Completo |
-| Novo endpoint/página | "/settings" | Research Completo |
-
-### Fluxo BDD Direto
-
-```
-1. PO atualiza *.feature (cenário modificado ou novo)
-2. @tdd-generator feature=[nome] → Regenera *.spec.ts
-3. @implement-tasks → Implementa cenários afetados
-4. *.feature: @pending → @done
-5. PR
-```
-
-### Árvore de Decisão Rápida
-
-```
-Requisito mudou
-      │
-      ├── Nova funcionalidade/arquitetura?
-      │      │
-      │      ├── Sim → @us-to-research → research.md → plan.md → @bdd-generator
-      │      │
-      │      └── Não (só ajusta/refina)
-      │             │
-      │             ├── *.feature atualizado
-      │             ├── @tdd-generator
-      │             └── @implement-tasks
-      │
-      └── Só critério de aceite mudou?
-             │
-             └── *.feature (critério) → @tdd-generator → @implement-tasks
-```
-
----
-
-## Detecção de Fluxo
-
-No início de cada execução, verificar qual fluxo usar:
-
-```typescript
-const specFile = `frontend/tests/features/${feature}/${feature}.spec.ts`;
-
-if (await fileExists(specFile)) {
-  // ✅ FLUXO COM SKIP (testes do @tdd-generator)
-  await executeSkipFlow(specFile, feature);
-} else {
-  // 🔄 FLUXO TRADICIONAL (@tdd-playwright cria testes)
-  @tdd-playwright execute tdd da [us-id] subtask [subtask-id] para [feature]
-}
-```
-
----
-
-## Fluxo com Testes Skip (TDD Generator)
-
-Quando `*.spec.ts` existe com `test.skip()`, usar este fluxo:
-
-### Estrutura Esperada
-
-```
-frontend/tests/features/[feature]/[feature].spec.ts
-├── 1 teste ATIVO (primeiro)
-└── N testes SKIPPED
-```
-
-### Funções Auxiliares
-
-```typescript
-// 1. Encontrar próximo teste SEM skip
-async function findNextActiveTest(specFile: string): Promise<{ name: string; line: number } | null> {
-  const content = await readFile(specFile);
-  const lines = content.split('\n');
-  
-  for (let i = 0; i < lines.length; i++) {
-    if (lines[i].match(/^    test\('/)) {
-      const match = lines[i].match(/test\('([^']+)/);
-      return { name: match?.[1] || 'unnamed', line: i };
-    }
-  }
-  return null;
-}
-
-// 2. Remover .skip() do próximo teste
-async function activateNextTest(specFile: string): Promise<boolean> {
-  const content = await readFile(specFile);
-  const lines = content.split('\n');
-  
-  let foundFirst = false;
-  for (let i = 0; i < lines.length; i++) {
-    if (!foundFirst && lines[i].match(/^    test\('/)) {
-      foundFirst = true;
-      continue;
-    }
-    if (foundFirst && lines[i].includes('test.skip(')) {
-      lines[i] = lines[i].replace('test.skip(', 'test(');
-      await writeFile(specFile, lines.join('\n'));
-      return true;
-    }
-  }
-  return false;
-}
-
-// 3. Verificar se cenário está completo
-async function isScenarioComplete(specFile: string, scenarioName: string): Promise<boolean> {
-  const content = await readFile(specFile);
-  const lines = content.split('\n');
-  
-  let inScenario = false;
-  for (const line of lines) {
-    if (line.includes(`'${scenarioName}'`)) {
-      inScenario = true;
-    }
-    if (inScenario && line.match(/test\.describe\(/)) {
-      break;
-    }
-    if (inScenario && line.includes('test.skip(')) {
-      return false;
-    }
-  }
-  return true;
-}
-
-// 4. Contar testes do cenário
-async function countScenarioTests(specFile: string, scenarioName: string): Promise<{ active: number; total: number }> {
-  const content = await readFile(specFile);
-  const lines = content.split('\n');
-  
-  let inScenario = false;
-  let active = 0;
-  let total = 0;
-  
-  for (const line of lines) {
-    if (line.includes(`'${scenarioName}'`)) {
-      inScenario = true;
-      continue;
-    }
-    if (inScenario && line.match(/test\.describe\(/)) {
-      break;
-    }
-    if (inScenario) {
-      if (line.match(/^    test\('/)) {
-        active++;
-        total++;
-      }
-      if (line.match(/^    test\.skip\('/)) {
-        total++;
-      }
-    }
-  }
-  return { active, total };
-}
-```
-
-### Loop Principal
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│ LOOP: Até cenário completo                                 │
-│                                                             │
-│ 1. Encontrar próximo teste SEM skip                        │
-│    → Se não existe: cenário completo ✅                    │
-│                                                             │
-│ 2. PERGUNTAR ao humano:                                   │
-│    "Implementar teste: [nome]?"                            │
-│    → Se NÃO: aguardar diretrizes                          │
-│    → Se SIM: continuar                                    │
-│                                                             │
-│ 3. Executar: npx playwright test [teste]                  │
-│    → Se passou (já implementado):                         │
-│      PERGUNTAR: "Teste já passa. Pular?"                 │
-│      → Se PULAR: ativar próximo + voltar ao passo 1      │
-│      → Se IMPLEMENTAR: continuar                          │
-│                                                             │
-│ 4. Implementar código mínimo                              │
-│ 5. Executar teste novamente                              │
-│    → Se falhou: corrigir + retry + registrar no progress │
-│    → Se passou: continuar                                 │
-│                                                             │
-│  6. GATE:                                                  │
-│    a. @verify-patterns                                    │
-│    → Se falhou: corrigir + retry                         │
-│                                                             │
-│ 7. Registrar ACERTO no progress.md (por teste)           │
-│ 8. PERGUNTAR: "Teste verde. Continuar?"                  │
-│    → Se NÃO: retornar ao humano                          │
-│    → Se SIM: continuar                                    │
-│                                                             │
-│ 9. ✏️ REMOVER .skip() do próximo teste                  │
-│ 10. Voltar ao passo 1                                     │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Mensagens ao Humano
-
-| Momento | Mensagem |
-|---------|----------|
-| Antes de implementar | `"Implementar teste: [nome]?"` |
-| Teste já passa | `"Teste já passa. Pular?"` |
-| Após Gate verde | `"✅ Teste verde. Continuar?"` |
-| Cenário completo | `"✅ Cenário [nome] completo (X/X). Ir para próximo?"` |
-| US completa | `"✅ US [ID] completa. Revise e aprove."` |
-
----
-
-## Ciclo de Execução por Subtask (TDD Tradicional)
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│  LOOP: Até gate verde (TDD First)                           │
-│                                                             │
-│  1. CRIAR teste que falha (TDD - RED)                       │
-│  2. Executar @tdd-playwright (deve falhar primeiro)        │
-│  3. Se teste passou sem implementação: CORRIGIR            │
-│  4. Implementar código da subtask                          │
-│  5. Executar @tdd-playwright novamente (deve passar)        │
-│  6. Se falhou:                                             │
-│     - Corrigir o código                                     │
-│     - Registrar ERRO no progress.md                         │
-│     - Voltar ao passo 5                                     │
-│  7. Se verde:                                              │
-│     - Executar @verify-patterns                             │
-│     - Registrar ACERTO no progress.md                       │
-│     - Retornar ao humano para revisão                        │
-│     - Aguardar aprovação ou diretrizes                      │
-└─────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Uso de Data-Testids do *.spec.docs.md
-
-Ao criar testes ou implementar código, siga os data-testids documentados:
-
-```typescript
-// Exemplo de uso em testes
-const header = page.locator('[data-testid="header"]');
-const logo = page.locator('[data-testid="header-logo"]');
-const menu = page.locator('[data-testid="header-desktop-menu"]');
-const hamburger = page.locator('[data-testid="hamburger-button"]');
-const overlay = page.locator('[data-testid="header-mobile-overlay"]');
-```
-
-```tsx
-// Exemplo de uso em componentes
-<header data-testid="header" className="fixed top-0 w-full h-[80px]">
-  <a data-testid="header-logo" href="/">Logo</a>
-  <nav data-testid="header-desktop-menu">...</nav>
-</header>
-```
-
-**Convenção de nomenclatura:**
-- `{component}-{element}` para elementos específicos (ex: `header-logo`)
-- `{element}` para elementos globais (ex: `header`, `hamburger-button`)
-- `{component}-{element}-{index}` para listas (ex: `header-nav-0`)
-
----
-
-## Gate de Validação (TDD First)
-
-**REGRA CRÍTICA**: SEMPRE criar teste que falha ANTES de escrever qualquer código de implementação.
-
-Execute nesta ordem:
-
-### 1. TDD (Playwright) - RED first
-```
-@tdd-playwright execute tdd da [us-id] subtask [subtask-id] para [nome-da-feature]
-```
-**PASSO 1**: Execute @tdd-playwright PRIMEIRO - o teste deve FALHAR sem implementação
-
-**PASSO 2**: Se *.spec.docs.md existir, leia os passos de implementação documentados para o cenário atual. Use os data-testids especificados e as referências de Tailwind/React recomendadas.
-
-**PASSO 3**: Implemente o código mínimo para passar
-
-**PASSO 4**: Execute @tdd-playwright novamente - agora deve PASSAR
-- Se falhou na etapa 1 (sem código): corrija teste ou aguarde implementação
-- Se falhou na etapa 3: corrija código + registre erro + retry
-
-### 2. @verify-patterns (convenções do projeto)
-```
-@verify-patterns execute verificação para [nome-da-feature] [us-id] subtask [subtask-id]
-```
-- Verifica convenções, guardrails, arquitetura
-- Se falhou: corrija + registre erro + retry
-
-### Se TODOS passaram (verde):
-✅ Registre acerto no progress.md
-✅ Retorne ao humano: "Subtask [X.Y] verde. Revise e continue."
-
-### Nota sobre CI/CD
-Typecheck e Lint são executados pela CI/CD Pipeline a cada push/PR:
-- `lint` → ESLint
-- `build` → Next.js build (inclui typecheck)
-- `test` → Playwright Tests
-
----
-
-## Progress.md — Formato (por Teste)
+### Estrutura por Categoria
 
 ```markdown
-# Progress: [Nome da Feature]
+# Progress: [Feature]
 
-## US [N]: [Título da US]
-**Status:** 🔄 In Progress
+## CSS Patterns
 
-### Task [N.X]: [Título da subtask]
-**Status:** 🔄 In Progress
+### [YYYY-MM-DD] [Nome do Pattern]
+- Usar `hover:` prefix do Tailwind para feedback visual
+- Manter transições suaves com `transition-colors`
 
-### Cenário: [Nome do cenário]
-**Status:** 🔄 In Progress (2/8 testes)
+## Accessibility
 
-#### Testes:
-- ✅ [2024-01-15 10:30] Teste 1: "a sidebar deve ser visível"
-- ✅ [2024-01-15 10:35] Teste 2: "a sidebar deve ter largura SIDEBAR_WIDTH"
-- 🔄 [2024-01-15 10:40] Teste 3: "logo deve aparecer no topo" ← ATUAL
-- ⏳ Teste 4: "menu deve exibir NAV_COUNT itens"
-- ⏳ Teste 5: "botão premium deve estar visível"
-- ⏳ Teste 6: "área de perfil deve estar visível"
-- ⏳ Teste 7: "avatar deve estar visível"
-- ⏳ Teste 8: "nome do usuário deve ser exibido"
+### [YYYY-MM-DD] [Nome do Pattern]
+- `aria-disabled="true"` em vez de `disabled` attribute
+- `aria-busy="true"` durante processamento
 
-#### Registros:
-- ✅ [Acerto] Sidebar implementada com data-testid correto
-- ⚠️ Error: "CSS width não aplicado" → Corrigido com inline style
+## Component
 
----
+### [YYYY-MM-DD] [Nome do Pattern]
+- Template literal para className: `${base} ${custom}`
+- Spinner como children, não pseudo-element
 
-## US [M]: [Título da US]
-**Status:** 🔄 In Progress
+## React
 
-### Task [M.1]: [Título da subtask]
-**Status:** 🔄 In Progress
-
-### Cenário: [Nome do cenário]
-**Status:** 🔄 In Progress (0/5 testes)
-
-#### Testes:
-- 🔄 Teste 1: "..." ← ATUAL
-- ⏳ Teste 2: "..."
-- ⏳ Teste 3: "..."
-- ⏳ Teste 4: "..."
-- ⏳ Teste 5: "..."
-
-#### Registros:
-- ⚠️ Error: [erro encontrado]
+### [YYYY-MM-DD] [Nome do Pattern]
+- Props tipadas com interfaces descritivas
+- Sem `any`, usar inferência de tipos
 ```
 
+### Como Registrar
+
+Após APROVAÇÃO de cada teste:
+1. Identificar categoria (CSS | A11y | Component | React)
+2. Destilar aprendizado para linguagem alto nível
+3. Adicionar ao progress.md
+
+Após CORREÇÃO GUIADA:
+1. Remover aprendizados que não se aplicam mais
+2. Adicionar novos aprendizados da correção
+
 ---
 
-## Condição de Parada
+## Detectar Próximo Teste
 
-### Por Cenário:
+1. Ler `frontend/tests/features/[feature]/[feature].spec.ts`
+2. Encontrar primeiro `test.skip('`
+3. Extrair nome do teste
+4. Se não existir SKIP → todos implementados ✅ → encerrar
+
+### Exemplo de Detecção
 
 ```typescript
-if (await isScenarioComplete(specFile, currentScenario)) {
-  // ✅ Cenário completo
-  // Registrar no progress.md
-  // PERGUNTAR: "Cenário completo. Ir para próximo?"
+// Procurar linha com test.skip(
+const match = content.match(/test\.skip\('([^']+)/);
+if (!match) {
+  // Não há mais testes para implementar
 }
 ```
 
-### Por Subtarefa:
+---
 
-| Situação | Ação |
-|----------|------|
-| Próximo teste já passa | Perguntar: "Pular ou implementar?" |
-| Próximo teste não existe | Cenário completo ✅ |
-| Teste falha após implementação | Corrigir + retry |
+## TDD Cycle
 
-### Por US:
+### RED (Fase 1)
+1. Editar spec.ts: `test.skip(` → `test(`
+2. Executar: `npx playwright test --grep "nome-do-teste"`
+3. **DEVE FALHAR** (sem implementação)
 
-Quando TODAS as subtasks e cenários estão completos:
+### GREEN (Fase 2)
+1. Implementar código mínimo no componente
+2. Executar teste novamente
+3. **DEVE PASSAR**
 
-1. Retornar ao humano: `"✅ US [ID] completa. Revise e aprove."`
-2. Se humano APPROVA:
-   - Mostrar: `git status` e `git diff` dos arquivos modificados
-   - Aguardar confirmação: `"Confirma o commit?"`
-   - Se confirmado: `git commit`
-   - Limpar progress.md
-   - ENCERRE o agente
-3. Se humano NEGA:
-   - Aguardar novas diretrizes
+### REFACTOR (Fase 3)
+1. Verificar se refatoração é necessária
+2. Se sim, refatorar e executar
+3. **DEVE CONTINUAR PASSANDO**
+
+---
+
+## Interação Humana
+
+### Pergunta 1: Ativar teste
+```
+"Ativar e implementar [nome-do-teste]?"
+- Mostrar cenário BDD correspondente
+- Mostrar aprendizados relevantes do progress.md
+- SIM → continuar
+- NÃO → aguardar diretrizes
+```
+
+### Pergunta 2: Revisar código
+```
+"Teste verde. Revisar código?"
+- Mostrar: git diff
+- CORRIGIR → voltar ao TDD
+- APROVAR → continuar
+```
+
+### Pergunta 3: Próximo teste
+```
+"Continuar para próximo?"
+- SIM → loop
+- NÃO → encerrar
+```
+
+---
+
+## Gate: @verify-patterns
+
+Executar após aprovação humana do código.
+
+### Se APROVADO
+→ Continuar para registro + commit
+
+### Se FALHOU
+```
+"Verify-patterns encontrou problemas:
+
+[Arquivo]:[Linha] - [Problema]
+[Arquivo]:[Linha] - [Problema]
+
+Opções:
+1. Aprovar mesmo assim
+2. Me guiar na correção"
+```
+
+**Opção 1: Aprovar mesmo assim**
+→ Ignora violação → continuar para registro + commit
+
+**Opção 2: Me guiar**
+1. Mostrar erros específicos (arquivo:linha)
+2. Aguardar instruções
+3. Corrigir conforme orientado
+4. Atualizar progress.md:
+   - Adicionar novos aprendizados
+   - Remover aprendizados que não se aplicam
+5. Executar @verify-patterns novamente
+6. Se falhar: perguntar novamente
+7. Se aprovar: continuar para registro + commit
+
+---
+
+## Registro e Commit
+
+### Após Aprovação (automático)
+
+1. **Registrar no progress.md**
+   - Identificar categoria
+   - Destilar para linguagem alto nível
+   - Adicionar com data
+
+2. **Commit (Conventional Commits)**
+   
+   Padrão: `<tipo>(<escopo>): implement <test-name>`
+   
+   Exemplos:
+   ```
+   feat(button): implement inverse button hover
+   test(button): implement disabled state tests
+   refactor(button): improve aria attributes
+   ```
+
+   Regras:
+   - `feat`: implementação de código de componente
+   - `test`: implementação de teste
+   - `refactor`: melhoria sem mudança de comportamento
+
+---
+
+## Fluxo Completo
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  INÍCIO DA SESSÃO                                                    │
+│  1. Ler convencoes-codigo.md + guardrails.md                        │
+│  2. Ler progress.md existente                                        │
+│  3. Identificar feature                                              │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  DETECTAR PRÓXIMO TESTE                                             │
+│  Ler spec.ts → primeiro test.skip()                                  │
+│  Se não existe → "Todos implementados ✅" → ENCERRAR                 │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  PERGUNTA 1: "Ativar e implementar [nome]?"                        │
+│  Mostrar aprendizados relevantes                                      │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  TDD CYCLE                                                           │
+│  RED → GREEN → REFACTOR                                              │
+│  Executar teste a cada fase (falhar → passar → passar)              │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  PERGUNTA 2: "Teste verde. Revisar código?"                         │
+│  Mostrar git diff                                                    │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                    ┌───────────────┴───────────────┐
+                    ▼                               ▼
+            ┌──────────────┐               ┌──────────────┐
+            │   CORRIGIR   │               │   APROVAR    │
+            │  ← TDD Cycle  │               │  Continuar   │
+            └──────────────┘               └──────┬───────┘
+                                                  │
+                                                  ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  GATE: @verify-patterns                                              │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                    ┌───────────────┴───────────────┐
+                    ▼                               ▼
+            ┌──────────────┐               ┌──────────────┐
+            │   FALHOU    │               │   APROVADO   │
+            │              │               │              │
+            │  PERGUNTAR:  │               │  Continuar   │
+            │  Aprovar ou  │               └──────┬───────┘
+            │  guiar?      │                       │
+            └──────────────┘                       │
+                    │                              │
+       ┌────────────┴────────────┐                 │
+       ▼                         ▼                 │
+┌──────────────┐         ┌──────────────┐          │
+│  APROVAR     │         │   GUIAR      │          │
+│  MESMO ASSIM │         │              │          │
+└──────────────┘         │ 1. Mostrar   │          │
+       │                  │    erros     │          │
+       │                  │ 2. Aguardar  │          │
+       │                  │    instrução │          │
+       │                  │ 3. Corrigir  │          │
+       │                  │ 4. Atualizar │          │
+       │                  │    progress  │          │
+       │                  │ 5. Re-verify │          │
+       │                  └──────┬───────┘          │
+       │                         │                  │
+       │         ┌────────────────┘                  │
+       │         │ (se falhar: perguntar novamente) │
+       │         ▼ (se aprovar: continuar)          │
+       │         │                                     │
+       └─────────┴─────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  REGISTRAR + COMMIT                                                  │
+│  1. Registrar aprendizado no progress.md (categorizado)            │
+│  2. Commit com Conventional Commits                                  │
+└─────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  PERGUNTA 3: "Continuar para próximo?"                               │
+│  SIM → loop | NÃO → encerrar                                         │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -471,48 +307,100 @@ Quando TODAS as subtasks e cenários estão completos:
 
 | Regra | Detalhe |
 |-------|---------|
-| **Aprovação** | Pedir confirmação entre cada teste |
-| **Progresso** | Registrar cada teste individualmente no progress.md |
-| **Skip** | Remover .skip() do próximo após teste passar |
-| **Gate** | @verify-patterns + Playwright devem passar |
-| **Encerra** | Só quando US completa + aprovação humana |
+| **TDD First** | Sempre RED → GREEN → REFACTOR |
+| **Aprovação** | Perguntar em 3 pontos: ativar, revisar, próximo |
+| **Gate** | @verify-patterns antes do commit |
+| **Progress** | Registrar após aprovação, categorizado |
+| **Commit** | Após aprovação, Conventional Commits |
+| **Encerrar** | Só quando não houver mais SKIP |
 | **NUNCA use `task`** | Use @ menção direta para subagents |
+
+---
+
+## Condição de Parada
+
+### Por Feature:
+```
+Se não existe test.skip() no spec.ts:
+  → "Feature [nome] completa!"
+  → Mostrar todos os aprendizados destilados
+  → Aguardar aprovação final
+  → ENCERRAR
+```
+
+---
+
+## Exemplos
+
+### Progress.md Exemplo
+
+```markdown
+# Progress: Button
+
+## CSS Patterns
+
+### [2024-01-15] Hover State Transition
+- Usar `hover:` prefix do Tailwind para feedback visual
+- Manter transições suaves com `transition-colors duration-200`
+
+### [2024-01-15] Disabled Opacity
+- `opacity-50` para estados desabilitados
+- Sempre acompanhado de `cursor-not-allowed`
+
+## Accessibility
+
+### [2024-01-15] Disabled A11y
+- `aria-disabled="true"` em vez de `disabled` attribute
+- Acompanhado de feedback visual CSS
+
+### [2024-01-15] Loading A11y
+- `aria-busy="true"` indica processamento
+- Combinar com `aria-disabled` para previnir double-click
+
+## Component
+
+### [2024-01-15] ClassName Merging
+- Template literal: `${baseClass} ${className}`
+- Classes base + customizações sempre preservadas
+
+### [2024-01-15] Spinner Placement
+- Spinner como children, não como pseudo-element
+- Preservar layout durante transição
+```
+
+### Commits Exemplo
+
+```
+feat(button): implement inverse button smoke tests
+test(button): implement disabled state tests
+feat(button): implement loading state with aria attributes
+refactor(button): improve className merging pattern
+```
 
 ---
 
 ## Formato Rápido de Referência
 
 ```
+INICIAR:
+  @implement-tasks [feature]
+
 INÍCIO:
-  1. Ler docs globais (uma vez)
-  2. Ler *.feature + plan.md + progress.md
-  3. Verificar/criar branch
-  4. Detectar fluxo: *.spec.ts com skip?
+  1. Ler convenções + guardrails
+  2. Ler progress existente
 
-FLUXO COM SKIP (@tdd-generator):
-  1. Encontrar próximo teste SEM skip
-  2. PERGUNTAR: "Implementar teste: [nome]?"
-  3. Se teste já passa: PERGUNTAR "Pular?"
-  4. Implementar código mínimo
-  5. Executar teste
-  6. GATE: @verify-patterns
-  7. Registrar acerto no progress.md (por teste)
-  8. PERGUNTAR: "Teste verde. Continuar?"
-  9. Ativar próximo teste (.skip → test)
-  10. Voltar ao passo 1
+DETECTAR:
+  1. Ler spec.ts
+  2. Encontrar primeiro SKIP
+  3. Se não existe → encerrar
 
-FLUXO TRADICIONAL (@tdd-playwright):
-  1. @tdd-playwright: criar teste que FALHA (RED)
-  2. Implementar código mínimo
-  3. @tdd-playwright: teste deve PASSAR (GREEN)
-  4. @verify-patterns: verificar padrões
-  5. Se falhou: corrigir + registrar erro + retry
-  6. Se verde: PERGUNTAR + retornar ao humano
-
-US COMPLETA + APROVADO:
-  1. Mostrar git status + git diff
-  2. PERGUNTAR: "Confirma o commit?"
-  3. Se sim: git commit
-  4. Limpar progress.md
-  5. ENCERRAR
+POR TESTE:
+  1. PERGUNTAR: "Ativar [nome]?"
+  2. TDD: RED → GREEN → REFACTOR
+  3. PERGUNTAR: "Revisar código?"
+  4. GATE: @verify-patterns
+     - Se falhou: PERGUNTAR guiar ou aprovar
+  5. REGISTRAR + COMMIT
+  6. PERGUNTAR: "Próximo?"
+  7. Loop ou encerrar
 ```
