@@ -1,6 +1,6 @@
 ---
 name: verify-and-sync-bdd-tdd
-description: "Verifica e reporta divergências entre BDD (.feature) e TDD (.spec.ts + .spec.docs.md). BDD é fonte da verdade. Reporta diferenças para ajuste MANUAL."
+description: "Verifica e reporta divergências entre BDD (.feature) e TDD (.spec.ts + .spec.docs.md). TDD é a referência, BDD sincroniza. Reporta diferenças para ajuste MANUAL."
 mode: subagent
 temperature: 0.1
 tools:
@@ -21,8 +21,16 @@ permission:
 
 ```
 ╔═══════════════════════════════════════════════════════════════════╗
-║  BDD = FONTE DA VERDADE                                        ║
-║  TDD = IMPLEMENTAÇÃO DO BDD                                    ║
+║  FLUXO TDD → BDD (Ciclo de Vida)                              ║
+║                                                                   ║
+║  1. DESENVOLVEDOR implementa teste (tira do skip)             ║
+║  2. Executa o teste                                             ║
+║  3. Teste passa?                                               ║
+║     ├── SIM → BDD deve receber @smoke                         ║
+║     └── NÃO → BDD mantém tag original (ex: @hover)             ║
+║                                                                   ║
+║  TDD = REFERÊNCIA                                               ║
+║  BDD = FONTE DA VERDADE ATUALIZADA                              ║
 ║                                                                   ║
 ║  ESTE AGENTE SÓ REPORTA DIVERGÊNCIAS - NÃO APLICA MUDANÇAS      ║
 ║  VOCÊ DECIDE O QUE FAZER MANUALMENTE                            ║
@@ -31,18 +39,18 @@ permission:
 
 | Situação | Ação do Agente |
 |----------|---------------|
-| TDD sem BDD | ⚠️ **REPORTAR** - você decide |
-| BDD sem TDD | ⚠️ **REPORTAR** - você decide |
-| Status diferente | ⚠️ **REPORTAR** - você decide |
-| Assertions incompletas | ⚠️ **REPORTAR** - você decide |
+| TDD `test()` sem BDD `@smoke` | ⚠️ **SUGERIR** adicionar `@smoke` ao BDD |
+| BDD `@smoke` sem TDD `test()` | ⚠️ **REPORTAR** - smoke pode ter quebrado |
+| TDD `test.skip()` sem BDD | ✅ OK - em desenvolvimento |
+| Assertions incompletas | ⚠️ **REPORTAR** - falso positivo |
 
 ---
 
 ## INPUT/OUTPUT
 
 **INPUTS:**
-- `specs/features/[feature]/features/[feature].feature` ← **FONTE DA VERDADE**
-- `frontend/tests/features/[feature]/[feature].spec.ts`
+- `frontend/tests/features/[feature]/[feature].spec.ts` ← **REFERÊNCIA (TDD)**
+- `specs/features/[feature]/features/[feature].feature` ← **FONTE DA VERDADE (BDD)**
 - `frontend/tests/features/[feature]/[feature].spec.docs.md`
 
 **OUTPUTS:**
@@ -64,15 +72,18 @@ PASSO 2: Parse TDD (.spec.ts)
   ├── Mapear: testName → { assertions, selectors, status }
   └── Contar testes
 
-PASSO 3: Validar Contra BDD
-  ├── Para cada teste TDD → existe cenário BDD?
-  │   ├── ❌ NÃO → REPORTAR (TDD sem BDD)
-  │   └── ✅ SIM → OK
+PASSO 3: Validar BDD Contra TDD
   ├── Para cada cenário BDD → existe teste TDD?
-  │   ├── ❌ NÃO → REPORTAR (BDD sem TDD)
+  │   ├── ❌ NÃO → SUGERIR criar teste no .spec.ts
   │   └── ✅ SIM → OK
-  └── Verificar status: @smoke = ativo, outros = skip
-       └── ❌ DIFERENTE → REPORTAR
+  ├── Para cada teste TDD → existe cenário BDD?
+  │   ├── ❌ NÃO → REPORTAR (criar cenário BDD)
+  │   └── ✅ SIM → OK
+  └── Verificar status: TDD `test()` deve ter BDD `@smoke`
+       ├── TDD `test()` + BDD SEM `@smoke` → ⚠️ SUGERIR adicionar `@smoke`
+       ├── TDD `test()` + BDD COM `@smoke` → ✅ OK (sincronizado)
+       ├── TDD `test.skip()` + BDD SEM `@smoke` → ✅ OK (em desenvolvimento)
+       └── TDD `test.skip()` + BDD COM `@smoke` → ❌ REPORTAR (smoke quebrou?)
 
 PASSO 4: Validar Completude de Assertions (ANTI-FALSO-POSITIVO)
   ├── Para cada cenário BDD:
@@ -92,26 +103,49 @@ PASSO 5: Gerar Relatório
 
 ---
 
-## MAPEAMENTO: TAGS → STATUS ESPERADO
+## MAPEAMENTO: TAGS ↔ STATUS (FLUXO TDD → BDD)
 
-| Tag | Status Esperado |
-|-----|----------------|
-| `@smoke` | `test()` (ativo) |
-| `@hover` | `test.skip()` |
-| `@active` | `test.skip()` |
-| `@state` | `test.skip()` |
-| `@interaction` | `test.skip()` |
-| `@a11y` | `test.skip()` |
-| `@keyboard` | `test.skip()` |
-| `@aria` | `test.skip()` |
-| `@touch-target` | `test.skip()` |
-| `@defensive` | `test.skip()` |
-| `@variant` | `test.skip()` (a menos que @smoke) |
-| `@size` | `test.skip()` |
-| `@full-width` | `test.skip()` |
-| `@testid` | `test.skip()` |
-| `@classname` | `test.skip()` |
-| `@children` | `test.skip()` |
+### Lógica de Validação
+
+| TDD | BDD | Status | Ação |
+|-----|-----|--------|------|
+| `test()` | COM `@smoke` | ✅ Sincronizado | OK |
+| `test()` | SEM `@smoke` | ⚠️ Sugerir | Adicionar `@smoke` ao BDD |
+| `test.skip()` | SEM `@smoke` | ✅ Em desenvolvimento | OK |
+| `test.skip()` | COM `@smoke` | ❌ Problema | REPORTAR |
+
+### Tags BDD e Seu Significado
+
+| Tag | Significado | Ação ao Implementar |
+|-----|-------------|-------------------|
+| `@smoke` | Teste crítico, deve sempre passar | Manter `test()` |
+| `@hover` | Teste de hover (desenvolvimento) | Ao passar, adicionar `@smoke` |
+| `@active` | Teste de active (desenvolvimento) | Ao passar, adicionar `@smoke` |
+| `@state` | Teste de estado (desenvolvimento) | Ao passar, adicionar `@smoke` |
+| `@interaction` | Teste de interação | Ao passar, adicionar `@smoke` |
+| `@a11y` | Teste de acessibilidade | Ao passar, adicionar `@smoke` |
+| `@keyboard` | Navegação por teclado | Ao passar, adicionar `@smoke` |
+| `@aria` | Atributos ARIA | Ao passar, adicionar `@smoke` |
+| `@touch-target` | Área de toque mobile | Ao passar, adicionar `@smoke` |
+| `@defensive` | Proteção contra bugs | Ao passar, adicionar `@smoke` |
+| `@variant` | Variante de componente | Ao passar, adicionar `@smoke` |
+| `@size` | Tamanho específico | Ao passar, adicionar `@smoke` |
+| `@full-width` | Largura total | Ao passar, adicionar `@smoke` |
+| `@testid` | Identificação para testes | Ao passar, adicionar `@smoke` |
+| `@classname` | Sobrescrita de estilos | Ao passar, adicionar `@smoke` |
+| `@children` | Conteúdo textual | Ao passar, adicionar `@smoke` |
+
+### Ciclo de Vida
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 1. TESTE É IMPLEMENTADO (tirado do skip)                   │
+│ 2. DESENVOLVEDOR RODA O TESTE                             │
+│ 3. TESTE PASSA?                                           │
+│    ├── SIM → BDD deve receber @smoke                      │
+│    └── NÃO → Manter tag original, corrigir código          │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -225,51 +259,62 @@ Ao verificar sincronia, normalizar ambos os nomes (remover pontuação, normaliz
 ## RELATÓRIO DE SAÍDA
 
 ```
-🔍 Verificando BDD ↔ TDD
+🔍 Verificando BDD ↔ TDD (Fluxo TDD → BDD)
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📊 BDD: [N] cenários encontrados
-📊 TDD: [N] testes encontrados
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 TDD: [N] testes (REFERÊNCIA)
+📊 BDD: [N] cenários (FONTE DA VERDADE)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ⚠️ DIVERGÊNCIAS ENCONTRADAS
+
+┌────────────────────────────────────────────────────────────────┐
+│ ✅ SINCRONIZADOS: test() + BDD com @smoke                    │
+├────────────────────────────────────────────────────────────────┤
+│ • "Inverse button tem estilo correto"                          │
+│ • "Upgrade button tem dimensões do inverse"                     │
+│ • (outros cenários sincronizados)                              │
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ⚠️ TDD ATIVO, BDD SEM @smoke (SUGERIR):                      │
+├────────────────────────────────────────────────────────────────┤
+│ 1. "Inverse button em hover"                                   │
+│    → TDD: test() (ativo)                                     │
+│    → BDD: @hover (sem @smoke)                                │
+│    → Ação: Se teste passou, adicionar @smoke ao BDD            │
+│                                                                │
+│ 2. "Upgrade button ocupa 100% do container"                  │
+│    → TDD: test() (ativo)                                     │
+│    → BDD: @full-width (sem @smoke)                           │
+│    → Ação: Se teste passou, adicionar @smoke ao BDD           │
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ ❌ TDD SKIP, BDD COM @smoke (PROBLEMA):                       │
+├────────────────────────────────────────────────────────────────┤
+│ 1. "[nome-do-teste]"                                          │
+│    → TDD: test.skip()                                        │
+│    → BDD: @smoke                                             │
+│    → Ação: Verificar por que smoke quebrou                    │
+└────────────────────────────────────────────────────────────────┘
 
 ┌────────────────────────────────────────────────────────────────┐
 │ ❌ TDD SEM BDD (você decide o que fazer):                     │
 ├────────────────────────────────────────────────────────────────┤
 │ 1. "[nome-do-teste]"                                          │
-│    → Sem cenário BDD correspondente                           │
-│    → Ação: REMOVER do .spec.ts OU adicionar cenário no .feature│
-│                                                                │
-│ 2. "[nome-do-teste]"                                          │
-│    → Sem cenário BDD correspondente                           │
-│    → Ação: REMOVER do .spec.ts OU adicionar cenário no .feature│
+│    → TDD: test() existe                                      │
+│    → BDD: Sem cenário correspondente                          │
+│    → Ação: Criar cenário no .feature                          │
 └────────────────────────────────────────────────────────────────┘
 
 ┌────────────────────────────────────────────────────────────────┐
 │ ⚠️ BDD SEM TDD (você decide o que fazer):                     │
 ├────────────────────────────────────────────────────────────────┤
 │ 1. "[nome-do-cenario]"                                        │
-│    → Cenário BDD existe, teste TDD não                        │
-│    → Ação: GERAR teste no .spec.ts OU remover cenário no .feature│
-│                                                                │
-│ 2. "[nome-do-cenario]"                                        │
-│    → Cenário BDD existe, teste TDD não                        │
-│    → Ação: GERAR teste no .spec.ts OU remover cenário no .feature│
-└────────────────────────────────────────────────────────────────┘
-
-┌────────────────────────────────────────────────────────────────┐
-│ ⚠️ STATUS DIFERENTE:                                          │
-├────────────────────────────────────────────────────────────────┤
-│ 1. "[nome-do-teste]"                                          │
-│    → BDD: @smoke (deveria ser test())                        │
-│    → TDD: test.skip()                                        │
-│    → Ação: Mudar test.skip() → test() no .spec.ts            │
-│                                                                │
-│ 2. "[nome-do-teste]"                                          │
-│    → BDD: SEM @smoke (deveria ser test.skip())               │
-│    → TDD: test()                                              │
-│    → Ação: Mudar test() → test.skip() no .spec.ts            │
+│    → BDD: Cenário existe                                      │
+│    → TDD: Sem teste correspondente                            │
+│    → Ação: Implementar teste ou remover cenário               │
 └────────────────────────────────────────────────────────────────┘
 
 ┌────────────────────────────────────────────────────────────────┐
@@ -278,123 +323,109 @@ Ao verificar sincronia, normalizar ambos os nomes (remover pontuação, normaliz
 │ 1. "Inverse button tem estilo correto"                        │
 │    → BDD: 3 steps (background, cor, borda)                   │
 │    → TDD: 2 assertions                                        │
-│    → FALTANDO: 1 assertion                                     │
-│    → Step: "não deve ter borda" sem assert no TDD            │
-│    → Ação: Adicionar expect para borda no .spec.ts           │
-│                                                                │
-│ 2. "Upgrade button tem dimensões do inverse sm-like"         │
-│    → BDD: 4 steps (font-size, font-weight, radius, padding)  │
-│    → TDD: 5 assertions (inclui paddingTop + paddingBottom)   │
-│    → ✅ OK - assertions suficientes                            │
+│    → FALTANDO: "não deve ter borda"                          │
+│    → Ação: Adicionar expect para borda                        │
 └────────────────────────────────────────────────────────────────┘
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📝 AÇÕES MANUAIS NECESSÁRIAS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-button.spec.ts:
-  ❌ REMOVER: [lista de testes sem BDD]
-  ⚠️ GERAR: [lista de testes faltando]
-  ~ AJUSTAR STATUS: [lista de status diferentes]
-  ⚠️ COMPLETAR ASSERTIONS: [lista de testes + steps faltando]
-
-button.feature:
-  ❌ (Nenhuma ação - BDD é fonte da verdade)
-
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+button.feature (BDD):
+  ⚠️ ADICIONAR @smoke:
+    • "Inverse button em hover" (se teste passou)
+    • "Upgrade button ocupa 100% do container" (se teste passou)
+
+button.spec.ts (TDD):
+  ❌ (Nenhuma ação - TDD é a referência)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 ✅ FIM DO RELATÓRIO
-   TDD sem BDD: [N]
-   BDD sem TDD: [N]
-   Status diferente: [N]
+   Sincronizados: [N]
+   Sugerir @smoke no BDD: [N]
+   Problemas (smoke quebrou): [N]
    Assertions incompletas: [N]
    Total divergências: [N]
-
-Exit: 1 (diferenças encontradas)
-```
 
 ---
 
 ## EXEMPLO DE RELATÓRIO
 
 ```
-🔍 Verificando BDD ↔ TDD
+🔍 Verificando BDD ↔ TDD (Fluxo TDD → BDD)
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📊 BDD: 22 cenários
-📊 TDD: 16 testes
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 TDD: 16 testes (REFERÊNCIA)
+📊 BDD: 22 cenários (FONTE DA VERDADE)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ SINCRONIZADOS:
+• "Inverse button tem estilo correto" (TDD=test(), BDD=@smoke)
+• "Inverse button em disabled tem estilo correto" (TDD=test(), BDD=@smoke)
+• "Upgrade button tem dimensões do inverse" (TDD=test(), BDD=@smoke)
 
 ⚠️ DIVERGÊNCIAS ENCONTRADAS
 
 ┌────────────────────────────────────────────────────────────────┐
-│ ❌ TDD SEM BDD (você decide o que fazer):                     │
+│ ⚠️ TDD ATIVO, BDD SEM @smoke (SUGERIR):                      │
 ├────────────────────────────────────────────────────────────────┤
-│ 1. "primary-button"                                           │
-│    → Sem cenário BDD correspondente                           │
-│    → Ação: REMOVER do .spec.ts OU adicionar cenário no .feature│
+│ 1. "Inverse button em hover"                                   │
+│    → TDD: test() (ativo)                                     │
+│    → BDD: @hover (sem @smoke)                                │
+│    → Ação: Se teste passou, adicionar @smoke ao BDD            │
 │                                                                │
-│ 2. "secondary-button"                                          │
-│    → Sem cenário BDD correspondente                           │
-│    → Ação: REMOVER do .spec.ts OU adicionar cenário no .feature│
+│ 2. "Upgrade button ocupa 100% do container"                   │
+│    → TDD: test() (ativo)                                     │
+│    → BDD: @full-width (sem @smoke)                           │
+│    → Ação: Se teste passou, adicionar @smoke ao BDD           │
 │                                                                │
-│ 3. "ghost-button"                                             │
-│    → Sem cenário BDD correspondente                           │
-│    → Ação: REMOVER do .spec.ts OU adicionar cenário no .feature│
+│ 3. "Inverse button renderiza children"                         │
+│    → TDD: test() (ativo)                                     │
+│    → BDD: @children (sem @smoke)                              │
+│    → Ação: Se teste passou, adicionar @smoke ao BDD           │
 └────────────────────────────────────────────────────────────────┘
 
 ┌────────────────────────────────────────────────────────────────┐
-│ ⚠️ BDD SEM TDD (você decide o que fazer):                     │
+│ ❌ TDD SKIP, BDD COM @smoke (PROBLEMA):                       │
 ├────────────────────────────────────────────────────────────────┤
-│ 1. "inverse-button-em-active"                                  │
-│    → Cenário BDD existe, teste TDD não                       │
-│    → Ação: GERAR teste no .spec.ts OU remover cenário no .feature│
-│                                                                │
-│ 2. "double-click-protection"                                   │
-│    → Cenário BDD existe, teste TDD não                       │
-│    → Ação: GERAR teste no .spec.ts OU remover cenário no .feature│
-└────────────────────────────────────────────────────────────────┘
-
-┌────────────────────────────────────────────────────────────────┐
-│ ⚠️ STATUS DIFERENTE:                                          │
-├────────────────────────────────────────────────────────────────┤
-│ 1. "inverse-button-tem-estilo-correto"                        │
-│    → BDD: @smoke (deveria ser test())                        │
+│ 1. "Inverse button em loading exibe spinner"                  │
 │    → TDD: test.skip()                                        │
-│    → Ação: Mudar test.skip() → test() no .spec.ts            │
+│    → BDD: @smoke                                             │
+│    → Ação: Verificar por que smoke quebrou                    │
 └────────────────────────────────────────────────────────────────┘
 
 ┌────────────────────────────────────────────────────────────────┐
-│ ⚠️ ASSERTIONS INCOMPLETAS:                                   │
+│ ⚠️ ASSERTIONS INCOMPLETAS (ANTI-FALSO-POSITIVO):              │
 ├────────────────────────────────────────────────────────────────┤
 │ 1. "Inverse button tem estilo correto"                        │
-│    → BDD: 3 assertions esperadas                              │
-│    → TDD: 2 assertions encontradas                            │
+│    → BDD: 3 steps (background, cor, borda)                   │
+│    → TDD: 2 assertions                                        │
 │    → FALTANDO: "não deve ter borda"                          │
-│    → Ação: Adicionar expect para borda                       │
+│    → Ação: Adicionar expect para borda                        │
 └────────────────────────────────────────────────────────────────┘
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📝 AÇÕES MANUAIS NECESSÁRIAS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-button.spec.ts:
-  ❌ REMOVER: primary-button, secondary-button, ghost-button
-  ⚠️ GERAR: inverse-button-em-active, double-click-protection
-  ~ AJUSTAR: inverse-button-tem-estilo-correto (skip → ativo)
-  ⚠️ COMPLETAR: Inverse button tem estilo correto (faltando borda)
+button.feature (BDD):
+  ⚠️ ADICIONAR @smoke:
+    • "Inverse button em hover" (se teste passou)
+    • "Upgrade button ocupa 100% do container" (se teste passou)
+    • "Inverse button renderiza children" (se teste passou)
 
-button.feature:
-  ❌ (Nenhuma ação - BDD é fonte da verdade)
+button.spec.ts (TDD):
+  ❌ (Nenhuma ação - TDD é a referência)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ✅ FIM DO RELATÓRIO
-   TDD sem BDD: 3
-   BDD sem TDD: 2
-   Status diferente: 1
+   Sincronizados: 3
+   Sugerir @smoke no BDD: 3
+   Problemas (smoke quebrou): 1
    Assertions incompletas: 1
-   Total divergências: 7
+   Total divergências: 8
 
 Exit: 1 (diferenças encontradas)
 ```
@@ -415,9 +446,11 @@ Exit: 1 (diferenças encontradas)
 
 - Este agente **SÓ REPORTA** - não modifica arquivos
 - Você decide manualmente o que fazer
-- BDD é intocável - é a fonte da verdade
+- **TDD é a referência**: Se um teste está ativo (`test()`), ele deve ser considerado `@smoke` no BDD
+- **BDD é a fonte da verdade ATUALIZADA**: Após o teste passar, o BDD deve sincronizar
 - Após ajustar manualmente, rode novamente para verificar
 - **Assertions incompletas = FALSO POSITIVO**: Um teste pode passar sem verificar todos os steps do BDD
+- **Ciclo de vida**: Implementar → Rodar → Passou? → Adicionar @smoke ao BDD
 
 ---
 

@@ -19,9 +19,13 @@
 ### Status dos Testes
 
 | Tag BDD | Status TDD | Count |
-|---------|-------------|-------|
-| @smoke | `test()` (ativo) | 4 |
-| others | `test.skip()` | 18 |
+|---------|------------|-------|
+| @smoke | `test()` (ativo) | 6 |
+| @hover | `test()` (ativo) | 1 |
+| @active | `test()` (ativo) | 1 |
+| @full-width | `test()` (ativo) | 1 |
+| @children | `test()` (ativo) | 1 |
+| others | `test.skip()` | 14 |
 
 ---
 
@@ -32,8 +36,8 @@
 | Teste | Tags | Status |
 |-------|------|--------|
 | `Inverse button tem estilo correto` | @smoke | ✅ ATIVO |
-| `Inverse button em hover` | @hover | ⏭️ SKIP |
-| `Inverse button em estado active` | @active | ⏭️ SKIP |
+| `Inverse button em hover` | @hover @smoke | ✅ ATIVO |
+| `Inverse button em estado active` | @active @smoke | ✅ ATIVO |
 
 #### Snippet - `Inverse button tem estilo correto`
 
@@ -51,8 +55,8 @@ test('Inverse button tem estilo correto', async ({ page }) => {
 #### Snippet - `Inverse button em hover`
 
 ```typescript
-// @hover
-test.skip('Inverse button em hover', async ({ page }) => {
+// @hover @smoke - ATIVO
+test('Inverse button em hover', async ({ page }) => {
   const button = page.locator('[data-testid="button-inverse"]');
   await expect(button).toBeVisible();
   await button.hover();
@@ -64,8 +68,8 @@ test.skip('Inverse button em hover', async ({ page }) => {
 #### Snippet - `Inverse button em estado active`
 
 ```typescript
-// @active
-test.skip('Inverse button em estado active', async ({ page }) => {
+// @active @smoke - ATIVO
+test('Inverse button em estado active', async ({ page }) => {
   const button = page.locator('[data-testid="button-inverse"]');
   await expect(button).toBeVisible();
   await button.click();
@@ -80,14 +84,14 @@ test.skip('Inverse button em estado active', async ({ page }) => {
 
 | Teste | Tags | Status |
 |-------|------|--------|
-| `Inverse button em disabled tem estilo correto` | @smoke | ✅ ATIVO |
+| `Inverse button em disabled tem estilo correto` | @disabled | ⏭️ SKIP |
 | `Inverse button em disabled não responde a cliques` | @interaction | ⏭️ SKIP |
 
 #### Snippet - `Inverse button em disabled tem estilo correto`
 
 ```typescript
-// @smoke - ATIVO
-test('Inverse button em disabled tem estilo correto', async ({ page }) => {
+// @disabled
+test.skip('Inverse button em disabled tem estilo correto', async ({ page }) => {
   const button = page.locator('[data-testid="button-disabled-inverse"]');
   await expect(button).toHaveAttribute('disabled');
   const styles = await getComputedStyles(page, '[data-testid="button-disabled-inverse"]');
@@ -113,14 +117,14 @@ test.skip('Inverse button em disabled não responde a cliques', async ({ page })
 
 | Teste | Tags | Status |
 |-------|------|--------|
-| `Inverse button em loading exibe spinner e desabilita interação` | @smoke | ✅ ATIVO |
+| `Inverse button em loading exibe spinner e desabilita interação` | @loading | ⏭️ SKIP |
 | `Inverse button em loading não responde a cliques` | @interaction | ⏭️ SKIP |
 
 #### Snippet - `Inverse button em loading exibe spinner e desabilita interação`
 
 ```typescript
-// @smoke - ATIVO
-test('Inverse button em loading exibe spinner e desabilita interação', async ({ page }) => {
+// @loading
+test.skip('Inverse button em loading exibe spinner e desabilita interação', async ({ page }) => {
   const button = page.locator('[data-testid="button-loading-inverse"]');
   await expect(button).toHaveAttribute('aria-busy', 'true');
   await expect(button).toHaveAttribute('aria-disabled', 'true');
@@ -170,7 +174,7 @@ test.skip('Inverse button em focus tem focus ring visível', async ({ page }) =>
 | Teste | Tags | Status |
 |-------|------|--------|
 | `Upgrade button tem dimensões do inverse sm-like` | @smoke | ✅ ATIVO |
-| `Upgrade button ocupa 100% do container` | @full-width | ⏭️ SKIP |
+| `Upgrade button ocupa 100% do container` | @full-width @smoke | ✅ ATIVO |
 
 #### Snippet - `Upgrade button tem dimensões do inverse sm-like`
 
@@ -191,8 +195,8 @@ test('Upgrade button tem dimensões do inverse sm-like', async ({ page }) => {
 #### Snippet - `Upgrade button ocupa 100% do container`
 
 ```typescript
-// @full-width
-test.skip('Upgrade button ocupa 100% do container', async ({ page }) => {
+// @full-width @smoke - ATIVO
+test('Upgrade button ocupa 100% do container', async ({ page }) => {
   const styles = await getComputedStyles(page, '[data-testid="button-inverse"]');
   expect(styles?.width).toBe('100%');
 });
@@ -381,13 +385,13 @@ test.skip('Inverse button aceita data-testid para identificação em testes', as
 
 | Teste | Tags | Status |
 |-------|------|--------|
-| `Inverse button renderiza children como texto Upgrade Now` | @children | ⏭️ SKIP |
+| `Inverse button renderiza children como texto Upgrade Now` | @children @smoke | ✅ ATIVO |
 
 #### Snippet - `Inverse button renderiza children como texto Upgrade Now`
 
 ```typescript
-// @children
-test.skip('Inverse button renderiza children como texto Upgrade Now', async ({ page }) => {
+// @children @smoke - ATIVO
+test('Inverse button renderiza children como texto Upgrade Now', async ({ page }) => {
   const button = page.locator('[data-testid="button-inverse"]');
   await expect(button).toContainText('Upgrade Now');
 });
@@ -399,17 +403,17 @@ test.skip('Inverse button renderiza children como texto Upgrade Now', async ({ p
 
 | Categoria | Total | Ativos | Skipped |
 |-----------|-------|--------|---------|
-| Variantes | 3 | 1 | 2 |
-| Disabled | 2 | 1 | 1 |
-| Loading | 2 | 1 | 1 |
+| Variantes | 3 | 3 | 0 |
+| Disabled | 2 | 0 | 2 |
+| Loading | 2 | 0 | 2 |
 | Focus | 1 | 0 | 1 |
-| Size | 2 | 1 | 1 |
+| Size | 2 | 2 | 0 |
 | Acessibilidade | 5 | 0 | 5 |
 | Defensive | 4 | 0 | 4 |
 | Classname | 1 | 0 | 1 |
 | Testid | 1 | 0 | 1 |
-| Children | 1 | 0 | 1 |
-| **TOTAL** | **22** | **4** | **18** |
+| Children | 1 | 1 | 0 |
+| **TOTAL** | **22** | **6** | **16** |
 
 ---
 
@@ -569,8 +573,8 @@ npx playwright test button.spec.ts -g "Inverse button tem estilo correto"
 | Tag | Significado | Status Esperado |
 |-----|------------|----------------|
 | @smoke | Teste crítico de smoke | `test()` (ativo) |
-| @hover | Comportamento em hover | `test.skip()` |
-| @active | Comportamento em active | `test.skip()` |
+| @hover | Comportamento em hover | `test()` (ativo) |
+| @active | Comportamento em active | `test()` (ativo) |
 | @disabled | Estado desabilitado | `test.skip()` |
 | @loading | Estado de carregamento | `test.skip()` |
 | @focus | Estado de focus | `test.skip()` |
@@ -578,13 +582,13 @@ npx playwright test button.spec.ts -g "Inverse button tem estilo correto"
 | @keyboard | Navegação por teclado | `test.skip()` |
 | @aria | Atributos ARIA | `test.skip()` |
 | @touch-target | Área de toque mobile | `test.skip()` |
-| @full-width | Botão largura total | `test.skip()` |
+| @full-width | Botão largura total | `test()` (ativo) |
 | @double-click | Proteção contra double-click | `test.skip()` |
 | @loading-transition | Transição de estado | `test.skip()` |
 | @type-attribute | Atributo type do HTML | `test.skip()` |
 | @classname | Propriedade className | `test.skip()` |
 | @testid | Atributo data-testid | `test.skip()` |
-| @children | Conteúdo children | `test.skip()` |
+| @children | Conteúdo children | `test()` (ativo) |
 | @interaction | Interação do usuário | `test.skip()` |
 | @defensive | Proteção crítica | `test.skip()` |
 

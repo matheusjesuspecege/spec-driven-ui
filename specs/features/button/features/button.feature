@@ -24,13 +24,13 @@ Funcionalidade: Button Component - Upgrade Button (Inverse)
               E deve ter texto com cor primary (#FF5C00)
               E não deve ter borda
 
-        @button @variant @inverse @hover
+        @button @variant @inverse @hover @smoke
         Cenário: Inverse button em hover
             Dado que o componente Button variant="inverse" está visível
              Quando o cursor passa sobre o botão
              Então o background muda para bg-muted (#1A1A1D)
 
-        @button @variant @inverse @active
+        @button @variant @inverse @active @smoke
         Cenário: Inverse button em estado active
             Dado que o componente Button variant="inverse" está visível
              Quando o botão é clicado
@@ -40,7 +40,7 @@ Funcionalidade: Button Component - Upgrade Button (Inverse)
   # ESTADO - Disabled
   # RF-02: Exibir estado disabled
   # ============================================================
-        @button @state @disabled @smoke
+        @button @state @disabled
         Cenário: Inverse button em disabled tem estilo correto
             Dado que o componente Button é renderizado com variant="inverse" e disabled=true
              Quando visível na página
@@ -58,7 +58,7 @@ Funcionalidade: Button Component - Upgrade Button (Inverse)
   # ESTADO - Loading
   # RF-03: Exibir estado loading
   # ============================================================
-        @button @state @loading @smoke
+        @button @state @loading
         Cenário: Inverse button em loading exibe spinner e desabilita interação
             Dado que o componente Button é renderizado com variant="inverse" e loading=true
              Quando visível na página
@@ -103,7 +103,7 @@ Funcionalidade: Button Component - Upgrade Button (Inverse)
   # RF-06: Upgrade button ocupa 100% do container
   # Design: padding horizontal 0 (full width button)
   # ============================================================
-        @button @full-width @upgrade
+        @button @full-width @upgrade @smoke
         Cenário: Upgrade button ocupa 100% do container
             Dado que o componente Button é renderizado com variant="inverse"
              Quando visível na página
@@ -202,7 +202,7 @@ Funcionalidade: Button Component - Upgrade Button (Inverse)
   # ============================================================
   # CHILDREN - Conteúdo textual
   # ============================================================
-        @button @children
+        @button @children @smoke
         Cenário: Inverse button renderiza children como texto "Upgrade Now"
             Dado que o componente Button variant="inverse" é renderizado com children="Upgrade Now"
              Quando visível na página
