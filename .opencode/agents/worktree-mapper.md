@@ -20,6 +20,20 @@ Exemplo:
 
 ## Fluxo de Execução
 
+### Etapa 0: Carregar Convenções (OBRIGATÓRIO)
+
+**ANTES de analisar a feature, CARREGUE os seguintes documentos:**
+
+1. `specs/docs/convencoes-codigo.md` — Padrões de código
+2. `specs/docs/guardrails.md` — Antipadrões
+3. `.opencode/agents/verify-patterns.md` — Regras de validação
+
+**REGRAS CRÍTICAS (verify-patterns.md linha 123):**
+- ❌ NÃO gere tasks para `index.ts` (barrel exports são PROIBIDOS)
+- ❌ NÃO gere tasks para CSS separado (`[nome].css`) — use Tailwind utilities no componente
+- ✅ Estrutura padrão: `frontend/src/components/[nome]/[nome].tsx` (apenas .tsx)
+- ✅ Exports: `export default` direto, imports diretos sem barrel
+
 ### Etapa 1: Localizar Artefatos
 
 1. Lista o arquivo `.feature` em `specs/features/[feature]/features/*.feature`
@@ -66,8 +80,9 @@ Ordem sugerida:
 | Regra | Descrição |
 |-------|-----------|
 | 1 feature = 1 worktree | Cada feature tem sua própria worktree |
-| Sequencial | Dentro da worktree: CSS → Component → Tests |
-| Múltiplas worktrees | Chamadas manualmente pelo humano |
+| Estrutura de arquivos | Apenas `.tsx` no componente — SEM `.css` separado, SEM `index.ts` |
+| Estilização | Tailwind utilities no componente — não criar CSS por componente |
+| Exports | `export default` direto — imports diretos (SEM barrel exports) |
 
 ## Validação
 

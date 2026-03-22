@@ -17,6 +17,8 @@
 - Arquivos devem respeitar o maximo de 500 linhas, acima disso deverá ser criado em arquivo separado e importado onde é utizado.
 - Pastas devem ser criadas em lowercase, separado por `-` quando necessário.
 - Utilitários devem ser salvos em `frontend/src/utils/utils.ts`
+- **NÃO criar barrel exports** (`index.ts`) — imports diretos dos arquivos |
+- **NÃO criar CSS separado** por componente — use Tailwind utilities no `.tsx` |
 
 ---
 
