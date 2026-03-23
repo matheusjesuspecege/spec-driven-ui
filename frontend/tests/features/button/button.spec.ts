@@ -158,7 +158,16 @@ test.describe("Feature: Button (BDD Source)", () => {
     await expect(button).toHaveAttribute("aria-disabled", "true");
   });
 
-  test.skip("Inverse button em mobile tem touch target adequado", async () => {});
+  test("Inverse button em mobile tem touch target adequado", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 375, height: 667 });
+    const button = page.locator(buttonInverseID);
+    await expect(button).toBeVisible();
+    const box = await button.boundingBox();
+    expect(box?.width).toBeGreaterThanOrEqual(44);
+    expect(box?.height).toBeGreaterThanOrEqual(44);
+  });
 
   test.skip("Double-click não causa ação duplicada no Inverse button", async () => {});
 

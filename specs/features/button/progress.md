@@ -40,3 +40,8 @@
 ### [2026-03-22] Disabled ARIA State
 - `aria-disabled` deve combinar `loading || props.disabled`
 - Teste verifica `aria-disabled="true"` em estado disabled
+
+### [2026-03-22] Mobile Touch Target
+- Height do botão: `h-11` (44px) para atingir touch target mínimo de 44px
+- Teste usa `setViewportSize({ width: 375, height: 667 })` para mobile
+- Verifica `boundingBox().width/height >= 44`
