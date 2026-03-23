@@ -66,3 +66,7 @@
 - Extrair `className` da desestruturação antes de `...props`
 - Mesclar classes: `${baseClasses} ${customClassName || ""}`
 - Ordem importa: classes base primeiro, custom por último
+
+### [2026-03-22] Data-Testid Attribute
+- `data-testid` é propagado via `{...props}`
+- Teste verifica `toHaveAttribute("data-testid", "button-inverse")`

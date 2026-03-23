@@ -215,5 +215,8 @@ test.describe("Feature: Button (BDD Source)", () => {
     await expect(button).toHaveClass(/upgrade-btn/);
   });
 
-  test.skip("Inverse button aceita data-testid para identificação em testes", async () => {});
+  test("Inverse button aceita data-testid para identificação em testes", async ({ page }) => {
+    const button = page.locator(buttonInverseID);
+    await expect(button).toHaveAttribute("data-testid", "button-inverse");
+  });
 });
