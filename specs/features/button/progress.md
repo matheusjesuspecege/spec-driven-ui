@@ -50,3 +50,8 @@
 - Teste usa `page.evaluate()` para adicionar event listener e contar cliques
 - Usa `dblclick()` e `click({ clickCount: 2 })` para simular double-click
 - Verifica `clickCount <= 1`
+
+### [2026-03-22] Loading Click Test
+- Para testar loading state via clique, usar `useState` no componente de teste
+- Criar `ButtonWithLoading` component com `onClick={() => setLoading(true)}`
+- Usar `data-testid` específico para botão interativo

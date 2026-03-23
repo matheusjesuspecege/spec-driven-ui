@@ -16,6 +16,7 @@ const TOKENS = {
 const buttonInverseID = '[data-testid="button-inverse"]';
 const buttonDisabledInverseID = '[data-testid="button-disabled-inverse"]';
 const buttonLoadingInverseID = '[data-testid="button-loading-inverse"]';
+const buttonClickLoadingInverseID = '[data-testid="button-click-loading-inverse"]';
 
 test.describe("Feature: Button (BDD Source)", () => {
   test.beforeEach(async ({ page }) => {
@@ -172,18 +173,33 @@ test.describe("Feature: Button (BDD Source)", () => {
   test("Double-click não causa ação duplicada no Inverse button", async ({ page }) => {
     const button = page.locator(buttonInverseID);
     let clickCount = 0;
-    await page.evaluate(() => {
-      const btn = document.querySelector('[data-testid="button-inverse"]') as HTMLButtonElement;
-      btn?.addEventListener("click", () => { clickCount++; }, { once: false });
-    });
+    await page.evaluate((selector) => {
+      const btn = document.querySelector(selector);
+      btn?.addEventListener("click", () => { clickCount++; });
+    }, buttonInverseID);
     await button.dblclick();
     await button.click({ clickCount: 2 });
     expect(clickCount).toBeLessThanOrEqual(1);
   });
 
-  test.skip("Spinner aparece imediatamente ao clicar no Inverse button", async () => {});
+  test("Spinner aparece imediatamente ao clicar no Inverse button", async ({ page }) => {
+    const button = page.locator(buttonClickLoadingInverseID);
+    await button.click();
+    const spinner = page.locator(`${buttonClickLoadingInverseID} .btn-spinner`);
+    await expect(spinner).toBeVisible();
+  });
 
-  test.skip("Transição para loading state preserva layout no Inverse button", async () => {});
+  test("Transição para loading state preserva layout no Inverse button", async ({ page }) => {
+    const button = page.locator(buttonClickLoadingInverseID);
+    await expect(button).toBeVisible();
+    const styles = await getComputedStyles(page, buttonClickLoadingInverseID);
+    expect(styles?.width).toBeDefined();
+    expect(styles?.height).toBeDefined();
+    await button.click();
+    const stylesAfter = await getComputedStyles(page, buttonClickLoadingInverseID);
+    expect(stylesAfter?.width).toBeDefined();
+    expect(stylesAfter?.height).toBeDefined();
+  });
 
   test.skip("Inverse button type-button não submete formulário inadvertidamente", async () => {});
 

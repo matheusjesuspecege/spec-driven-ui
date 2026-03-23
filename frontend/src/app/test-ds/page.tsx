@@ -1,4 +1,7 @@
+"use client";
+
 import { Button } from "@/components/button/button";
+import { useState } from "react";
 
 export default function TestDS() {
   return (
@@ -19,5 +22,21 @@ const Buttons = () => (
     <Button data-testid="button-loading-inverse" variant="inverse" fullWidth loading>
       Upgrade Now
     </Button>
+    <ButtonWithLoading />
   </div>
 );
+
+const ButtonWithLoading = () => {
+  const [loading, setLoading] = useState(false);
+  return (
+    <Button
+      data-testid="button-click-loading-inverse"
+      variant="inverse"
+      fullWidth
+      loading={loading}
+      onClick={() => setLoading(true)}
+    >
+      Upgrade Now
+    </Button>
+  );
+};
