@@ -31,7 +31,12 @@
 ## Componentes
 
 - Componentes só devem ser exportados se forem realmente ser utilizados por outros componentes.
--  Use `export default` para arquivos com apenas 1 componente.
+- Use `export default` para arquivos com apenas 1 componente.
+- **Props condicionais**: use template literal `${condition ? "classes" : ""}` para classes condicionais.
+- **Custom className**: extraia `className` da desestruturação antes de `...props`, mescle com classes base: `${baseClasses} ${className || ""}`.
+- **Disabled State**: use `opacity-50 cursor-not-allowed` via props + spread operator.
+- **Loading State**: use `aria-busy={loading}` + `aria-disabled={loading}` + spinner inline.
+- **Focus Ring**: use `focus:outline-2 focus:outline-offset-2 focus:outline-[cor]` para indicadores de foco visíveis.
 
 ---
 
@@ -55,6 +60,10 @@ frontend/tests/features/[nome]/
 ```
 
 > **Ordem de implementação de testes**: componentes com menos dependências primeiro (bottom-up). Mockar dependências nos specs dos componentes pais.
+- **Click forçado**: use `click({ force: true })` para testar elementos em estados disabled/loading.
+- **Double-click prevention**: use `page.evaluate()` + `dblclick()` + `clickCount` para verificar proteção.
+- **Form submission**: use `type="button"` para previnir submissão acidental de formulário.
+- **State transitions**: capture dimensões (width/height) antes e depois de mudanças de estado para verificar estabilidade de layout.
 
 ---
 
@@ -68,6 +77,9 @@ frontend/tests/features/[nome]/
 ## React
 
 - Em loops `map` adicionar a `key` unica no elemento e priorizando a prop do array da iteração no lugar da key 
+- **ARIA**: use `role="button"` para semântica, `aria-busy` e `aria-disabled` para estados.
+- **Touch Target**: mantenha mínimo 44x44px para elementos interativos (WCAG compliance).
+- **Keyboard Navigation**: use `<button>` nativo para suporte automático a Tab/Enter/Space.
 
 ---
 

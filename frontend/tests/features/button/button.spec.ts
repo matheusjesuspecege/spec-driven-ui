@@ -91,7 +91,7 @@ test.describe("Feature: Button (BDD Source)", () => {
      * o assert de opacity está como 1, porém no código está (0.95) que é o correto.
      * tive que fazer esse falso positivo, porque está conflitando com a className 'rounded-md' do tailwind.
      * por algum motivo se adicionar a classe 'rounded-md' a active:opacity-95 não funciona.
-     * portanto está funcional no código, porém aqui no teste tuve que contornar.     *
+     * portanto está funcional no código, porém aqui no teste tive que contornar.    
      */
     expect(styles?.opacity).toBe(1);
   });
