@@ -46,14 +46,14 @@ Funcionalidade: Button Component - Upgrade Button (Inverse)
        Quando visível na página
        Então o texto "Upgrade Now" deve estar visível
 
-  @button @classname
+  @button @classname @smoke
   Cenário: Inverse button aceita className para estilos customizados
       Dado que o componente Button variant="inverse" é renderizado com className="upgrade-btn"
        Quando visível na página
        Então deve incluir a classe "upgrade-btn" no elemento
         E deve manter as classes base do componente
 
-  @button @testid
+  @button @testid @smoke
   Cenário: Inverse button aceita data-testid para identificação em testes
       Dado que o componente Button variant="inverse" é renderizado com data-testid="upgrade-btn"
        Quando visível na página
@@ -77,7 +77,7 @@ Funcionalidade: Button Component - Upgrade Button (Inverse)
        Quando o botão é clicado
        Então o background escurece 5% em relação ao estado default
 
-  @button @state @disabled
+  @button @state @disabled @smoke
   Cenário: Inverse button em disabled tem estilo correto
       Dado que o componente Button é renderizado com variant="inverse" e disabled=true
        Quando visível na página
@@ -85,7 +85,7 @@ Funcionalidade: Button Component - Upgrade Button (Inverse)
         E deve ter cursor not-allowed
         E deve ter atributo disabled="true"
 
-  @button @state @loading
+  @button @state @loading @smoke
   Cenário: Inverse button em loading exibe spinner e desabilita interação
       Dado que o componente Button é renderizado com variant="inverse" e loading=true
        Quando visível na página
@@ -94,7 +94,7 @@ Funcionalidade: Button Component - Upgrade Button (Inverse)
         E deve exibir spinner
         E deve ter cursor not-allowed
 
-  @button @state @focus @a11y
+  @button @state @focus @a11y @smoke
   Cenário: Inverse button em focus tem focus ring visível
       Dado que o componente Button variant="inverse" está visível
        Quando o botão recebe focus (Tab)
@@ -106,19 +106,19 @@ Funcionalidade: Button Component - Upgrade Button (Inverse)
   # Cliques, navegação, feedback
   # ═══════════════════════════════════════════════════════════
 
-  @button @state @disabled @interaction
+  @button @state @disabled @interaction @smoke
   Cenário: Inverse button em disabled não responde a cliques
       Dado que o componente Button variant="inverse" está em estado disabled
        Quando o usuário clica no botão
        Então o onClick não deve ser disparado
 
-  @button @state @loading @interaction
+  @button @state @loading @interaction @smoke
   Cenário: Inverse button em loading não responde a cliques
       Dado que o componente Button variant="inverse" está em estado loading
        Quando o usuário clica no botão
        Então o onClick não deve ser disparado
 
-  @button @a11y @keyboard
+  @button @a11y @keyboard @smoke
   Cenário: Inverse button é navegável por teclado
       Dado que o componente Button variant="inverse" está visível na página
        Quando o usuário pressiona Tab
@@ -126,28 +126,28 @@ Funcionalidade: Button Component - Upgrade Button (Inverse)
         E deve ser possível ativá-lo com Enter
         E deve ser possível ativá-lo com Space
 
-  @button @defensive @double-click
+  @button @defensive @double-click @smoke
   Cenário: Double-click não causa ação duplicada no Inverse button
       Dado que o componente Button variant="inverse" está habilitado
        Quando o usuário clica rapidamente 3 vezes no botão
        Então a ação deve ocorrer apenas uma vez
         E não deve haver duplicação de requisições ou estados
 
-  @button @defensive @double-click
+  @button @defensive @double-click @smoke
   Cenário: Spinner aparece imediatamente ao clicar no Inverse button
       Dado que o componente Button variant="inverse" está habilitado
        E o callback onClick é síncrono (retorna promise)
        Quando o usuário clica no botão
        Então deve haver proteção contra double-click nativo do browser
 
-  @button @defensive @loading-transition
+  @button @defensive @loading-transition @smoke
   Cenário: Transição para loading state preserva layout no Inverse button
       Dado que o componente Button variant="inverse" está visível
        Quando loading muda de false para true
        Então o layout não deve saltar (no layout shift)
         E o botão deve manter dimensões similares
 
-  @button @defensive @type-attribute
+  @button @defensive @type-attribute @smoke
   Cenário: Inverse button type="button" não submete formulário inadvertidamente
       Dado que o componente Button variant="inverse" está dentro de um formulário
        Quando o botão tem type="button" (default)
@@ -159,27 +159,27 @@ Funcionalidade: Button Component - Upgrade Button (Inverse)
   # Leitores de tela, touch targets
   # ═══════════════════════════════════════════════════════════
 
-  @button @a11y @aria
+  @button @a11y @aria @smoke
   Cenário: Inverse button expõe estados corretamente para leitores de tela
       Dado que o componente Button variant="inverse" é renderizado
        Quando exposto para leitores de tela
        Então o papel (role) deve ser "button"
         E deve ter texto acessível como nome acessível
 
-  @button @a11y @aria
+  @button @a11y @aria @smoke
   Cenário: Inverse button em disabled expõe estado corretamente
       Dado que o componente Button variant="inverse" é renderizado com disabled=true
        Quando exposto para leitores de tela
        Então o atributo aria-disabled deve ser "true"
 
-  @button @a11y @aria
+  @button @a11y @aria @smoke
   Cenário: Inverse button em loading expõe estado corretamente
       Dado que o componente Button variant="inverse" é renderizado com loading=true
        Quando exposto para leitores de tela
        Então o atributo aria-busy deve ser "true"
         E o atributo aria-disabled deve ser "true"
 
-  @button @a11y @touch-target
+  @button @a11y @touch-target @smoke
   Cenário: Inverse button em mobile tem touch target adequado
       Dado que o componente Button variant="inverse" é renderizado
        Quando visualizado em dispositivo mobile (touch)
