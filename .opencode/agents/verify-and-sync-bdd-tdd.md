@@ -63,9 +63,17 @@ permission:
 
 ```
 PASSO 1: Parse BDD (.feature)
-  ├── Extrair TODOS os cenários com tags
-  ├── Mapear: scenarioName → { tags, given, when, then, steps }
-  └── Contar cenários
+   ├── Extrair TODOS os cenários com tags
+   ├── Mapear: scenarioName → { tags, given, when, then, steps }
+   └── Contar cenários
+
+PASSO 1.1: Classificar cenários por dependência (inferência)
+   ├── Classificar cada cenário: render | state | interaction | a11y
+   │   ├── render: renderizad[oa], vis[í|i]vel, exibe, aparece
+   │   ├── state: hover, focus, loading, disabled, active
+   │   ├── interaction: clica, submit, digita, seleciona
+   │   └── a11y: teclado, tab, leitor de tela, aria
+   └── Ordenar: render → state → interaction → a11y
 
 PASSO 2: Parse TDD (.spec.ts)
   ├── Extrair TODOS os testes com status
@@ -266,6 +274,13 @@ Ao verificar sincronia, normalizar ambos os nomes (remover pontuação, normaliz
 📊 BDD: [N] cenários (FONTE DA VERDADE)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+📋 ORDEM DOS CENÁRIOS (por dependência):
+   1. render: "Button renderiza" [render] (@smoke)
+   2. state: "Button em hover" [state] (@hover)
+   3. interaction: "Button em clique" [interaction] (@interaction)
+   4. a11y: "Button é navegável" [a11y] (@a11y)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 ⚠️ DIVERGÊNCIAS ENCONTRADAS
 
 ┌────────────────────────────────────────────────────────────────┐
@@ -358,6 +373,15 @@ button.spec.ts (TDD):
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📊 TDD: 16 testes (REFERÊNCIA)
 📊 BDD: 22 cenários (FONTE DA VERDADE)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 ORDEM DOS CENÁRIOS (por dependência):
+   1. render: "Inverse button tem estilo correto" [render] (@smoke)
+   2. render: "Upgrade button tem dimensões do inverse" [render] (@smoke)
+   3. state: "Inverse button em hover" [state] (@hover)
+   4. state: "Inverse button em disabled" [state] (@smoke)
+   5. interaction: "Inverse button em clique" [interaction] (@interaction)
+   6. a11y: "Inverse button é navegável" [a11y] (@a11y)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ✅ SINCRONIZADOS:

@@ -564,6 +564,129 @@ getPencilId()
                (fluxo principal pergunta ao usuário)
 ```
 
+### Passo 7.7: Ordenar Cenários por Dependência (Inferência)
+
+**CRÍTICO**: Reordenar cenários para que dependências lógicas venham primeiro.
+
+```typescript
+// Classificação de cenários por tipo (inferência automática)
+const SCENARIO_TYPES = {
+  render: [
+    /renderizad[oa]|vis[í|i]vel|exibe|aparece|presente|carregad[oa]|mostra|exibindo/i,
+    /está na página|está renderizad/i,
+  ],
+  state: [
+    /hover|focus|loading|disabled|active|pressed|erro|success|focused/i,
+    /estado de |em hover|em focus|em disabled|em loading|em active/i,
+  ],
+  interaction: [
+    /clica|click|submit|digita|seleciona|pressiona|abre|fecha|toggle|envia/i,
+    /quando o usuário|ao clicar|ao submeter|ao pressionar/,
+  ],
+  a11y: [
+    /teclado|tab|navegaç[a|ã]o|leitor de tela|aria|foco|acessibilidad/i,
+    /navegável|acess[í|i]vel|leitor/i,
+  ],
+};
+
+// Ordenar cenários por dependência (render → state → interaction → a11y)
+function sortScenariosByDependency(scenarios: Scenario[]): Scenario[] {
+  // 1. Classificar cada cenário
+  const classified = scenarios.map(scenario => {
+    const text = `${scenario.name} ${scenario.given.join(' ')} ${scenario.when.join(' ')} ${scenario.then.join(' ')}`;
+    
+    let type: 'render' | 'state' | 'interaction' | 'a11y' = 'render';
+    
+    for (const [key, patterns] of Object.entries(SCENARIO_TYPES)) {
+      for (const pattern of patterns) {
+        if (pattern.test(text)) {
+          type = key as 'render' | 'state' | 'interaction' | 'a11y';
+          break;
+        }
+      }
+      if (type !== 'render') break;
+    }
+    
+    return { scenario, type };
+  });
+  
+  // 2. Ordenar por tipo (ordem lógica: render → state → interaction → a11y)
+  const typeOrder: Record<string, number> = { render: 1, state: 2, interaction: 3, a11y: 4 };
+  
+  // 3. Dentro de cada tipo, manter ordem original (happy → rule → defensive → state → component)
+  const sorted = [...classified].sort((a, b) => {
+    const orderDiff = typeOrder[a.type] - typeOrder[b.type];
+    if (orderDiff !== 0) return orderDiff;
+    
+    // Manter ordem original dentro do mesmo tipo
+    return scenarios.indexOf(a.scenario) - scenarios.indexOf(b.scenario);
+  });
+  
+  return sorted.map(s => s.scenario);
+}
+
+// Validar dependências circulares
+function validateNoCycles(scenarios: Scenario[]): boolean {
+  const graph = new Map<string, string[]>();
+  
+  for (const scenario of scenarios) {
+    const depMatch = scenario.tags.find(t => t.startsWith('@depends-on:'));
+    if (depMatch) {
+      const target = depMatch.replace('@depends-on:', '');
+      const sources = graph.get(target) || [];
+      sources.push(scenario.name);
+      graph.set(target, sources);
+    }
+  }
+  
+  // Verificar ciclos (simplificado)
+  const visited = new Set<string>();
+  for (const scenario of scenarios) {
+    if (visited.has(scenario.name)) continue;
+    
+    const stack = [scenario.name];
+    while (stack.length > 0) {
+      const current = stack.pop()!;
+      if (visited.has(current)) return false; // Ciclo detectado
+      visited.add(current);
+      
+      const deps = graph.get(current) || [];
+      stack.push(...deps);
+    }
+  }
+  
+  return true;
+}
+
+function orderScenarios(scenarios: Scenario[]): Scenario[] {
+  // 1. Classificar e ordenar
+  const ordered = sortScenariosByDependency(scenarios);
+  
+  // 2. Validar ciclos (se houver @depends-on tags)
+  if (!validateNoCycles(ordered)) {
+    console.warn('⚠️ Dependências circulares detectadas nos cenários');
+  }
+  
+  return ordered;
+}
+```
+
+**Ordem de execução:**
+```
+render → state → interaction → a11y
+```
+
+**Exemplo de transformação:**
+
+| Input (ordem aleatória) | Output (ordenado) |
+|-------------------------|-------------------|
+| "Button em hover" (state) | "Button renderiza" (render) |
+| "Button navegável" (a11y) | "Button em hover" (state) |
+| "Button renderiza" (render) | "Button em clique" (interaction) |
+| "Button em clique" (interaction) | "Button navegável" (a11y) |
+
+---
+
 ### Passo 8: Gerar *.feature
 
 ```typescript
@@ -622,6 +745,9 @@ async function generateBddFeature(feature: string): Promise<{ success: boolean; 
   // 3. Gerar cenários (etapas 4-7)
   const scenarios = await generateAllScenarios(research, plan);
   
+  // 3.1 Ordenar cenários por dependência (etapa 7.7)
+  const orderedScenarios = orderScenarios(scenarios);
+  
   // 4. Obter pencil_id (etapa 7.6)
   const { pencilId, source } = await getPencilId(feature, research, plan);
   
@@ -657,8 +783,8 @@ async function generateBddFeature(feature: string): Promise<{ success: boolean; 
     }
   }
   
-  // 6. Gerar arquivo .feature com pencil_id
-  const featureContent = generateFeature(feature, scenarios, finalPencilId);
+  // 6. Gerar arquivo .feature com pencil_id (já ordenado por dependência)
+  const featureContent = generateFeature(feature, orderedScenarios, finalPencilId);
   
   // 7. Salvar (etapa 9)
   await writeFile(featurePath, featureContent);
@@ -788,10 +914,12 @@ Arquivos criados:
 pencil_id: [ID] (fonte: [research|pencil|user])
 - Se "não vinculado": componente ainda não existe no Pencil ou usuário optou por não vincular
 
-Cenários gerados: N
+Cenários gerados: N (ordenados por dependência: render → state → interaction → a11y)
 - @desktop: X
 - @mobile: Y
 - @a11y: Z
+
+Ordenação por dependência: ✅ Ativada (inferência automática)
 
 Próx passos:
 1. Revise os cenários gerados
@@ -814,6 +942,7 @@ Antes de salvar, verificar:
 - [ ] Cenários @state estão presentes para loading/erro/sucesso
 - [ ] pencil_id foi obtido (via research, plan, Pencil MCP, ou input do usuário)
 - [ ] pencil_id correto foi vinculado ao .feature
+- [ ] **Cenários ordenados por dependência** (render → state → interaction → a11y)
 
 ## Regras
 
@@ -825,6 +954,7 @@ Antes de salvar, verificar:
 6. **Regras de Negócio (@rule)** - MANDATÓRIO para operações críticas (submit, transação,validação)
 7. **Proteção (@defensive)** - MANDATÓRIO para Lei de Murphy (double-click, timeout)
 8. **Estados (@state)** - MANDATÓRIO para ações assíncronas (loading, erro, sucesso)
+9. **Ordenação por dependência** - Cenários ordenadaos via inferência (render → state → interaction → a11y)
 
 ## Regras de Vinculação com Pencil
 
