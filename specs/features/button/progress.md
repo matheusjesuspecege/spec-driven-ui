@@ -28,3 +28,7 @@
 ### [2026-03-22] Focus Ring Pattern
 - Classes Tailwind para focus ring: `focus:outline-2 focus:outline-offset-2 focus:outline-[#3b82f6]`
 - Usar cor literal `[#3b82f6]` em vez de CSS variable para compatibilidade
+
+### [2026-03-22] Keyboard Navigation
+- Elemento `<button>` nativo já suporta navegação por teclado
+- Teste usa `page.keyboard.press("Tab")` + `toBeFocused()` para verificar focus

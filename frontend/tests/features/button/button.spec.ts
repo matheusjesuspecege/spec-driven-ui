@@ -128,7 +128,13 @@ test.describe("Feature: Button (BDD Source)", () => {
     expect(styles?.outlineColor).toBe(hexToRgb(TOKENS.borderFocus));
   });
 
-  test.skip("Inverse button é navegável por teclado", async () => {});
+  test("Inverse button é navegável por teclado", async ({ page }) => {
+    await page.keyboard.press("Tab");
+    const button = page.locator(buttonInverseID);
+    await expect(button).toBeFocused();
+    await page.keyboard.press("Enter");
+    await page.keyboard.press("Space");
+  });
 
   test.skip("Inverse button expõe estados corretamente para leitores de tela", async () => {});
 
