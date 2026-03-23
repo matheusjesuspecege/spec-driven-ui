@@ -143,7 +143,12 @@ test.describe("Feature: Button (BDD Source)", () => {
     await expect(button).toHaveAttribute("role", "button");
   });
 
-  test.skip("Inverse button em disabled expõe estado corretamente", async () => {});
+  test("Inverse button em disabled expõe estado corretamente", async ({
+    page,
+  }) => {
+    const button = page.locator(buttonDisabledInverseID);
+    await expect(button).toHaveAttribute("aria-disabled", "true");
+  });
 
   test.skip("Inverse button em loading expõe estado corretamente", async () => {});
 

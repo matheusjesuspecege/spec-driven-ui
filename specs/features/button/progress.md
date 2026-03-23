@@ -36,3 +36,7 @@
 ### [2026-03-22] Accessibility - Role Attribute
 - Adicionar `role="button"` explicitamente para leitores de tela
 - Teste usa `toHaveAttribute("role", "button")` para verificar
+
+### [2026-03-22] Disabled ARIA State
+- `aria-disabled` deve combinar `loading || props.disabled`
+- Teste verifica `aria-disabled="true"` em estado disabled
