@@ -1,38 +1,58 @@
 ---
 name: export-code-to-design
 description: "Envia código React para o Pencil como PROPOSTA. Cria NOVO componente no Pencil (não altera o original) para revisão e aprovação do designer. Segue fluxo spec-driven."
-mode: subagent
-temperature: 0.3
-tools:
-  pencil_open_document: true
-  pencil_get_editor_state: true
-  pencil_batch_design: true
-  pencil_find_empty_space_on_canvas: true
-  pencil_batch_get: true
-  read: true
-  write: true
-permission:
-  edit: ask
+license: MIT
+compatibility:
+  opencode: ">= 0.1.0"
+  pencil: ">= 1.0.0"
+metadata:
+  version: "1.0.0"
+  user-invocable: true
+  triggers:
+    - "exportar código para design"
+    - "propor mudança de design"
+    - "criar proposta no pencil"
+    - "export --component=[nome]"
+    - "code to design [nome-do-componente]"
 ---
 
-## Acionamento
+## Quando Usar
 
-- 'exportar código para design'
-- 'propor mudança de design'
-- 'criar proposta no pencil'
-- 'export --component=[nome]'
-- 'code to design [nome-do-componente]'
+Use esta skill quando você precisa:
+
+- Propor uma mudança de design baseada em código existente
+- Exportar um componente React para o Pencil para revisão do designer
+- Criar uma proposta visual a partir de implementação real
+- Sincronizar código com design através de fluxo de aprovação
+
+**Não use** quando:
+- O designer já aprovou o design (use import-design-to-code)
+- Precisa apenas visualizar specs (use outra skill)
+- Quer alterar componente original diretamente (sempre crie proposta)
+
+---
 
 ## Regras Fundamentais
 
-⚠️ **IMPORTANTE**: Este agente CRIA um novo componente no Pencil. **NUNCA altera o componente original.**
+⚠️ **IMPORTANTE**: Esta skill CRIA um novo componente no Pencil. **NUNCA altera o componente original.**
 
-- Componente original: permanece intacto
-- Nova proposta: criada com sufixo `[PROPOSTA]`
-- Designer aprova/rejeita a proposta
-- Somente após aprovação, a mudança é aplicada
+- **Componente original**: permanece intacto no Pencil
+- **Nova proposta**: criada com sufixo `[PROPOSTA]`
+- **Designer aprova/rejeita** a proposta
+- **Somente após aprovação**, a mudança é aplicada ao código
 
-## Fluxo de Execução
+### Regras Obrigatórias
+
+1. **Nunca modifique** o componente original no Pencil
+2. Use **specs como fonte da verdade** para intent/nome
+3. Use **código para valores reais** (não assuma)
+4. Marque claramente como **"[PROPOSTA]"**
+5. Não modifique código, apenas leia
+6. Atualize spec com status da proposta
+
+---
+
+## Fluxo
 
 ### Etapa 1: Identificar o que exportar
 
@@ -85,35 +105,15 @@ const proposalId = `${pencilId}_PROPOSTA_${Date.now()}`;
    - ID: `[id]_PROPOSTA_[timestamp]`
    - Propriedades visuais baseadas no código
 
-```javascript
-// Exemplo de criação
-pencil_batch_design({
-  operations: [
-    {
-      type: 'insert',
-      parent: 'document',
-      nodeData: {
-        type: 'frame',
-        id: proposalId,
-        name: proposalName,
-        fill: extractedColor,
-        cornerRadius: extractedRadius,
-        // ... outras propriedades
-      }
-    }
-  ]
-});
-```
-
 ### Etapa 7: Confirmar e informar
 
 Retornar resumo da proposta criada para revisão do designer.
 
 ---
 
-## Classificação Atomic Design
+## Atomic Design
 
-O agente deve classificar o elemento exportado:
+A skill classifica o elemento exportado:
 
 - **Atom**: Elementos indivisíveis — botões, ícones, labels, inputs, cores, fontes, tokens
 - **Molecule**: Combinação simples — SearchBar (input + botão), CardSimple (título + descrição)
@@ -144,9 +144,10 @@ O agente deve classificar o elemento exportado:
 
 ---
 
-## Formato de Saída
+## Output
 
-**Sucesso:**
+### Sucesso
+
 ```
 ✅ Proposta enviada para revisão no Pencil
 
@@ -166,7 +167,8 @@ O agente deve classificar o elemento exportado:
 2. Após aprovação, execute import-design-to-code
 ```
 
-**Erro (componente não encontrado):**
+### Erro (componente não encontrado)
+
 ```
 ❌ Componente não encontrado
 
@@ -176,17 +178,6 @@ O componente [nome] não foi encontrado em:
 
 Verifique se o componente existe antes de exportar.
 ```
-
----
-
-## Regras
-
-- **CRIE novo frame** no Pencil, nunca altere o original
-- Use specs como fonte da verdade para intent
-- Use código para obter valores reais (não assuma)
-- Marque claramente como "proposta" ([PROPOSTA])
-- Não modifique código, apenas leia
-- Atualize spec com status da proposta
 
 ---
 

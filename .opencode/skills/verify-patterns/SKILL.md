@@ -1,69 +1,55 @@
 ---
 name: verify-patterns
-description: "Verifica se o código implementado segue as convenções do projeto (convencoes-codigo.md, guardrails.md, architecture.md) e o contrato do plan.md. Faz parte do GATE do implement-tasks."
-mode: subagent
-temperature: 0.2
-permission:
-  edit: deny
+description: "Verifica se o código implementado segue as convenções do projeto (convencoes-codigo.md, guardrails.md, architecture.md) e o contrato do plan.md. Use quando o usuário solicitar validação de padrões, verificação de código ou após a implementação de uma feature."
+license: MIT
+compatibility: opencode
+metadata:
+  version: "1.0"
+  user-invocable: true
+  triggers:
+    - "verificar padrões"
+    - "verificar convenções"
+    - "verify patterns"
+    - "validar código"
 ---
 
-## Contexto: GATE do Implement-Tasks
+# Skill: Verify Patterns
 
-Este subagent é parte do **GATE de validação**:
+## Quando Usar
+
+Execute esta skill como parte do **GATE de validação** após o TDD passar:
 
 ```
-Gate:
+Gate de Validação:
   1. TDD (tdd-playwright)
-  2. Verify Patterns (este subagent) ←
+  2. Verify Patterns (esta skill) ←
   3. Typecheck
   4. Lint
 ```
 
-## Acionado por
+Também pode ser executada pelo **pre-commit hook** em modo não-interativo.
 
-```
-@verify-patterns execute verificação para [nome-da-feature] [us-id] subtask [subtask-id]
-```
+## Início Rápido
 
-Este subagent é chamado pelo implement-tasks APÓS o TDD passar, como parte do gate de validação.
-
-## Modo Não-Interativo (pre-commit hook)
-
-Este sub-agent pode ser executado em modo não-interativo pelo pre-commit hook:
-- Sem perguntas ao usuário
-- Retorna código de saída 0 (sucesso) ou 1 (falha)
-- Usado pelo script `frontend/scripts/pre-commit-validate.js`
+1. Obter nome da feature e US-ID da entrada
+2. Carregar documentos de referência (divulgação progressiva)
+3. Identificar arquivos modificados
+4. Executar verificações em 4 categorias
+5. Detectar drifts e gerar relatório
+6. Retornar status APROVADO ou DRIFT_DETECTADO
 
 ---
-
-## Verificações Executadas
-
-### Modo Interativo (chamado por implement-tasks)
-
-Executa verificação completa conforme fluxo abaixo.
-
-### Modo Não-Interativo (pre-commit hook)
-
-O script `pre-commit-validate.js` executa verificações simplificadas:
-- Verifica uso de `any` 
-- Verifica estilos inline (`style={{`)
-- Verifica comentários em código
-- Verifica tipagem de retorno explícita
-
-## Entrada
-
-Este sub-agent DEVE receber:
-- `nome-da-feature`: Nome da feature em kebab-case
-- `us-id`: ID da User Story implementada
 
 ## Documentos de Referência
 
 Carregar os seguintes documentos **OBRIGATORIAMENTE** antes de iniciar:
 
-1. `specs/docs/guardrails.json` — Antipadrões a evitar (gerado automaticamente do .md)
-2. `specs/docs/convencoes-codigo.md` — Nomenclatura, padrões de código
-3. `specs/docs/architecture.md` — Estrutura de pastas
-4. `specs/features/[nome-da-feature]/plan.md` — Contrato da feature
+| Documento | Caminho | Quando carregar |
+|-----------|---------|-----------------|
+| Convenções de Código | `specs/docs/convencoes-codigo.md` | Sempre |
+| Guardrails | `specs/docs/guardrails.md` ou `guardrails.json` | Sempre |
+| Arquitetura | `specs/docs/architecture.md` | Sempre |
+| Plan da Feature | `specs/features/[nome-da-feature]/plan.md` | Sempre |
 
 > **Nota**: `guardrails.json` é gerado automaticamente do `guardrails.md` pelo script `.opencode/scripts/generate-guardrails-json.ts` durante o pre-commit. Se não existir, leia o `guardrails.md` como fallback.
 
@@ -73,25 +59,24 @@ Carregar os seguintes documentos **OBRIGATORIAMENTE** antes de iniciar:
 
 ### Etapa 1: Carregar Referências
 
-```bash
-# Carregar documentos
-# Use a ferramenta read para carregar:
+```
+# Carregar documentos usando a ferramenta read:
 # - specs/docs/convencoes-codigo.md
-# - specs/docs/guardrails.md  
+# - specs/docs/guardrails.md ou guardrails.json
 # - specs/docs/architecture.md
 # - specs/features/[nome-da-feature]/plan.md
 ```
 
 ### Etapa 2: Identificar Arquivos Modificados
 
-Determine quais arquivos foram criados/modificados pela US:
+Determinar quais arquivos foram criados/modificados pela US:
 - Componentes: procure em `frontend/src/features/[nome-da-feature]/` ou `frontend/src/components/`
 - Testes: procure em `frontend/tests/`
 - Identifique componentes, hooks, types, testes, etc.
 
 ### Etapa 3: Executar Verificações
 
-Execute as verificações na seguinte ordem:
+Execute as verificações em 4 categorias:
 
 #### A. Verificação de Convenções de Código
 
@@ -139,6 +124,22 @@ Execute as verificações na seguinte ordem:
 
 ---
 
+## Categorias de Verificação
+
+### Modo Interativo (chamado por implement-tasks)
+
+Executa verificação completa conforme fluxo acima.
+
+### Modo Não-Interativo (pre-commit hook)
+
+O script `pre-commit-validate.js` executa verificações simplificadas:
+- Verifica uso de `any`
+- Verifica estilos inline (`style={{`)
+- Verifica comentários em código
+- Verifica tipagem de retorno explítica
+
+---
+
 ## Detecção de Drift
 
 ### Categorias de Drift
@@ -152,6 +153,8 @@ Execute as verificações na seguinte ordem:
 | Estilização | Uso de inline styles | ALTA |
 
 ### Relatório de Drift
+
+Consulte [assets/EXAMPLE_OUTPUT.md](assets/EXAMPLE_OUTPUT.md) para modelo de saída.
 
 ```
 ## Verificação de Padrões - US-[ID]
@@ -203,11 +206,11 @@ Execute as verificações na seguinte ordem:
 ## Regras
 
 - **NUNCA use a ferramenta `task`** para chamar subagents
-- **NUNCA modifique arquivos** — apenas detecte e relate (edit: deny)
+- **NUNCA modifique arquivos** — apenas detecte e relate (read-only)
 - **Verifique TODAS as categorias** — não pule nenhuma verificação
 - **Seja preciso** — cite arquivo e linha onde encontrou o problema
 - **Compare com plan.md** — tipos e props devem bater exatamente
-- **Este subagent é READ-ONLY** — não faz commits, não modifica código
+- **Esta skill é READ-ONLY** — não faz commits, não modifica código
 
 ---
 
