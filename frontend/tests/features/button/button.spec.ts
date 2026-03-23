@@ -169,7 +169,17 @@ test.describe("Feature: Button (BDD Source)", () => {
     expect(box?.height).toBeGreaterThanOrEqual(44);
   });
 
-  test.skip("Double-click não causa ação duplicada no Inverse button", async () => {});
+  test("Double-click não causa ação duplicada no Inverse button", async ({ page }) => {
+    const button = page.locator(buttonInverseID);
+    let clickCount = 0;
+    await page.evaluate(() => {
+      const btn = document.querySelector('[data-testid="button-inverse"]') as HTMLButtonElement;
+      btn?.addEventListener("click", () => { clickCount++; }, { once: false });
+    });
+    await button.dblclick();
+    await button.click({ clickCount: 2 });
+    expect(clickCount).toBeLessThanOrEqual(1);
+  });
 
   test.skip("Spinner aparece imediatamente ao clicar no Inverse button", async () => {});
 

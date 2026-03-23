@@ -45,3 +45,8 @@
 - Height do botão: `h-11` (44px) para atingir touch target mínimo de 44px
 - Teste usa `setViewportSize({ width: 375, height: 667 })` para mobile
 - Verifica `boundingBox().width/height >= 44`
+
+### [2026-03-22] Double-Click Prevention
+- Teste usa `page.evaluate()` para adicionar event listener e contar cliques
+- Usa `dblclick()` e `click({ clickCount: 2 })` para simular double-click
+- Verifica `clickCount <= 1`
