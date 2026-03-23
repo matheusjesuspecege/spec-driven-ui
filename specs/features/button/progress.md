@@ -55,3 +55,9 @@
 - Para testar loading state via clique, usar `useState` no componente de teste
 - Criar `ButtonWithLoading` component com `onClick={() => setLoading(true)}`
 - Usar `data-testid` específico para botão interativo
+
+### [2026-03-22] Form Submission Prevention
+- Criar Form component com `useState` para testar submissão
+- Verificar que `type="button"` não submete formulário
+- Usar `toHaveAttribute("type", "button")` para verificar
+- Usar `form.locator("button")` para localizar botão dentro do form

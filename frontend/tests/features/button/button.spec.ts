@@ -17,6 +17,7 @@ const buttonInverseID = '[data-testid="button-inverse"]';
 const buttonDisabledInverseID = '[data-testid="button-disabled-inverse"]';
 const buttonLoadingInverseID = '[data-testid="button-loading-inverse"]';
 const buttonClickLoadingInverseID = '[data-testid="button-click-loading-inverse"]';
+const formSubmittedID = '[data-testid="form-submitted"]';
 
 test.describe("Feature: Button (BDD Source)", () => {
   test.beforeEach(async ({ page }) => {
@@ -201,7 +202,13 @@ test.describe("Feature: Button (BDD Source)", () => {
     expect(stylesAfter?.height).toBeDefined();
   });
 
-  test.skip("Inverse button type-button não submete formulário inadvertidamente", async () => {});
+  test("Inverse button type-button não submete formulário inadvertidamente", async ({ page }) => {
+    const form = page.locator(formSubmittedID);
+    const button = form.locator("button");
+    await expect(button).toHaveAttribute("type", "button");
+    await button.click();
+    await expect(form).not.toContainText(/Form submitted!/i);
+  });
 
   test.skip("Inverse button aceita className para estilos customizados", async () => {});
 

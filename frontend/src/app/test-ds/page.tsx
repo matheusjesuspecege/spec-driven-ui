@@ -7,6 +7,7 @@ export default function TestDS() {
   return (
     <>
       <Buttons />
+      <Form />
     </>
   );
 }
@@ -38,5 +39,20 @@ const ButtonWithLoading = () => {
     >
       Upgrade Now
     </Button>
+  );
+};
+
+const Form = () => {
+  const [submitted, setSubmitted] = useState(false);
+  return (
+    <form
+      data-testid="form-submitted"
+      onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }}
+    >
+      <Button data-testid="button-inverse-form" variant="inverse" type="button">
+        Submit
+      </Button>
+      {submitted && <span>Form submitted!</span>}
+    </form>
   );
 };
