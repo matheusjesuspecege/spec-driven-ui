@@ -1,6 +1,6 @@
 ---
 name: implement-tasks
-description: "Implementa testes skip progressivamente via TDD. A cada teste verde, pergunta ao humano para revisar e aprovar. Worktree já contém o contexto da feature."
+description: "Implementa testes skip progressivamente via TDD. SEMPRE pergunta ao humano em 3 checkpoints obrigatórios: 1) Ativar teste, 2) Revisar código, 3) Próximo. NUNCA pule checkpoints. Worktree já contém o contexto da feature."
 mode: subagent
 temperature: 0.3
 tools:
@@ -28,7 +28,20 @@ permission:
 
 1. Ler `specs/docs/convencoes-codigo.md`
 2. Ler `specs/docs/guardrails.md`
-3. Ler `specs/features/[nome-da-feature]/progress.md` (se existir)
+3. Verificar se `specs/features/[nome-da-feature]/progress.md` existe:
+   - Se **EXISTE** → ler conteúdo
+   - Se **NÃO EXISTE** → criar arquivo com template vazio:
+     ```markdown
+     # Progress: [Feature]
+
+     ## CSS Patterns
+
+     ## Accessibility
+
+     ## Component
+
+     ## React
+     ```
 4. Identificar a feature a trabalhar
 
 ---
@@ -120,28 +133,43 @@ if (!match) {
 
 ## Interação Humana
 
+### ⚠️ REGRAS DE USO DA FERRAMENTA `question`
+
+```
+1. A ferramenta question DEVE ser chamada em cada checkpoint
+2. O código NÃO deve continuar até a resposta ser recebida
+3. Se a resposta for SKIP/NÃO → aguardando, não avance
+4. Se não houver chamada question → FLUXO VIOLADO
+```
+
 ### Pergunta 1: Ativar teste
 ```
 "Ativar e implementar [nome-do-teste]?"
 - Mostrar cenário BDD correspondente
 - Mostrar aprendizados relevantes do progress.md
 - SIM → continuar
-- NÃO → aguardar diretrizes
+- NÃO → aguardar diretrizes (NÃO avance!)
 ```
 
-### Pergunta 2: Revisar código
+### Pergunta 2: Revisar código (OBRIGATÓRIO)
 ```
 "Teste verde. Revisar código?"
 - Mostrar: git diff
 - CORRIGIR → voltar ao TDD
 - APROVAR → continuar
+
+⚠️ SEMPRE use a ferramenta question aqui
+⚠️ NUNCA pule esta etapa
 ```
 
-### Pergunta 3: Próximo teste
+### Pergunta 3: Próximo teste (OBRIGATÓRIO)
 ```
 "Continuar para próximo?"
 - SIM → loop
 - NÃO → encerrar
+
+⚠️ SEMPRE use a ferramenta question aqui
+⚠️ NUNCA pule esta etapa
 ```
 
 ---
@@ -227,7 +255,8 @@ Opções:
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│  PERGUNTA 1: "Ativar e implementar [nome]?"                        │
+│  📋 PERGUNTA 1: "Ativar e implementar [nome]?"                     │
+│  ⚠️ OBRIGATÓRIO - usar ferramenta question                           │
 │  Mostrar aprendizados relevantes                                      │
 └─────────────────────────────────────────────────────────────────────┘
                                     │
@@ -240,7 +269,9 @@ Opções:
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│  PERGUNTA 2: "Teste verde. Revisar código?"                         │
+│  📋 PERGUNTA 2: "Teste verde. Revisar código?"                     │
+│  ⚠️ OBRIGATÓRIO - usar ferramenta question                           │
+│  ⚠️ NUNCA avance sem confirmação humana!                             │
 │  Mostrar git diff                                                    │
 └─────────────────────────────────────────────────────────────────────┘
                                     │
@@ -253,7 +284,7 @@ Opções:
                                                   │
                                                   ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│  GATE: @verify-patterns                                              │
+│  🔒 GATE: @verify-patterns (via @ menção)                           │
 └─────────────────────────────────────────────────────────────────────┘
                                     │
                     ┌───────────────┴───────────────┐
@@ -286,8 +317,8 @@ Opções:
        │         ▼ (se aprovar: continuar)          │
        │         │                                     │
        └─────────┴─────────────────────────────────────┘
-                              │
-                              ▼
+                               │
+                               ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │  REGISTRAR + COMMIT                                                  │
 │  1. Registrar aprendizado no progress.md (categorizado)            │
@@ -296,7 +327,9 @@ Opções:
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│  PERGUNTA 3: "Continuar para próximo?"                               │
+│  📋 PERGUNTA 3: "Continuar para próximo?"                           │
+│  ⚠️ OBRIGATÓRIO - usar ferramenta question                           │
+│  ⚠️ NUNCA avance automaticamente!                                   │
 │  SIM → loop | NÃO → encerrar                                         │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -314,6 +347,73 @@ Opções:
 | **Commit** | Após aprovação, Conventional Commits |
 | **Encerrar** | Só quando não houver mais SKIP |
 | **NUNCA use `task`** | Use @ menção direta para subagents |
+| **SEM EXCEÇÕES** | NUNCA pular checkpoints - são OBRIGATÓRIOS |
+
+---
+
+## ⚠️ REGRAS CRÍTICAS DE FLUXO
+
+### BLOQUEIOS ABSOLUTOS
+
+```
+🚫 PROIBIDO AVANÇAR se:
+   - Teste acabou de ficar verde E humano não confirmou
+   - Checkpoint 2 (revisar código) não foi executado
+   - @verify-patterns não foi executado
+   - Checkpoint 3 (próximo?) não foi executado
+```
+
+### SEQUÊNCIA OBRIGATÓRIA
+
+```
+P1: "Ativar [nome]?"     → OBRIGATÓRIO ANTES do TDD
+   ↓
+TDD: RED → GREEN → REFACTOR
+   ↓
+P2: "Revisar código?"    → OBRIGATÓRIO APÓS verde
+   ↓
+@verify-patterns         → OBRIGATÓRIO APÓS aprovação
+   ↓
+Registrar + Commit       → OBRIGATÓRIO APÓS verify
+   ↓
+P3: "Próximo?"           → OBRIGATÓRIO ANTES do loop
+```
+
+### MENSAGENS DE ERRO SE PULADO
+
+Se detectar avanço sem checkpoint:
+
+```
+❌ ERRO CRÍTICO DE FLUXO
+
+O agente avançou sem executar o checkpoint obrigatório.
+
+Sequência esperada:
+  1. ✅ RED (teste falhou)
+  2. ✅ GREEN (teste passou) ← você está aqui
+  3. ⏳ P2: "Teste verde. Revisar código?"
+  4. ⏳ @verify-patterns
+  5. ⏳ Registrar + Commit
+  6. ⏳ P3: "Próximo?"
+
+Ação correta: Usar ferramenta question AGORA.
+```
+
+### VERIFICAÇÃO DE FLUXO
+
+Após cada fase do TDD, verificar:
+
+```typescript
+// Ao final do GREEN:
+const checkpointExecuted = await question({
+  question: "Teste verde. Revisar código?",
+  // ...
+});
+// SE não houver question call → FLUXO VIOLADO
+```
+
+**Regra:** A ferramenta `question` DEVE ser usada em cada checkpoint.
+Qualquer tentativa de continuar sem `question` é ERRO fatal.
 
 ---
 
@@ -395,12 +495,27 @@ DETECTAR:
   3. Se não existe → encerrar
 
 POR TESTE:
-  1. PERGUNTAR: "Ativar [nome]?"
+  1. 📋 PERGUNTAR: "Ativar [nome]?" ← OBRIGATÓRIO
   2. TDD: RED → GREEN → REFACTOR
-  3. PERGUNTAR: "Revisar código?"
-  4. GATE: @verify-patterns
+  3. 📋 PERGUNTAR: "Revisar código?" ← OBRIGATÓRIO
+  4. 🔒 GATE: @verify-patterns
      - Se falhou: PERGUNTAR guiar ou aprovar
   5. REGISTRAR + COMMIT
-  6. PERGUNTAR: "Próximo?"
+  6. 📋 PERGUNTAR: "Próximo?" ← OBRIGATÓRIO
   7. Loop ou encerrar
+```
+
+## Checklist de Verificação
+
+```
+□ Checkpoint 1: question "Ativar [nome]?" chamado?
+□ TDD completo: RED → GREEN → REFACTOR?
+□ Checkpoint 2: question "Revisar código?" chamado?
+□ Gate: @verify-patterns executado?
+□ Registros salvos no progress.md?
+□ Commit criado?
+□ Checkpoint 3: question "Próximo?" chamado?
+
+SE QUALQUER □ ESTIVER VAZIO:
+  → PARAR E EXECUTAR O CHECKPOINT FALTANTE
 ```

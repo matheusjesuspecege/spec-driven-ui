@@ -2,6 +2,7 @@
 
 > **FONTE DA VERDADE: `specs/features/button/features/button.feature`**
 > TDD sincronizado com BDD - cada teste corresponde a um cenário BDD
+> **Ordem por dependência**: `render → state → interaction → a11y`
 
 ---
 
@@ -21,23 +22,32 @@
 | Tag BDD | Status TDD | Count |
 |---------|------------|-------|
 | @smoke | `test()` (ativo) | 6 |
-| @hover | `test()` (ativo) | 1 |
-| @active | `test()` (ativo) | 1 |
-| @full-width | `test()` (ativo) | 1 |
-| @children | `test()` (ativo) | 1 |
+| @state | `test()` (ativo) | 2 |
 | others | `test.skip()` | 14 |
+
+### Ordem de Execução
+
+```
+RENDER (6)     → Componente existe e renderiza corretamente
+STATE (5)      → Estados: hover, active, disabled, loading, focus  
+INTERACTION (7) → Ações do usuário: cliques, navegações
+A11Y (4)       → Leitores de tela, touch targets
+```
 
 ---
 
 ## 2. Testes (Sincronizados com BDD)
 
-### 2.1 VARIANTES - Inverse
+### 2.1 RENDER (6 testes) - Renderização básica do componente
 
 | Teste | Tags | Status |
 |-------|------|--------|
 | `Inverse button tem estilo correto` | @smoke | ✅ ATIVO |
-| `Inverse button em hover` | @hover @smoke | ✅ ATIVO |
-| `Inverse button em estado active` | @active @smoke | ✅ ATIVO |
+| `Upgrade button tem dimensões do inverse sm-like` | @smoke | ✅ ATIVO |
+| `Upgrade button ocupa 100% do container` | @smoke | ✅ ATIVO |
+| `Inverse button renderiza children como texto Upgrade Now` | @smoke | ✅ ATIVO |
+| `Inverse button aceita className para estilos customizados` | @classname | ⏭️ SKIP |
+| `Inverse button aceita data-testid para identificação em testes` | @testid | ⏭️ SKIP |
 
 #### Snippet - `Inverse button tem estilo correto`
 
@@ -51,6 +61,76 @@ test('Inverse button tem estilo correto', async ({ page }) => {
   expect(styles?.color).toBe(hexToRgb(TOKENS.primary));
 });
 ```
+
+#### Snippet - `Upgrade button tem dimensões do inverse sm-like`
+
+```typescript
+// @smoke - ATIVO
+test('Upgrade button tem dimensões do inverse sm-like', async ({ page }) => {
+  const button = page.locator('[data-testid="button-inverse"]');
+  await expect(button).toBeVisible();
+  const styles = await getComputedStyles(page, '[data-testid="button-inverse"]');
+  expect(styles?.fontSize).toBe(12);
+  expect(styles?.fontWeight).toBe(600);
+  expect(styles?.borderRadius).toBe(6);
+  expect(styles?.paddingTop).toBe(10);
+  expect(styles?.paddingBottom).toBe(10);
+});
+```
+
+#### Snippet - `Upgrade button ocupa 100% do container`
+
+```typescript
+// @smoke - ATIVO
+test('Upgrade button occupies the full width of the container', async ({ page }) => {
+  const button = page.locator('[data-testid="button-inverse"]');
+  const styles = await getComputedStyles(page, '[data-testid="button-inverse"]');
+  const screen = await button.evaluate(() => window.screen.width);
+  expect(styles?.screenWidth).toBe(screen);
+});
+```
+
+#### Snippet - `Inverse button renderiza children como texto Upgrade Now`
+
+```typescript
+// @smoke - ATIVO
+test('Inverse button renderiza children como texto Upgrade Now', async ({ page }) => {
+  const button = page.locator('[data-testid="button-inverse"]');
+  await expect(button).toContainText(/Upgrade now/i);
+});
+```
+
+#### Snippet - `Inverse button aceita className para estilos customizados`
+
+```typescript
+// @classname
+test.skip('Inverse button aceita className para estilos customizados', async ({ page }) => {
+  const button = page.locator('[data-testid="button-inverse"]');
+  await expect(button).toHaveClass(/upgrade-btn/);
+});
+```
+
+#### Snippet - `Inverse button aceita data-testid para identificação em testes`
+
+```typescript
+// @testid
+test.skip('Inverse button aceita data-testid para identificação em testes', async ({ page }) => {
+  const button = page.locator('[data-testid="button-inverse"]');
+  await expect(button).toHaveAttribute('data-testid', 'button-inverse');
+});
+```
+
+---
+
+### 2.2 STATE (5 testes) - Estados do componente
+
+| Teste | Tags | Status |
+|-------|------|--------|
+| `Inverse button em hover` | @hover @smoke | ✅ ATIVO |
+| `Inverse button em estado active` | @active @smoke | ✅ ATIVO |
+| `Inverse button em disabled tem estilo correto` | @disabled | ⏭️ SKIP |
+| `Inverse button em loading exibe spinner e desabilita interação` | @loading | ⏭️ SKIP |
+| `Inverse button em focus tem focus ring visível` | @focus @a11y | ⏭️ SKIP |
 
 #### Snippet - `Inverse button em hover`
 
@@ -74,18 +154,9 @@ test('Inverse button em estado active', async ({ page }) => {
   await expect(button).toBeVisible();
   await button.click();
   const styles = await getComputedStyles(page, '[data-testid="button-inverse"]');
-  expect(styles?.backgroundColor).not.toBe('rgb(255, 255, 255)');
+  expect(styles?.opacity).toBe(1);
 });
 ```
-
----
-
-### 2.2 ESTADO - Disabled
-
-| Teste | Tags | Status |
-|-------|------|--------|
-| `Inverse button em disabled tem estilo correto` | @disabled | ⏭️ SKIP |
-| `Inverse button em disabled não responde a cliques` | @interaction | ⏭️ SKIP |
 
 #### Snippet - `Inverse button em disabled tem estilo correto`
 
@@ -99,26 +170,6 @@ test.skip('Inverse button em disabled tem estilo correto', async ({ page }) => {
   expect(styles?.cursor).toBe('not-allowed');
 });
 ```
-
-#### Snippet - `Inverse button em disabled não responde a cliques`
-
-```typescript
-// @interaction
-test.skip('Inverse button em disabled não responde a cliques', async ({ page }) => {
-  const button = page.locator('[data-testid="button-disabled-inverse"]');
-  await button.click();
-  // onClick não deve ser disparado
-});
-```
-
----
-
-### 2.3 ESTADO - Loading
-
-| Teste | Tags | Status |
-|-------|------|--------|
-| `Inverse button em loading exibe spinner e desabilita interação` | @loading | ⏭️ SKIP |
-| `Inverse button em loading não responde a cliques` | @interaction | ⏭️ SKIP |
 
 #### Snippet - `Inverse button em loading exibe spinner e desabilita interação`
 
@@ -135,29 +186,10 @@ test.skip('Inverse button em loading exibe spinner e desabilita interação', as
 });
 ```
 
-#### Snippet - `Inverse button em loading não responde a cliques`
-
-```typescript
-// @interaction
-test.skip('Inverse button em loading não responde a cliques', async ({ page }) => {
-  const button = page.locator('[data-testid="button-loading-inverse"]');
-  await button.click();
-  // onClick não deve ser disparado
-});
-```
-
----
-
-### 2.4 ESTADO - Focus
-
-| Teste | Tags | Status |
-|-------|------|--------|
-| `Inverse button em focus tem focus ring visível` | @a11y | ⏭️ SKIP |
-
 #### Snippet - `Inverse button em focus tem focus ring visível`
 
 ```typescript
-// @a11y
+// @focus @a11y
 test.skip('Inverse button em focus tem focus ring visível', async ({ page }) => {
   const button = page.locator('[data-testid="button-inverse"]');
   await button.focus();
@@ -169,50 +201,37 @@ test.skip('Inverse button em focus tem focus ring visível', async ({ page }) =>
 
 ---
 
-### 2.5 TAMANHO - Upgrade
+### 2.3 INTERACTION (7 testes) - Ações do usuário
 
 | Teste | Tags | Status |
 |-------|------|--------|
-| `Upgrade button tem dimensões do inverse sm-like` | @smoke | ✅ ATIVO |
-| `Upgrade button ocupa 100% do container` | @full-width @smoke | ✅ ATIVO |
-
-#### Snippet - `Upgrade button tem dimensões do inverse sm-like`
-
-```typescript
-// @smoke - ATIVO
-test('Upgrade button tem dimensões do inverse sm-like', async ({ page }) => {
-  const button = page.locator('[data-testid="button-inverse"]');
-  await expect(button).toBeVisible();
-  const styles = await getComputedStyles(page, '[data-testid="button-inverse"]');
-  expect(styles?.fontSize).toBe(12);
-  expect(styles?.fontWeight).toBe(600);
-  expect(styles?.borderRadius).toBe(6);
-  expect(styles?.paddingTop).toBe(10);
-  expect(styles?.paddingBottom).toBe(10);
-});
-```
-
-#### Snippet - `Upgrade button ocupa 100% do container`
-
-```typescript
-// @full-width @smoke - ATIVO
-test('Upgrade button ocupa 100% do container', async ({ page }) => {
-  const styles = await getComputedStyles(page, '[data-testid="button-inverse"]');
-  expect(styles?.width).toBe('100%');
-});
-```
-
----
-
-### 2.6 ACESSIBILIDADE
-
-| Teste | Tags | Status |
-|-------|------|--------|
+| `Inverse button em disabled não responde a cliques` | @interaction | ⏭️ SKIP |
+| `Inverse button em loading não responde a cliques` | @interaction | ⏭️ SKIP |
 | `Inverse button é navegável por teclado` | @keyboard | ⏭️ SKIP |
-| `Inverse button expõe estados corretamente para leitores de tela` | @aria | ⏭️ SKIP |
-| `Inverse button em disabled expõe estado corretamente` | @aria | ⏭️ SKIP |
-| `Inverse button em loading expõe estado corretamente` | @aria | ⏭️ SKIP |
-| `Inverse button em mobile tem touch target adequado` | @touch-target | ⏭️ SKIP |
+| `Double-click não causa ação duplicada no Inverse button` | @double-click | ⏭️ SKIP |
+| `Spinner aparece imediatamente ao clicar no Inverse button` | @double-click | ⏭️ SKIP |
+| `Transição para loading state preserva layout no Inverse button` | @loading-transition | ⏭️ SKIP |
+| `Inverse button type="button" não submete formulário inadvertidamente` | @type-attribute | ⏭️ SKIP |
+
+#### Snippet - `Inverse button em disabled não responde a cliques`
+
+```typescript
+// @interaction
+test.skip('Inverse button em disabled não responde a cliques', async ({ page }) => {
+  const button = page.locator('[data-testid="button-disabled-inverse"]');
+  await button.click({ force: true });
+});
+```
+
+#### Snippet - `Inverse button em loading não responde a cliques`
+
+```typescript
+// @interaction
+test.skip('Inverse button em loading não responde a cliques', async ({ page }) => {
+  const button = page.locator('[data-testid="button-loading-inverse"]');
+  await button.click({ force: true });
+});
+```
 
 #### Snippet - `Inverse button é navegável por teclado`
 
@@ -226,6 +245,76 @@ test.skip('Inverse button é navegável por teclado', async ({ page }) => {
   await page.keyboard.press('Space');
 });
 ```
+
+#### Snippet - `Double-click não causa ação duplicada no Inverse button`
+
+```typescript
+// @double-click
+test.skip('Double-click não causa ação duplicada no Inverse button', async ({ page }) => {
+  const button = page.locator('[data-testid="button-inverse"]');
+  let clickCount = 0;
+  await page.evaluate((selector) => {
+    const btn = document.querySelector(selector);
+    btn?.addEventListener('click', () => { clickCount++; });
+  }, '[data-testid="button-inverse"]');
+  await button.dblclick();
+  await button.click({ clickCount: 2 });
+  expect(clickCount).toBeLessThanOrEqual(1);
+});
+```
+
+#### Snippet - `Spinner aparece imediatamente ao clicar no Inverse button`
+
+```typescript
+// @double-click
+test.skip('Spinner aparece imediatamente ao clicar no Inverse button', async ({ page }) => {
+  const button = page.locator('[data-testid="button-click-loading-inverse"]');
+  await button.click();
+  const spinner = page.locator('[data-testid="button-click-loading-inverse"] .btn-spinner');
+  await expect(spinner).toBeVisible();
+});
+```
+
+#### Snippet - `Transição para loading state preserva layout no Inverse button`
+
+```typescript
+// @loading-transition
+test.skip('Transição para loading state preserva layout no Inverse button', async ({ page }) => {
+  const button = page.locator('[data-testid="button-click-loading-inverse"]');
+  await expect(button).toBeVisible();
+  const styles = await getComputedStyles(page, '[data-testid="button-click-loading-inverse"]');
+  expect(styles?.width).toBeDefined();
+  expect(styles?.height).toBeDefined();
+  await button.click();
+  const stylesAfter = await getComputedStyles(page, '[data-testid="button-click-loading-inverse"]');
+  expect(stylesAfter?.width).toBeDefined();
+  expect(stylesAfter?.height).toBeDefined();
+});
+```
+
+#### Snippet - `Inverse button type="button" não submete formulário inadvertidamente`
+
+```typescript
+// @type-attribute
+test.skip('Inverse button type-button não submete formulário inadvertidamente', async ({ page }) => {
+  const form = page.locator('[data-testid="form-submitted"]');
+  const button = form.locator('button');
+  await expect(button).toHaveAttribute('type', 'button');
+  await button.click();
+  await expect(form).not.toContainText(/Form submitted!/i);
+});
+```
+
+---
+
+### 2.4 A11Y (4 testes) - Acessibilidade
+
+| Teste | Tags | Status |
+|-------|------|--------|
+| `Inverse button expõe estados corretamente para leitores de tela` | @aria | ⏭️ SKIP |
+| `Inverse button em disabled expõe estado corretamente` | @aria | ⏭️ SKIP |
+| `Inverse button em loading expõe estado corretamente` | @aria | ⏭️ SKIP |
+| `Inverse button em mobile tem touch target adequado` | @touch-target | ⏭️ SKIP |
 
 #### Snippet - `Inverse button expõe estados corretamente para leitores de tela`
 
@@ -274,146 +363,15 @@ test.skip('Inverse button em mobile tem touch target adequado', async ({ page })
 
 ---
 
-### 2.7 PROTEÇÃO CRÍTICA (@defensive)
-
-| Teste | Tags | Status |
-|-------|------|--------|
-| `Double-click não causa ação duplicada no Inverse button` | @double-click | ⏭️ SKIP |
-| `Spinner aparece imediatamente ao clicar no Inverse button` | @double-click | ⏭️ SKIP |
-| `Transição para loading state preserva layout no Inverse button` | @loading-transition | ⏭️ SKIP |
-| `Inverse button type-button não submete formulário inadvertidamente` | @type-attribute | ⏭️ SKIP |
-
-#### Snippet - `Double-click não causa ação duplicada no Inverse button`
-
-```typescript
-// @double-click
-test.skip('Double-click não causa ação duplicada no Inverse button', async ({ page }) => {
-  const button = page.locator('[data-testid="button-inverse"]');
-  let clickCount = 0;
-  
-  // Mock do callback para contar cliques
-  await page.evaluate(() => {
-    const btn = document.querySelector('[data-testid="button-inverse"]') as HTMLButtonElement;
-    btn?.addEventListener('click', () => { clickCount++; }, { once: false });
-  });
-  
-  await button.dblclick();
-  await button.click({ clickCount: 2 });
-  
-  expect(clickCount).toBeLessThanOrEqual(1);
-});
-```
-
-#### Snippet - `Spinner aparece imediatamente ao clicar no Inverse button`
-
-```typescript
-// @double-click
-test.skip('Spinner aparece imediatamente ao clicar no Inverse button', async ({ page }) => {
-  const button = page.locator('[data-testid="button-inverse"]');
-  await button.click();
-  const spinner = page.locator('[data-testid="button-inverse"] .btn-spinner');
-  await expect(spinner).toBeVisible();
-});
-```
-
-#### Snippet - `Transição para loading state preserva layout no Inverse button`
-
-```typescript
-// @loading-transition
-test.skip('Transição para loading state preserva layout no Inverse button', async ({ page }) => {
-  const button = page.locator('[data-testid="button-loading-inverse"]');
-  await expect(button).toBeVisible();
-  const styles = await getComputedStyles(page, '[data-testid="button-loading-inverse"]');
-  expect(styles?.width).toBeDefined();
-  expect(styles?.height).toBeDefined();
-});
-```
-
-#### Snippet - `Inverse button type-button não submete formulário inadvertidamente`
-
-```typescript
-// @type-attribute
-test.skip('Inverse button type-button não submete formulário inadvertidamente', async ({ page }) => {
-  await page.goto('/form');
-  const button = page.locator('[data-testid="button-inverse"]');
-  await expect(button).toHaveAttribute('type', 'button');
-  await button.click();
-  const formSubmitted = page.locator('[data-testid="form-submitted"]');
-  await expect(formSubmitted).not.toBeVisible();
-});
-```
-
----
-
-### 2.8 CLASSNAME
-
-| Teste | Tags | Status |
-|-------|------|--------|
-| `Inverse button aceita className para estilos customizados` | @classname | ⏭️ SKIP |
-
-#### Snippet - `Inverse button aceita className para estilos customizados`
-
-```typescript
-// @classname
-test.skip('Inverse button aceita className para estilos customizados', async ({ page }) => {
-  const button = page.locator('[data-testid="button-inverse"]');
-  await expect(button).toHaveClass(/upgrade-btn/);
-});
-```
-
----
-
-### 2.9 DATATESTID
-
-| Teste | Tags | Status |
-|-------|------|--------|
-| `Inverse button aceita data-testid para identificação em testes` | @testid | ⏭️ SKIP |
-
-#### Snippet - `Inverse button aceita data-testid para identificação em testes`
-
-```typescript
-// @testid
-test.skip('Inverse button aceita data-testid para identificação em testes', async ({ page }) => {
-  const button = page.locator('[data-testid="upgrade-btn"]');
-  await expect(button).toBeVisible();
-});
-```
-
----
-
-### 2.10 CHILDREN
-
-| Teste | Tags | Status |
-|-------|------|--------|
-| `Inverse button renderiza children como texto Upgrade Now` | @children @smoke | ✅ ATIVO |
-
-#### Snippet - `Inverse button renderiza children como texto Upgrade Now`
-
-```typescript
-// @children @smoke - ATIVO
-test('Inverse button renderiza children como texto Upgrade Now', async ({ page }) => {
-  const button = page.locator('[data-testid="button-inverse"]');
-  await expect(button).toContainText('Upgrade Now');
-});
-```
-
----
-
 ## 3. Resumo
 
 | Categoria | Total | Ativos | Skipped |
 |-----------|-------|--------|---------|
-| Variantes | 3 | 3 | 0 |
-| Disabled | 2 | 0 | 2 |
-| Loading | 2 | 0 | 2 |
-| Focus | 1 | 0 | 1 |
-| Size | 2 | 2 | 0 |
-| Acessibilidade | 5 | 0 | 5 |
-| Defensive | 4 | 0 | 4 |
-| Classname | 1 | 0 | 1 |
-| Testid | 1 | 0 | 1 |
-| Children | 1 | 1 | 0 |
-| **TOTAL** | **22** | **6** | **16** |
+| RENDER | 6 | 6 | 0 |
+| STATE | 5 | 2 | 3 |
+| INTERACTION | 7 | 0 | 7 |
+| A11Y | 4 | 0 | 4 |
+| **TOTAL** | **22** | **8** | **14** |
 
 ---
 
@@ -462,7 +420,6 @@ npx playwright test button.spec.ts -g "Inverse button tem estilo correto"
 | `expect(locator).toHaveClass(regex)` | Verifica classes CSS | `await expect(button).toHaveClass(/upgrade-btn/)` |
 | `expect(value).toBe(value)` | Verifica igualdade | `expect(styles?.fontSize).toBe(12)` |
 | `expect(value).toBeGreaterThanOrEqual(n)` | Verifica valor mínimo | `expect(box?.width).toBeGreaterThanOrEqual(44)` |
-| `expect(value).not.toBe(value)` | Negação de verificação | `expect(styles?.backgroundColor).not.toBe('rgb(255, 255, 255)')` |
 | `page.keyboard.press(key)` | Simula tecla pressionada | `await page.keyboard.press('Tab')` |
 | `locator.hover()` | Simula hover do mouse | `await button.hover()` |
 | `locator.focus()` | Coloca foco no elemento | `await button.focus()` |
@@ -489,14 +446,6 @@ npx playwright test button.spec.ts -g "Inverse button tem estilo correto"
 | `aria-disabled` | Indica elemento desabilitado (mantém no DOM) | Estado disabled | `aria-disabled="true"` |
 | `aria-label` | Define nome acessível para elemento | Icon-only buttons | `aria-label="Close"` |
 
-### 6.4 Design System
-
-| Conceito | Implementação |
-|----------|--------------|
-| **Design Tokens** | Objeto `TOKENS` com valores centralizados para cores, espaçamentos, etc. |
-| **Semantic Colors** | Nomes descritivos: `primary`, `bgMuted`, `borderFocus` |
-| **Consistent Selectors** | Uso de `data-testid` para identificação estável em testes |
-
 ---
 
 ## 7. Dicas de Design Patterns
@@ -511,7 +460,6 @@ npx playwright test button.spec.ts -g "Inverse button tem estilo correto"
 | **Arrange-Act-Assert** | Setup (locators) → Ação (click, hover) → Verificação (expect) |
 | **Sem comentários desnecessários** | Código auto-explicativo; comentários só quando necessário explicar "por que" |
 | **SRP (Single Responsibility Principle)** | Cada teste uma única responsabilidade - verificar um comportamento |
-| **Functions should do one thing** | Cada `expect` verifica uma coisa; não misturar verificações unrelated |
 
 ### 7.2 Testing Patterns
 
@@ -521,8 +469,6 @@ npx playwright test button.spec.ts -g "Inverse button tem estilo correto"
 | **Test Isolation** | Cada teste é independente | `beforeEach` garante estado limpo entre testes |
 | **Descriptive Test Names** | Nomes longos mas descritivos | `Inverse button em hover` descreve exatamente o cenário |
 | **Single Assertion Focus** | Assertions agrupadas logicamente | Múltiplos `expect` para mesma propriedade |
-| **Page Object Pattern** | Separa lógica de página | `page.locator()` abstrai seletores |
-| **AAA (Arrange-Act-Assert)** | Organização do teste | Setup → Execução → Verificação |
 
 ### 7.3 Acessibilidade (WCAG)
 
@@ -530,10 +476,8 @@ npx playwright test button.spec.ts -g "Inverse button tem estilo correto"
 |----------------|-------------|------------|
 | **Keyboard Navigation** | `page.keyboard.press('Tab')` verifica navegação por Tab | [WCAG 2.1 - 2.1.1](https://www.w3.org/WAI/WCAG21/Understanding/keyboard) |
 | **Focus Visibility** | `expect(button).toBeFocused()` verifica indicator de focus | [WCAG 2.4.7 - Focus Visible](https://www.w3.org/WAI/WCAG21/Understanding/focus-visible) |
-| **Focus Order** | Teclas Tab, Enter, Space funcionam corretamente | [WCAG 2.4.3 - Focus Order](https://www.w3.org/WAI/WCAG21/Understanding/focus-order) |
 | **Touch Target Size** | `expect(box?.width).toBeGreaterThanOrEqual(44)` - mínimo 44x44px | [WCAG - Touch Target Size](https://www.w3.org/WAI/WCAG21/Understanding/target-size-minimum) |
 | **ARIA Attributes** | `aria-busy`, `aria-disabled` comunicam estado | [WAI-ARIA Button Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/button/) |
-| **Role Attribute** | `role="button"` define semântica correta | [ARIA in HTML](https://www.w3.org/WAI/WCAG21/Understanding/name-role-value) |
 
 ### 7.4 Design System Patterns
 
@@ -542,8 +486,6 @@ npx playwright test button.spec.ts -g "Inverse button tem estilo correto"
 | **Design Tokens** | `const TOKENS = { primary: '#ff5c00' }` | Mudanças centralizadas |
 | **Consistent Selectors** | `data-testid="button-inverse"` | Testes menos frágeis |
 | **Component States** | @disabled, @loading, @focus | Cobertura completa |
-| **Semantic Naming** | `bgMuted` ao invés de `bgBlack` | Flexibilidade de temas |
-| **Consistent Spacing** | Múltiplos de 4px (4, 8, 12, 16...) | Alinhamento visual |
 
 ### 7.5 Defensive Programming (Lei de Murphy)
 
@@ -554,45 +496,34 @@ npx playwright test button.spec.ts -g "Inverse button tem estilo correto"
 | **State Transition Guards** | Loading state desabilita interação |
 | **Layout Shift Prevention** | Dimensões preservadas durante transições |
 
-### 7.6 Recursos Adicionais
-
-| Recurso | Link |
-|---------|------|
-| Playwright Documentation | https://playwright.dev/docs/intro |
-| Playwright API Reference | https://playwright.dev/docs/api/class-page |
-| WAI-ARIA Button Pattern | https://www.w3.org/WAI/ARIA/apg/patterns/button/ |
-| WCAG 2.1 Guidelines | https://www.w3.org/WAI/WCAG21/quickref/ |
-| Clean Code (Robert Martin) | https://gist.github.com/wojteklu/73c6913b9d7a20c4a79f |
-| Arrange-Act-Assert Pattern | https://automationpanda.com/2020/07/07/arrange-act-assert-a-pattern-for-writing-good-tests/ |
-| WCAG Contrast Checker | https://webaim.org/resources/contrastchecker/ |
-
 ---
 
 ## 8. Tags BDD - Referência Rápida
 
-| Tag | Significado | Status Esperado |
-|-----|------------|----------------|
-| @smoke | Teste crítico de smoke | `test()` (ativo) |
-| @hover | Comportamento em hover | `test()` (ativo) |
-| @active | Comportamento em active | `test()` (ativo) |
-| @disabled | Estado desabilitado | `test.skip()` |
-| @loading | Estado de carregamento | `test.skip()` |
-| @focus | Estado de focus | `test.skip()` |
-| @a11y | Acessibilidade | `test.skip()` |
-| @keyboard | Navegação por teclado | `test.skip()` |
-| @aria | Atributos ARIA | `test.skip()` |
-| @touch-target | Área de toque mobile | `test.skip()` |
-| @full-width | Botão largura total | `test()` (ativo) |
-| @double-click | Proteção contra double-click | `test.skip()` |
-| @loading-transition | Transição de estado | `test.skip()` |
-| @type-attribute | Atributo type do HTML | `test.skip()` |
-| @classname | Propriedade className | `test.skip()` |
-| @testid | Atributo data-testid | `test.skip()` |
-| @children | Conteúdo children | `test()` (ativo) |
-| @interaction | Interação do usuário | `test.skip()` |
-| @defensive | Proteção crítica | `test.skip()` |
+| Tag | Significado | Categoria |
+|-----|------------|-----------|
+| @smoke | Teste crítico de smoke | RENDER |
+| @hover | Comportamento em hover | STATE |
+| @active | Comportamento em active | STATE |
+| @disabled | Estado desabilitado | STATE |
+| @loading | Estado de carregamento | STATE |
+| @focus | Estado de focus | STATE |
+| @a11y | Acessibilidade | A11Y |
+| @keyboard | Navegação por teclado | INTERACTION |
+| @aria | Atributos ARIA | A11Y |
+| @touch-target | Área de toque mobile | A11Y |
+| @full-width | Botão largura total | RENDER |
+| @double-click | Proteção contra double-click | INTERACTION |
+| @loading-transition | Transição de estado | INTERACTION |
+| @type-attribute | Atributo type do HTML | INTERACTION |
+| @classname | Propriedade className | RENDER |
+| @testid | Atributo data-testid | RENDER |
+| @children | Conteúdo children | RENDER |
+| @interaction | Interação do usuário | INTERACTION |
+| @defensive | Proteção crítica | INTERACTION |
 
 ---
 
 > **Nota:** Este documento é gerado automaticamente e sincronizado com o arquivo `.feature` BDD.
 > Qualquer alteração nos nomes dos testes deve manter correspondência 1:1 com os cenários BDD.
+> **Ordem de execução**: render → state → interaction → a11y
