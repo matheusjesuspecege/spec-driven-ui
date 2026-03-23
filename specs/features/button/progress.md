@@ -24,3 +24,7 @@
 ### [2026-03-22] Loading Click Behavior
 - O `aria-disabled={loading}` impede resposta a cliques
 - Mesmo padrão do disabled: usar `click({ force: true })` no teste para forçar clique
+
+### [2026-03-22] Focus Ring Pattern
+- Classes Tailwind para focus ring: `focus:outline-2 focus:outline-offset-2 focus:outline-[#3b82f6]`
+- Usar cor literal `[#3b82f6]` em vez de CSS variable para compatibilidade

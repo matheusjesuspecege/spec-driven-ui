@@ -118,7 +118,15 @@ test.describe("Feature: Button (BDD Source)", () => {
     await button.click({ force: true });
   });
 
-  test.skip("Inverse button em focus tem focus ring visível", async () => {});
+  test("Inverse button em focus tem focus ring visível", async ({
+    page,
+  }) => {
+    const button = page.locator(buttonInverseID);
+    await button.focus();
+    const styles = await getComputedStyles(page, buttonInverseID);
+    expect(styles?.outlineWidth).toBe(2);
+    expect(styles?.outlineColor).toBe(hexToRgb(TOKENS.borderFocus));
+  });
 
   test.skip("Inverse button é navegável por teclado", async () => {});
 
