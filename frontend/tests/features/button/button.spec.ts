@@ -150,7 +150,13 @@ test.describe("Feature: Button (BDD Source)", () => {
     await expect(button).toHaveAttribute("aria-disabled", "true");
   });
 
-  test.skip("Inverse button em loading expõe estado corretamente", async () => {});
+  test("Inverse button em loading expõe estado corretamente", async ({
+    page,
+  }) => {
+    const button = page.locator(buttonLoadingInverseID);
+    await expect(button).toHaveAttribute("aria-busy", "true");
+    await expect(button).toHaveAttribute("aria-disabled", "true");
+  });
 
   test.skip("Inverse button em mobile tem touch target adequado", async () => {});
 
