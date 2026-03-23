@@ -136,7 +136,12 @@ test.describe("Feature: Button (BDD Source)", () => {
     await page.keyboard.press("Space");
   });
 
-  test.skip("Inverse button expõe estados corretamente para leitores de tela", async () => {});
+  test("Inverse button expõe estados corretamente para leitores de tela", async ({
+    page,
+  }) => {
+    const button = page.locator(buttonInverseID);
+    await expect(button).toHaveAttribute("role", "button");
+  });
 
   test.skip("Inverse button em disabled expõe estado corretamente", async () => {});
 

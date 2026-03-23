@@ -32,3 +32,7 @@
 ### [2026-03-22] Keyboard Navigation
 - Elemento `<button>` nativo já suporta navegação por teclado
 - Teste usa `page.keyboard.press("Tab")` + `toBeFocused()` para verificar focus
+
+### [2026-03-22] Accessibility - Role Attribute
+- Adicionar `role="button"` explicitamente para leitores de tela
+- Teste usa `toHaveAttribute("role", "button")` para verificar
