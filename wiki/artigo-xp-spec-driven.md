@@ -57,7 +57,7 @@ Precisávamos de:
 | **Pair Programming** | Agents trabalhando em conjunto |
 | **Test-Driven Development (TDD)** | RED → GREEN → REFACTOR |
 | **Continuous Integration** | Pre-commit hooks |
-| **Refactoring** | @verify-patterns |
+| **Refactoring** | /verify-patterns |
 | **Simple Design** | Atomic Design |
 | **Collective Ownership** | Design System compartilhado |
 | **Sustainable Pace** | Worktrees para paralelização |
@@ -139,7 +139,7 @@ Precisávamos de:
 | **@bdd-generator** | Gera cenários BDD em Gherkin |
 | **@tdd-generator** | Gera testes Playwright documentados |
 | **@implement-tasks** | Executa implementação via TDD |
-| **@verify-patterns** | Valida padrões e convenções |
+| **/verify-patterns** | Valida padrões e convenções (Skill) |
 | **@analyze-consistency** | Analisa consistência entre artefatos |
 | **@tdd-playwright** | Executa TDD por teste |
 | **@worktree-mapper** | Mapeia dependências para paralelização |
@@ -215,7 +215,7 @@ Precisávamos de:
 | **Simplicity** | @research-to-plan (faz o mínimo necessário) |
 | **Feedback** | @tdd-generator + @implement-tasks (testes como validação) |
 | **Testing** | *.spec.ts (especificação executável) |
-| **Refactoring** | @verify-patterns (mantém código limpo) |
+| **Refactoring** | /verify-patterns (mantém código limpo) |
 
 ### 4.3 O Pipeline Completo
 
@@ -269,7 +269,7 @@ Precisávamos de:
 │   │     Input: *.spec.ts                               │   │
 │   │     Output: componente.tsx                         │   │
 │   │                                                     │   │
-│   │     + GATE: @verify-patterns + typecheck + lint    │   │
+│   │     + GATE: /verify-patterns + typecheck + lint    │   │
 │   └─────────────────────────────────────────────────────┘   │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
@@ -315,7 +315,7 @@ Precisávamos de:
 │          │                                                  │
 │          ▼                                                  │
 │   ┌─────────────────────────────────────────────────────┐   │
-│   │  GATE (@verify-patterns)                             │   │
+│   │  GATE (/verify-patterns)                             │   │
 │   │  Verifica:                                           │   │
 │   │  → Convenções de código seguidas?                    │   │
 │   │  → Tipos TypeScript corretos?                        │   │
@@ -342,7 +342,7 @@ Precisávamos de:
 |----|----------------|
 | **Feedback rápido** | Teste falha/sucesso em segundos |
 | **Testing** | *.spec.ts como especificação |
-| **Refactoring** | @verify-patterns após cada ciclo |
+| **Refactoring** | /verify-patterns após cada ciclo |
 | **Courage** | Confiar nos testes para detectar regressions |
 
 ---
@@ -939,7 +939,7 @@ O **Extreme Programming** não é apenas uma metodologia - é uma filosofia que 
 |----------|------------|-----------|
 | **Comunicação** | *.feature | @bdd-generator |
 | **Feedback** | *.spec.ts | @tdd-generator, @implement-tasks |
-| **Simplicidade** | folders planas | @verify-patterns |
+| **Simplicidade** | folders planas | /verify-patterns |
 | **Integração** | pre-commit | @analyze-consistency |
 | **Velocidade** | worktrees | @worktree-runner |
 

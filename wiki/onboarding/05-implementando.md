@@ -140,7 +140,7 @@ frontend/
 
 □ Teste criado seguindo *.feature
 □ Teste passa com pnpm playwright test
-□ @verify-patterns passou
+□ /verify-patterns passou
 □ pnpm tsc --noEmit passou
 □ pnpm eslint passou
 □ progress.md atualizado

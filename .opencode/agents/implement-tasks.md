@@ -174,7 +174,7 @@ if (!match) {
 
 ---
 
-## Gate: @verify-patterns
+## Gate: /verify-patterns (Skill)
 
 Executar após aprovação humana do código.
 
@@ -203,7 +203,7 @@ Opções:
 4. Atualizar progress.md:
    - Adicionar novos aprendizados
    - Remover aprendizados que não se aplicam
-5. Executar @verify-patterns novamente
+5. Executar /verify-patterns novamente
 6. Se falhar: perguntar novamente
 7. Se aprovar: continuar para registro + commit
 
@@ -284,7 +284,7 @@ Opções:
                                                   │
                                                   ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│  🔒 GATE: @verify-patterns (via @ menção)                           │
+│  🔒 GATE: /verify-patterns (Skill)                          │
 └─────────────────────────────────────────────────────────────────────┘
                                     │
                     ┌───────────────┴───────────────┐
@@ -342,7 +342,7 @@ Opções:
 |-------|---------|
 | **TDD First** | Sempre RED → GREEN → REFACTOR |
 | **Aprovação** | Perguntar em 3 pontos: ativar, revisar, próximo |
-| **Gate** | @verify-patterns antes do commit |
+| **Gate** | /verify-patterns (Skill) antes do commit |
 | **Progress** | Registrar após aprovação, categorizado |
 | **Commit** | Após aprovação, Conventional Commits |
 | **Encerrar** | Só quando não houver mais SKIP |
@@ -359,7 +359,7 @@ Opções:
 🚫 PROIBIDO AVANÇAR se:
    - Teste acabou de ficar verde E humano não confirmou
    - Checkpoint 2 (revisar código) não foi executado
-   - @verify-patterns não foi executado
+   - /verify-patterns não foi executado
    - Checkpoint 3 (próximo?) não foi executado
 ```
 
@@ -372,7 +372,7 @@ TDD: RED → GREEN → REFACTOR
    ↓
 P2: "Revisar código?"    → OBRIGATÓRIO APÓS verde
    ↓
-@verify-patterns         → OBRIGATÓRIO APÓS aprovação
+/verify-patterns         → OBRIGATÓRIO APÓS aprovação
    ↓
 Registrar + Commit       → OBRIGATÓRIO APÓS verify
    ↓
@@ -392,7 +392,7 @@ Sequência esperada:
   1. ✅ RED (teste falhou)
   2. ✅ GREEN (teste passou) ← você está aqui
   3. ⏳ P2: "Teste verde. Revisar código?"
-  4. ⏳ @verify-patterns
+   4. ⏳ /verify-patterns
   5. ⏳ Registrar + Commit
   6. ⏳ P3: "Próximo?"
 
@@ -498,8 +498,8 @@ POR TESTE:
   1. 📋 PERGUNTAR: "Ativar [nome]?" ← OBRIGATÓRIO
   2. TDD: RED → GREEN → REFACTOR
   3. 📋 PERGUNTAR: "Revisar código?" ← OBRIGATÓRIO
-  4. 🔒 GATE: @verify-patterns
-     - Se falhou: PERGUNTAR guiar ou aprovar
+   4. 🔒 GATE: /verify-patterns (Skill)
+      - Se falhou: PERGUNTAR guiar ou aprovar
   5. REGISTRAR + COMMIT
   6. 📋 PERGUNTAR: "Próximo?" ← OBRIGATÓRIO
   7. Loop ou encerrar
@@ -511,7 +511,7 @@ POR TESTE:
 □ Checkpoint 1: question "Ativar [nome]?" chamado?
 □ TDD completo: RED → GREEN → REFACTOR?
 □ Checkpoint 2: question "Revisar código?" chamado?
-□ Gate: @verify-patterns executado?
+□ Gate: /verify-patterns (Skill) executado?
 □ Registros salvos no progress.md?
 □ Commit criado?
 □ Checkpoint 3: question "Próximo?" chamado?

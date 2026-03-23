@@ -188,7 +188,7 @@ Decisões: bottom-up, mock data, Sidebar primeiro, cores #0A0A0B
 
 **Como invocar:**
 ```
-@verify-patterns Verifique o componente Sidebar
+/verify-patterns Verifique o componente Sidebar
 ```
 
 **Verificações:**
@@ -367,7 +367,7 @@ Decisões: bottom-up, mock data, Sidebar primeiro, cores #0A0A0B
 | Preciso de testes | `@tdd-generator` |
 | Vou implementar | `@implement-tasks` |
 | Ciclo TDD | `@tdd-playwright` |
-| Validar código | `@verify-patterns` |
+| Validar código | `/verify-patterns` |
 | Extrair tokens | `@design-tokens-generator` |
 | Criar worktrees | `@worktree-runner` |
 | Mapear dependências | `@worktree-mapper` |

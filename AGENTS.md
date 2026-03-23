@@ -27,7 +27,7 @@ Leia primeiro: `@specs/docs/guardrails.md`
 | `@tdd-generator` | Gera testes *.spec.ts |
 | `@verify-and-sync-bdd-tdd` | Sincroniza BDD com testes |
 | `@implement-tasks` | Implementa código via TDD |
-| `@verify-patterns` | Valida padrões e convenções |
+| `@/verify-patterns` | Valida padrões e convenções |
 | `@analyze-consistency` | Analisa consistência entre artefatos |
 | `@design-tokens-generator` | Extrai tokens → globals.css |
 | `@diff-design-vs-code` | Compara design com código |
