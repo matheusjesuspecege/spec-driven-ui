@@ -23,6 +23,7 @@ export const getComputedStyles = async (page: Page, selector: string) => {
       width: styles.width,
       display: styles.display,
       border: styles.border,
+      borderWidth: parseInt(styles.borderWidth),
       screenWidth: window.screen.width
     };
   }, selector);

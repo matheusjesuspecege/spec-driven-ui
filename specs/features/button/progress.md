@@ -22,8 +22,7 @@
 - Atributos ARIA: `aria-busy={loading}` e `aria-disabled={loading}`
 
 ### [2026-03-22] Loading Click Behavior
-- O `aria-disabled={loading}` impede resposta a cliques
-- Mesmo padrão do disabled: usar `click({ force: true })` no teste para forçar clique
+- Usar `click({ force: true })` no teste para forçar clique
 
 ### [2026-03-22] Focus Ring Pattern
 - Classes Tailwind para focus ring: `focus:outline-2 focus:outline-offset-2 focus:outline-[#3b82f6]`
@@ -36,10 +35,6 @@
 ### [2026-03-22] Accessibility - Role Attribute
 - Adicionar `role="button"` explicitamente para leitores de tela
 - Teste usa `toHaveAttribute("role", "button")` para verificar
-
-### [2026-03-22] Disabled ARIA State
-- `aria-disabled` deve combinar `loading || props.disabled`
-- Teste verifica `aria-disabled="true"` em estado disabled
 
 ### [2026-03-22] Mobile Touch Target
 - Height do botão: `h-11` (44px) para atingir touch target mínimo de 44px
