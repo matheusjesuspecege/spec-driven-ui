@@ -61,3 +61,8 @@
 - Verificar que `type="button"` não submete formulário
 - Usar `toHaveAttribute("type", "button")` para verificar
 - Usar `form.locator("button")` para localizar botão dentro do form
+
+### [2026-03-22] Custom className Support
+- Extrair `className` da desestruturação antes de `...props`
+- Mesclar classes: `${baseClasses} ${customClassName || ""}`
+- Ordem importa: classes base primeiro, custom por último

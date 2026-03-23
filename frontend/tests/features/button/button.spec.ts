@@ -210,7 +210,10 @@ test.describe("Feature: Button (BDD Source)", () => {
     await expect(form).not.toContainText(/Form submitted!/i);
   });
 
-  test.skip("Inverse button aceita className para estilos customizados", async () => {});
+  test("Inverse button aceita className para estilos customizados", async ({ page }) => {
+    const button = page.locator(buttonInverseID);
+    await expect(button).toHaveClass(/upgrade-btn/);
+  });
 
   test.skip("Inverse button aceita data-testid para identificação em testes", async () => {});
 });

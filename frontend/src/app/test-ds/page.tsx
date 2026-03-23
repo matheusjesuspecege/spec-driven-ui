@@ -14,7 +14,7 @@ export default function TestDS() {
 
 const Buttons = () => (
   <div className="flex flex-col gap-5 w-screen">
-    <Button data-testid="button-inverse" variant="inverse" fullWidth>
+    <Button data-testid="button-inverse" variant="inverse" fullWidth className="upgrade-btn">
       Upgrade Now
     </Button>
     <Button data-testid="button-disabled-inverse" variant="inverse" fullWidth disabled>
