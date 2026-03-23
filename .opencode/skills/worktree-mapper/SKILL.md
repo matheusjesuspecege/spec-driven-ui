@@ -1,8 +1,15 @@
 ---
 name: worktree-mapper
 description: "Analisa uma feature e gera relatório sobre worktrees necessários. Use quando precisar mapear dependências de uma feature antes de criar worktrees Git paralelas."
-compatibility: "Requer acesso a arquivos em specs/features/"
+license: MIT
+compatibility: opencode
 metadata:
+  version: "1.0"
+  user-invocable: true
+  triggers:
+    - "@worktree-mapper"
+    - "mapear worktrees"
+    - "analisar dependências"
   temperature: "0.2"
   permission:
     edit: allow
@@ -26,7 +33,7 @@ Exemplo:
 
 1. `specs/docs/convencoes-codigo.md` — Padrões de código
 2. `specs/docs/guardrails.md` — Antipadrões
-3. `.opencode/agents/verify-patterns.md` — Regras de validação
+3. `.opencode/skills/verify-patterns/SKILL.md` — Regras de validação
 
 **REGRAS CRÍTICAS (verify-patterns.md linha 123):**
 - ❌ NÃO gere tasks para `index.ts` (barrel exports são PROIBIDOS)

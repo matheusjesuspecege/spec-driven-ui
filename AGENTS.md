@@ -17,24 +17,29 @@ Leia primeiro: `@specs/docs/guardrails.md`
 
 ---
 
-## 🧠 Agentes
+## 🧠 Skills
 
-| Agente | Função |
-|--------|--------|
-| `@us-to-research` | Converte US em research.md |
-| `@research-to-plan` | Gera plano de ação |
-| `@bdd-generator` | Gera cenários BDD (*.feature) |
-| `@tdd-generator` | Gera testes *.spec.ts |
-| `@verify-and-sync-bdd-tdd` | Sincroniza BDD com testes |
-| `@implement-tasks` | Implementa código via TDD |
-| `@/verify-patterns` | Valida padrões e convenções |
-| `@analyze-consistency` | Analisa consistência entre artefatos |
-| `@design-tokens-generator` | Extrai tokens → globals.css |
-| `@diff-design-vs-code` | Compara design com código |
-| `@export-code-to-design` | Exporta código para Pencil |
-| `@import-design-to-code` | Importa design aprovado |
-| `@worktree-mapper` | Mapeia dependências entre componentes |
-| `@worktree-runner` | Cria worktrees Git paralelos |
+| Skill | Função |
+|-------|--------|
+| `/us-to-research` | Converte US em research.md |
+| `/research-to-plan` | Gera plano de ação |
+| `/bdd-generator` | Gera cenários BDD (*.feature) |
+| `/tdd-generator` | Gera testes *.spec.ts |
+| `/verify-and-sync-bdd-tdd` | Sincroniza BDD com testes |
+| `/verify-patterns` | Valida padrões e convenções |
+| `/analyze-consistency` | Analisa consistência entre artefatos |
+| `/design-tokens-generator` | Extrai tokens → globals.css |
+| `/diff-design-vs-code` | Compara design com código |
+| `/export-code-to-design` | Exporta código para Pencil |
+| `/import-design-to-code` | Importa design aprovado |
+| `/worktree-mapper` | Mapeia dependências entre componentes |
+| `/worktree-runner` | Cria worktrees Git paralelos |
+
+## 🤖 Subagentes
+
+| Subagent | Função |
+|----------|--------|
+| `@implement-tasks` | Implementa código via TDD com checkpoint obrigatório |
 
 ---
 
