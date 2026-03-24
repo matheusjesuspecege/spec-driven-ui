@@ -23,6 +23,7 @@ const avatarTestID = '[data-testid="avatar"]';
 const avatarTestID_sm = '[data-testid="avatar-sm"]'
 const avatarTestID_md = '[data-testid="avatar-md"]'
 const avatarTestID_lg = '[data-testid="avatar-lg"]'
+const avatarTestID_xl = '[data-testid="avatar-xl"]'
 
 test.describe('Avatar', () => {
   test.beforeEach(async ({page}) => {
@@ -83,8 +84,12 @@ test.describe('Avatar', () => {
     expect(styles?.height).toBe(TOKENS.avatar.sizes.lg.height);
   });
 
-  test.skip('Avatar extra-large renderiza com tamanho correto', async ({ page }) => {
-    // TODO: Implementar teste para size="xl"
+  test('Avatar extra-large renderiza com tamanho correto', async ({ page }) => {
+    const avatar = page.locator(avatarTestID_xl);
+    await expect(avatar).toBeVisible();
+    const styles = await getComputedStyles(page, avatarTestID_xl);
+    expect(styles?.width).toBe(TOKENS.avatar.sizes.xl.width);
+    expect(styles?.height).toBe(TOKENS.avatar.sizes.xl.height);
   });
 
   test.skip('Texto centralizado verticalmente', async ({ page }) => {

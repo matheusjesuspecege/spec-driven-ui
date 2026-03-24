@@ -20,6 +20,7 @@ const AvatarTest = () => (
     <Avatar initials="MR" data-testid="avatar-sm" size="sm" />
     <Avatar initials="MR" data-testid="avatar-md" size="md" />
     <Avatar initials="MR" data-testid="avatar-lg" size="lg" />
+    <Avatar initials="MR" data-testid="avatar-xl" size="xl" />
   </div>
 );
 

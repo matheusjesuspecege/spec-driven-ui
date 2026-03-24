@@ -3,7 +3,7 @@ interface AvatarProps extends React.DetailedHTMLProps<
   HTMLDivElement
 > {
   initials: string;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
 }
 
 export const Avatar = ({ initials, size = "md", ...props }: AvatarProps) => (
