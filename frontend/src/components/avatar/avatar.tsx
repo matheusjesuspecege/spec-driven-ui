@@ -3,14 +3,19 @@ interface AvatarProps extends React.DetailedHTMLProps<
   HTMLDivElement
 > {
   initials: string;
+  size?: "sm" | "md";
 }
 
-export const Avatar = ({ initials, ...props }: AvatarProps) => (
+export const Avatar = ({ initials, size = "md", ...props }: AvatarProps) => (
   <div
-    data-testid="avatar"
-    className="rounded-[50%] size-9 bg-(--color-bg-overlay) text-(--color-text-subtle)"
+    className={`rounded-[50%] ${sizeClasses[size]} bg-(--color-bg-overlay) text-(--color-text-subtle)`}
     {...props}
   >
     {initials}
   </div>
 );
+
+const sizeClasses = {
+  sm: "size-6 text-(--font-size-3xs)",
+  md: "size-9 text-[12px]",
+};

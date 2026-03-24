@@ -9,10 +9,17 @@ export default function TestDS() {
     <>
       <Buttons />
       <Form />
-      <Avatar initials="MR" data-testid="avatar" />
+      <AvatarTest />
     </>
   );
 }
+
+const AvatarTest = () => (
+  <div className="flex gap-4">
+    <Avatar initials="MR" data-testid="avatar" />
+    <Avatar initials="MR" data-testid="avatar-sm" size="sm" />
+  </div>
+);
 
 const Buttons = () => (
   <div className="flex flex-col gap-5 w-screen">
