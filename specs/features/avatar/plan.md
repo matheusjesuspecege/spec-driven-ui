@@ -2,10 +2,13 @@
 
 > Gerado a partir de: `specs/features/avatar/research.md`
 > Foco: Frontend
+> Pencil ID: `sYLr4`
 
 ## 1. Visão Geral Técnica
 
-Componente atômico de Avatar que exibe iniciais do usuário em formato circular. Sem integração com backend - componente UI puro menerima props de conteúdo (string de iniciais) e aparência (tamanho, cores). Segue padrão de componentes atômicos do projeto.
+Componente atômico de Avatar que exibe iniciais do usuário em formato circular. Sem integração com backend - componente UI puro receber props de conteúdo (string de iniciais) e aparência (tamanho, cores). Segue padrão de componentes atômicos do projeto.
+
+**Design Reference:** `pencil-demo.pen` → nó `sYLr4`
 
 ---
 

@@ -1,8 +1,14 @@
-@desktop
+@desktop @avatar @atom @component
 Funcionalidade: Avatar com iniciais
   Como usuário do sistema
-              Eu quero ver as iniciais do usuário em um avatar circular
+  Eu quero ver as iniciais do usuário em um avatar circular
   Para que eu possa identificar o usuário quando não houver foto de perfil
+
+  # ═══════════════════════════════════════════════════════════
+  # PENCIL_IDS (Source: research.md)
+  # sYLr4: Avatar component
+  # ═══════════════════════════════════════════════════════════
+                **pencil_id:** "sYLr4"
 
         @render @pending
         Cenário: Avatar renderiza círculo com border-radius 50%

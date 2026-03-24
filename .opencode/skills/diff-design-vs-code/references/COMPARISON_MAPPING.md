@@ -78,7 +78,7 @@ Pencil: `rgba(20, 20, 23, 0.8)`
 Código: `bg-[#141417]/[0.8]` ou `bg-[#141417]/80`
 Spec: normalizar para formato base
 
-### Dimensõesdinâmicas
+### Dimensões dinâmicas
 
 Pencil: `"fill_container"`, `"auto"`
 Código: `w-full`, `h-full`, `w-auto`

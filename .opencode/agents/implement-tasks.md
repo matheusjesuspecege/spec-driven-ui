@@ -31,17 +31,19 @@ permission:
 3. Verificar se `specs/features/[nome-da-feature]/progress.md` existe:
    - Se **EXISTE** → ler conteúdo
    - Se **NÃO EXISTE** → criar arquivo com template vazio:
-     ```markdown
-     # Progress: [Feature]
+      ```markdown
+      # Progress: [Feature]
 
-     ## CSS Patterns
+      ## CSS Patterns
 
-     ## Accessibility
+      ## Accessibility
 
-     ## Component
+      ## Component
 
-     ## React
-     ```
+      ## React
+
+      ## Aprendizados Comparativos
+      ```
 4. Identificar a feature a trabalhar
 
 ---
@@ -78,6 +80,18 @@ Arquivo: `specs/features/[nome-da-feature]/progress.md`
 ### [YYYY-MM-DD] [Nome do Pattern]
 - Props tipadas com interfaces descritivas
 - Sem `any`, usar inferência de tipos
+
+## Aprendizados Comparativos
+
+### [YYYY-MM-DD] [Nome do Teste]
+**Antes (agente):** `disabled={true}`
+**Depois (humano):** `aria-disabled="true"`
+**Regra:** Usar aria-disabled para estados desabilitados (melhor a11y)
+
+### [YYYY-MM-DD] [Nome do Teste]
+**Antes (agente):** `className="btn-primary"`
+**Depois (humano):** `className="btn btn-primary"`
+**Regra:** Sempre incluir prefixo do componente na className
 ```
 
 ### Como Registrar
@@ -90,6 +104,13 @@ Após APROVAÇÃO de cada teste:
 Após CORREÇÃO GUIADA:
 1. Remover aprendizados que não se aplicam mais
 2. Adicionar novos aprendizados da correção
+
+Após AJUSTE MANUAL (fluxo comparativo):
+1. Detectar via `git diff HEAD` se houve alteração
+2. Analisar diferença: código antes (agente) vs depois (humano)
+3. Destilar regra: o que o humano fez de diferente e por quê
+4. Registrar na seção "Aprendizados Comparativos"
+5. **ACUMULAR** histórico (não substituir entradas anteriores)
 
 ---
 
@@ -155,11 +176,20 @@ if (!match) {
 ```
 "Teste verde. Revisar código?"
 - Mostrar: git diff
-- CORRIGIR → voltar ao TDD
-- APROVAR → continuar
+- APROVAR → continuar para /verify-patterns
+- AJUSTAR MANUALMENTE → humano edita código diretamente
 
 ⚠️ SEMPRE use a ferramenta question aqui
 ⚠️ NUNCA pule esta etapa
+```
+
+### Pergunta 2b: Analisar Ajustes (após edição manual)
+```
+"Feito! Analisar ajustes?"
+- Se SIM → executar git diff HEAD → análise comparativa
+- Se NÃO → pular registro + commit
+
+⚠️ SEMPRE use a ferramenta question aqui
 ```
 
 ### Pergunta 3: Próximo teste (OBRIGATÓRIO)
@@ -171,6 +201,74 @@ if (!match) {
 ⚠️ SEMPRE use a ferramenta question aqui
 ⚠️ NUNCA pule esta etapa
 ```
+
+---
+
+## Análise Comparativa (Fluxo de Ajuste Manual)
+
+Quando humano escolhe "AJUSTAR MANUALMENTE", seguir este fluxo:
+
+### Passo 1: Aguardar Edição
+```
+"Você escolheu ajustar manualmente.
+Edite o código conforme seus padrões.
+Quando terminar, diga 'Feito' para eu analisar."
+```
+
+### Passo 2: Detectar Alterações
+Executar: `git diff HEAD`
+- Se não houver diff → código não mudou → perguntar novamente
+- Se houver diff → continuar para análise
+
+### Passo 3: Mostrar Diff
+```
+DIFF DETECTADO:
+[arquivo:linha]
+- código removido (antes)
++ código adicionado (depois)
+```
+
+### Passo 4: Interpretação (Semiautomática)
+```
+📋 INTERPRETAÇÃO DO DIFF:
+
+**Antes (agente):**
+\`\`\`
+código que o agente gerou
+\`\`\`
+
+**Depois (humano):**
+\`\`\`
+código que o humano editou
+\`\`\`
+
+**Regra identificada:**
+[descrição em alto nível do que mudou e por quê]
+
+---
+CONFIRMA ESTA INTERPRETAÇÃO?
+  ├─ SIM → Registrar no progress.md
+  ├─ CORRIGIR → Humano edita a interpretação
+  └─ IGNORAR → Não registrar aprendizado
+```
+
+### Passo 5: Registrar (se confirmado)
+Adicionar entrada em "Aprendizados Comparativos":
+```markdown
+### [YYYY-MM-DD] [Nome do Teste]
+**Antes (agente):** `código original`
+**Depois (humano):** `código editado`
+**Regra:** [interpretação confirmada]
+```
+
+### Regras da Análise Comparativa
+
+| Regra | Detalhe |
+|-------|---------|
+| **Sempre acumular** | Não substituir entradas anteriores |
+| **Interpretar alto nível** | Não registrar linha por linha, mas o padrão |
+| **Confirmar antes de registrar** | Semiautomática: humano valida interpretação |
+| **Diff pode ser vazio** | Se humano não mudou nada, perguntar novamente |
 
 ---
 
@@ -239,99 +337,149 @@ Opções:
 ## Fluxo Completo
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│  INÍCIO DA SESSÃO                                                    │
-│  1. Ler convencoes-codigo.md + guardrails.md                        │
-│  2. Ler progress.md existente                                        │
-│  3. Identificar feature                                              │
-└─────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│  DETECTAR PRÓXIMO TESTE                                             │
-│  Ler spec.ts → primeiro test.skip()                                  │
-│  Se não existe → "Todos implementados ✅" → ENCERRAR                 │
-└─────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│  📋 PERGUNTA 1: "Ativar e implementar [nome]?"                     │
-│  ⚠️ OBRIGATÓRIO - usar ferramenta question                           │
-│  Mostrar aprendizados relevantes                                      │
-└─────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│  TDD CYCLE                                                           │
-│  RED → GREEN → REFACTOR                                              │
-│  Executar teste a cada fase (falhar → passar → passar)              │
-└─────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│  📋 PERGUNTA 2: "Teste verde. Revisar código?"                     │
-│  ⚠️ OBRIGATÓRIO - usar ferramenta question                           │
-│  ⚠️ NUNCA avance sem confirmação humana!                             │
-│  Mostrar git diff                                                    │
-└─────────────────────────────────────────────────────────────────────┘
-                                    │
-                    ┌───────────────┴───────────────┐
-                    ▼                               ▼
-            ┌──────────────┐               ┌──────────────┐
-            │   CORRIGIR   │               │   APROVAR    │
-            │  ← TDD Cycle  │               │  Continuar   │
-            └──────────────┘               └──────┬───────┘
-                                                  │
-                                                  ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│  🔒 GATE: /verify-patterns (Skill)                          │
-└─────────────────────────────────────────────────────────────────────┘
-                                    │
-                    ┌───────────────┴───────────────┐
-                    ▼                               ▼
-            ┌──────────────┐               ┌──────────────┐
-            │   FALHOU    │               │   APROVADO   │
-            │              │               │              │
-            │  PERGUNTAR:  │               │  Continuar   │
-            │  Aprovar ou  │               └──────┬───────┘
-            │  guiar?      │                       │
-            └──────────────┘                       │
-                    │                              │
-       ┌────────────┴────────────┐                 │
-       ▼                         ▼                 │
-┌──────────────┐         ┌──────────────┐          │
-│  APROVAR     │         │   GUIAR      │          │
-│  MESMO ASSIM │         │              │          │
-└──────────────┘         │ 1. Mostrar   │          │
-       │                  │    erros     │          │
-       │                  │ 2. Aguardar  │          │
-       │                  │    instrução │          │
-       │                  │ 3. Corrigir  │          │
-       │                  │ 4. Atualizar │          │
-       │                  │    progress  │          │
-       │                  │ 5. Re-verify │          │
-       │                  └──────┬───────┘          │
-       │                         │                  │
-       │         ┌────────────────┘                  │
-       │         │ (se falhar: perguntar novamente) │
-       │         ▼ (se aprovar: continuar)          │
-       │         │                                     │
-       └─────────┴─────────────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│  REGISTRAR + COMMIT                                                  │
-│  1. Registrar aprendizado no progress.md (categorizado)            │
-│  2. Commit com Conventional Commits                                  │
-└─────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│  📋 PERGUNTA 3: "Continuar para próximo?"                           │
-│  ⚠️ OBRIGATÓRIO - usar ferramenta question                           │
-│  ⚠️ NUNCA avance automaticamente!                                   │
-│  SIM → loop | NÃO → encerrar                                         │
-└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  INÍCIO DA SESSÃO                                                            │
+│  1. Ler convencoes-codigo.md + guardrails.md                                │
+│  2. Ler progress.md existente                                                │
+│  3. Identificar feature                                                      │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                      │
+                                      ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  DETECTAR PRÓXIMO TESTE                                                     │
+│  Ler spec.ts → primeiro test.skip()                                          │
+│  Se não existe → "Todos implementados ✅" → ENCERRAR                         │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                      │
+                                      ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  📋 PERGUNTA 1: "Ativar e implementar [nome]?"                          │
+│  ⚠️ OBRIGATÓRIO - usar ferramenta question                                   │
+│  Mostrar aprendizados relevantes do progress.md                              │
+│                                                                              │
+│  Opções:                                                                     │
+│    ├─ SIM → continuar                                                        │
+│    └─ NÃO → aguardando                                                       │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                      │
+                                      ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  TDD CYCLE                                                                   │
+│  RED → GREEN → REFACTOR                                                      │
+│  Executar teste a cada fase (falhar → passar → passar)                      │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                      │
+                                      ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  📋 PERGUNTA 2: "Teste verde. Revisar código?"                              │
+│  ⚠️ OBRIGATÓRIO - usar ferramenta question                                   │
+│  Mostrar git diff                                                            │
+│                                                                              │
+│  Opções:                                                                     │
+│    ├─ APROVAR                                                               │
+│    └─ AJUSTAR MANUALMENTE                                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+                    │                         │
+          ┌─────────┴─────────┐               │
+          ▼                   ▼               │
+   ┌──────────────┐   ┌──────────────┐        │
+   │    APROVAR   │   │ AJUSTAR      │        │
+   │              │   │ MANUALMENTE  │        │
+   └──────┬───────┘   └──────┬───────┘        │
+          │                  │                  │
+          │                  ▼                  │
+          │   ┌─────────────────────────────────────────────────────┐
+          │   │ HUMANO EDITA O CÓDIGO DIRETAMENTE                   │
+          │   │ (sem guiar o agente linha por linha)                 │
+          │   └─────────────────────────────────────────────────────┘
+          │                  │
+          │                  ▼
+          │   ┌─────────────────────────────────────────────────────┐
+          │   │ 📋 "Feito! Analisar ajustes?" (question)           │
+          │   │                                                     │
+          │   │ Opções:                                             │
+          │   │   ├─ SIM → agente analisa diff                      │
+          │   │   └─ NÃO → pular registro + commit                  │
+          │   └─────────────────────────────────────────────────────┘
+          │                  │
+          │                  ▼ (SIM)
+          │   ┌─────────────────────────────────────────────────────┐
+          │   │ AGENTE EXECUTA: git diff HEAD                        │
+          │   │                                                     │
+          │   │ Mostra diff formatado:                              │
+          │   │   - arquivo:linha alterado                          │
+          │   │   - código antes / depois                          │
+          │   └─────────────────────────────────────────────────────┘
+          │                  │
+          │                  ▼
+          │   ┌─────────────────────────────────────────────────────┐
+          │   │ 📋 INTERPRETAÇÃO DO DIFF (question)               │
+          │   │                                                     │
+          │   │ ┌─────────────────────────────────────────────┐    │
+          │   │ │ INTERPRETAÇÃO:                               │    │
+          │   │ │ • Antes: disabled → disabled={true}         │    │
+          │   │ │ • Depois: aria-disabled="true"               │    │
+          │   │ │ • Regra: Usar aria-disabled em vez de       │    │
+          │   │ │         disabled para estados desabilitados   │    │
+          │   │ └─────────────────────────────────────────────┘    │
+          │   │                                                     │
+          │   │ Opções:                                             │
+          │   │   ├─ SIM → Registrar no progress.md                  │
+          │   │   ├─ CORRIGIR INTERPRETAÇÃO                          │
+          │   │   └─ IGNORAR (não registrar)                        │
+          │   └─────────────────────────────────────────────────────┘
+          │                  │
+          │     ┌─────────────┴─────────────┐
+          │     ▼                           ▼
+          │ ┌──────────────┐         ┌──────────────┐
+          │ │  CORRIGIR    │         │     SIM      │
+          │ │              │         │              │
+          │ │ Humano edita │         │ REGISTRAR NO │
+          │ │ a interpr.   │         │ PROGRESS.MD   │
+          │ │              │         │              │
+          │ │ Ex: "Regra:  │         │ + Acumula    │
+          │ │ Manter aria- │         │   histórico  │
+          │ │ disabled"    │         │              │
+          │ └──────┬───────┘         └──────┬───────┘
+          │        │                         │
+          │        └─────────┬───────────────┘
+          │                  │
+          └────────►          │
+         APROVAR              ▼
+                       ┌──────────────┐
+                       │    COMMIT    │
+                       │              │
+                       │ feat(comp):  │
+                       │ implement    │
+                       │ [test-name]  │
+                       │              │
+                       └──────┬───────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  🔒 GATE: /verify-patterns (Skill)                                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                      │
+              ┌───────────────────────┴───────────────────────┐
+              ▼                                               ▼
+      ┌──────────────┐                               ┌──────────────┐
+      │   FALHOU    │                               │   APROVADO   │
+      │              │                               │              │
+      │  PERGUNTAR:  │                               │  Continuar   │
+      │  Aprovar ou  │                               └──────┬───────┘
+      │  guiar?      │                                       │
+      └──────────────┘                                       │
+              │                                              │
+             ... (fluxo atual)                               │
+                                                             ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  📋 PERGUNTA 3: "Continuar para próximo?"                                  │
+│  ⚠️ OBRIGATÓRIO - usar ferramenta question                                   │
+│                                                                              │
+│  Opções:                                                                     │
+│    ├─ SIM → loop (volta para DETECTAR PRÓXIMO TESTE)                        │
+│    └─ NÃO → ENCERRAR                                                         │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -348,6 +496,7 @@ Opções:
 | **Encerrar** | Só quando não houver mais SKIP |
 | **NUNCA use `task`** | Use @ menção direta para subagents |
 | **SEM EXCEÇÕES** | NUNCA pular checkpoints - são OBRIGATÓRIOS |
+| **Comparativo** | Ajuste manual → análise diff → registrar |
 
 ---
 
@@ -371,10 +520,25 @@ P1: "Ativar [nome]?"     → OBRIGATÓRIO ANTES do TDD
 TDD: RED → GREEN → REFACTOR
    ↓
 P2: "Revisar código?"    → OBRIGATÓRIO APÓS verde
-   ↓
-/verify-patterns         → OBRIGATÓRIO APÓS aprovação
-   ↓
-Registrar + Commit       → OBRIGATÓRIO APÓS verify
+   │
+   ├─ APROVAR
+   │     ↓
+   │  /verify-patterns
+   │     ↓
+   │  Registrar + Commit
+   │
+   └─ AJUSTAR MANUALMENTE
+         ↓
+      P2b: "Analisar ajustes?"
+         ↓
+      git diff HEAD
+         ↓
+      P2c: Interpretação?
+         ├─ SIM → Registrar (Comparativo)
+         ├─ CORRIGIR → humana corrige interpretação
+         └─ IGNORAR → pula registro
+         ↓
+      Commit
    ↓
 P3: "Próximo?"           → OBRIGATÓRIO ANTES do loop
 ```
@@ -466,6 +630,18 @@ Se não existe test.skip() no spec.ts:
 ### [2024-01-15] Spinner Placement
 - Spinner como children, não como pseudo-element
 - Preservar layout durante transição
+
+## Aprendizados Comparativos
+
+### [2024-01-20] Disabled State Test
+**Antes (agente):** `disabled={true}`
+**Depois (humano):** `aria-disabled="true" disabled={false}`
+**Regra:** Desabilitado visual = aria-disabled + disabled=false (mantém DOM)
+
+### [2024-01-20] Primary Button Test
+**Antes (agente):** `className="btn-primary"`
+**Depois (humano):** `className="btn btn-primary"`
+**Regra:** Sempre incluir classe base "btn" + classe de variante
 ```
 
 ### Commits Exemplo
@@ -498,8 +674,15 @@ POR TESTE:
   1. 📋 PERGUNTAR: "Ativar [nome]?" ← OBRIGATÓRIO
   2. TDD: RED → GREEN → REFACTOR
   3. 📋 PERGUNTAR: "Revisar código?" ← OBRIGATÓRIO
-   4. 🔒 GATE: /verify-patterns (Skill)
-      - Se falhou: PERGUNTAR guiar ou aprovar
+     ├─ APROVAR → continuar para verify-patterns
+     └─ AJUSTAR MANUALMENTE:
+        a. Humano edita código
+        b. 📋 "Feito! Analisar ajustes?"
+        c. git diff HEAD
+        d. 📋 Interpretação do diff (confirmar)
+        e. Registrar em "Aprendizados Comparativos"
+  4. 🔒 GATE: /verify-patterns (Skill)
+     - Se falhou: PERGUNTAR guiar ou aprovar
   5. REGISTRAR + COMMIT
   6. 📋 PERGUNTAR: "Próximo?" ← OBRIGATÓRIO
   7. Loop ou encerrar
@@ -511,6 +694,12 @@ POR TESTE:
 □ Checkpoint 1: question "Ativar [nome]?" chamado?
 □ TDD completo: RED → GREEN → REFACTOR?
 □ Checkpoint 2: question "Revisar código?" chamado?
+□   Se AJUSTAR MANUALMENTE:
+□     □ Humano editou código
+□     □ Checkpoint 2b: "Analisar ajustes?" chamado?
+□     □ git diff HEAD executado
+□     □ Interpretação mostrada e confirmada
+□     □ Registro em "Aprendizados Comparativos" salvo
 □ Gate: /verify-patterns (Skill) executado?
 □ Registros salvos no progress.md?
 □ Commit criado?
