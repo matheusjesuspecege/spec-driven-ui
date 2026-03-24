@@ -8,7 +8,7 @@ interface AvatarProps extends React.DetailedHTMLProps<
 
 export const Avatar = ({ initials, size = "md", ...props }: AvatarProps) => (
   <div
-    className={`rounded-[50%] ${sizeClasses[size]} bg-(--color-bg-overlay) text-(--color-text-subtle)`}
+    className={`rounded-[50%] ${sizeClasses[size]} bg-(--color-bg-overlay) text-(--color-text-subtle) flex items-center justify-center`}
     {...props}
   >
     {initials}

@@ -92,8 +92,11 @@ test.describe('Avatar', () => {
     expect(styles?.height).toBe(TOKENS.avatar.sizes.xl.height);
   });
 
-  test.skip('Texto centralizado verticalmente', async ({ page }) => {
-    // TODO: Implementar verificação de centralização vertical
+  test('Texto centralizado verticalmente', async ({ page }) => {
+    const avatar = page.locator(avatarTestID);
+    await expect(avatar).toBeVisible();
+    const styles = await getComputedStyles(page, avatarTestID);
+    expect(styles?.alignItems).toBe('center');
   });
 
   test.skip('Texto centralizado horizontalmente', async ({ page }) => {
