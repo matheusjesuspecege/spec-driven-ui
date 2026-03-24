@@ -74,7 +74,7 @@ Após o setup:
 
 2. Chamar implement-tasks:
    ```bash
-   @implement-tasks [feature]
+   /implement-tasks [feature]
    ```
 
 ---
@@ -90,7 +90,7 @@ Branch: feat/[feature]
 
 Para usar:
   cd ../spec-driven-ui-[feature]
-  @implement-tasks [feature]
+  /implement-tasks [feature]
 ```
 
 ---

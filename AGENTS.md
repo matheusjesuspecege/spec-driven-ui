@@ -34,12 +34,7 @@ Leia primeiro: `@specs/docs/guardrails.md`
 | `/import-design-to-code` | Importa design aprovado |
 | `/worktree-mapper` | Mapeia dependências entre componentes |
 | `/worktree-runner` | Cria worktrees Git paralelos |
-
-## 🤖 Subagentes
-
-| Subagent | Função |
-|----------|--------|
-| `@implement-tasks` | Implementa código via TDD com checkpoint obrigatório |
+| `/implement-tasks` | Implementa código via TDD com checkpoint obrigatório |
 
 ---
 

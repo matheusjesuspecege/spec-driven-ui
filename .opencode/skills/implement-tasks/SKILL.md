@@ -1,60 +1,35 @@
 ---
 name: implement-tasks
-description: "Implementa testes via TDD seguindo fluxo estruturado: 1 teste por iteração. Sempre segue 3 checkpoints obrigatórios: 1) Ativar/Planejar, 2) Revisar código, 3) Próximo. NUNCA pule checkpoints. Registra aprendizados no progress.md após cada iteração."
-mode: subagent
-temperature: 0.3
-tools:
-  write: true
-  edit: true
-  bash: true
-permission:
-  edit: allow
+description: "Implementa código via TDD seguindo fluxo estruturado: 1 teste por iteração. Sempre segue 3 checkpoints obrigatórios: 1) Ativar/Planejar, 2) Revisar código, 3) Próximo. NUNCA pule checkpoints. Registra aprendizados no progress.md após cada iteração. Use quando o usuário solicitar implementação de código com TDD supervisionado."
+license: MIT
+compatibility: opencode
+metadata:
+  version: "1.0"
+  user-invocable: true
+  triggers:
+    - "implementar"
+    - "codar"
+    - "implement tasks"
+    - "tdd"
 ---
 
-## ⚠️ ATENÇÃO: COMO INVOCAR ESTE SUBAGENT
+# Skill: Implement Tasks
 
-Este é um **SUBAGENT** ativado via menção:
+## Quando Usar
 
-```
-@implement-tasks avatar
-```
+Execute esta skill quando:
+- O usuário solicitar implementação de código via TDD
+- Houver uma feature com testes `.spec.ts` pendentes (`test.skip()`)
+- For necessário supervisionar implementação com checkpoints humanos
 
-### Responsabilidade do Agente PAI (que recebeu a menção)
-
-| Ação | Responsável |
-|------|------------|
-| Ler convenções e guardrails | ✅ AGENTE PAI |
-| Identificar a feature | ✅ AGENTE PAI |
-| **Executar TDD (RED/GREEN/REFACTOR)** | ❌ DELEGA PARA ESTE SUBAGENT |
-| **Editar código componente** | ❌ DELEGA PARA ESTE SUBAGENT |
-| **Fazer commits** | ❌ DELEGA PARA ESTE SUBAGENT |
-
-**O agente PAI NÃO deve executar ações de implementação diretamente.**
-**Após identificar a feature, deve DELEGAR para este subagent.**
-
----
-
-## Como Iniciar
-
-```
-@implement-tasks [nome-da-feature]
-```
-
-### Pré-requisitos:
-- Worktree criada com branch da feature (ou branch ativa)
-- Arquivo `frontend/tests/features/[nome]/[nome].spec.ts` existente com `test.skip()`
-- Arquivo `specs/features/[nome]/features/[nome].feature` existente
-
----
-
-## Fluxo Completo (Diagrama)
+## Fluxo Completo
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                    IMPLEMENT-TASKS: FEATURE=[NOME]                          │
 └─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
+                                     │
+                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  INÍCIO DA SESSÃO (UMA VEZ)                                                 │
 ├─────────────────────────────────────────────────────────────────────────────┤
@@ -65,8 +40,8 @@ Este é um **SUBAGENT** ativado via menção:
 │     - Se NÃO EXISTE → criar arquivo com template vazio                      │
 │  4. Identificar a feature a trabalhar                                        │
 └─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
+                                     │
+                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  DETECTAR PRÓXIMO TESTE                                                     │
 ├─────────────────────────────────────────────────────────────────────────────┤
@@ -75,8 +50,8 @@ Este é um **SUBAGENT** ativado via menção:
 │  3. Extrair nome do teste                                                   │
 │  4. Se não existir SKIP → todos implementados ✅ → encerrar               │
 └─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
+                                     │
+                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  📋 CHECKPOINT 1: "Ativar e implementar [nome-do-teste]?"                  │
 │  ⚠️ OBRIGATÓRIO - usar ferramenta question                                   │
@@ -90,22 +65,22 @@ Este é um **SUBAGENT** ativado via menção:
 │    ├─ SIM                                                                    │
 │    └─ NÃO                                                                    │
 └─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                          ┌─────────┴─────────┐
-                          ▼                   ▼
-                    ┌───────────┐      ┌──────────────┐
-                    │    SIM    │      │     NÃO      │
-                    └─────┬─────┘      │   Aguardar   │
-                          │              └──────────────┘
-                          ▼
+                                     │
+                           ┌─────────┴─────────┐
+                           ▼                   ▼
+                     ┌───────────┐      ┌──────────────┐
+                     │    SIM    │      │     NÃO      │
+                     └─────┬─────┘      │   Aguardar   │
+                           │              └──────────────┘
+                           ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  ⚠️ APÓS RESPOSTA "SIM":                                                    │
 │  - PAUSAR e aguardar confirmação explícita para continuar                  │
 │  - NÃO avance automaticamente para implementação                           │
 │  - Aguarde o humano dizer "Pode continuar" ou equivalente                 │
 └─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
+                                     │
+                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  IMPLEMENTAÇÃO DO TESTE (1 teste por iteração)                             │
 ├─────────────────────────────────────────────────────────────────────────────┤
@@ -115,8 +90,8 @@ Este é um **SUBAGENT** ativado via menção:
 │     - Quais assertions?                                                     │
 │  3. Adicionar o componente no test-ds page se necessário                 │
 └─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
+                                     │
+                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  TDD LOOP                                                                   │
 ├─────────────────────────────────────────────────────────────────────────────┤
@@ -133,11 +108,11 @@ Este é um **SUBAGENT** ativado via menção:
 │  REFACTOR: Melhorar código se necessário                                   │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
+                                     │
+                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  📋 CHECKPOINT 2: "Revisar código gerado?"                                 │
-│  ⚠️ OBRIGATÓRIO - usar ferramenta question                                   │
+│  ⚠️ OBRIGATÓRIO - usar ferramenta question                                 │
 │                                                                              │
 │  Mostrar:                                                                    │
 │  - Código atual do componente                                              │
@@ -150,27 +125,27 @@ Este é um **SUBAGENT** ativado via menção:
 │    ├─ REJEITAR                                                              │
 │    └─ SAIR                                                                  │
 └─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-              ┌─────────────────────┼─────────────────────┐
-              ▼                     ▼                     ▼
-       ┌──────────────┐      ┌──────────────┐      ┌──────────────┐
-       │   APROVAR    │      │  RESSALVA     │      │   REJEITAR   │
-       │              │      │              │      │              │
-       └──────┬───────┘      └──────┬───────┘      └──────────────┘
-              │                     │                     │
-              ▼                     ▼                     ▼
+                                     │
+               ┌─────────────────────┼─────────────────────┐
+               ▼                     ▼                     ▼
+        ┌──────────────┐      ┌──────────────┐      ┌──────────────┐
+        │   APROVAR    │      │  RESSALVA     │      │   REJEITAR   │
+        │              │      │              │      │              │
+        └──────┬───────┘      └──────┬───────┘      └──────────────┘
+               │                     │                     │
+               ▼                     ▼                     ▼
 ┌─────────────────────────┐ ┌─────────────────────────┐ ┌──────────────────┐
 │  /verify-patterns (Skill)│ │ IMPLEMENTAR AJUSTES     │ │  REFATORAR       │
 │                         │ │  solicitadas            │ │  CÓDIGO          │
 │  Se OK → Registrar +    │ │                         │ │                  │
-│  Commit                 │ │  Após ajustes:          │ │  Após refatorar: │
+│  Commit                 │ │  Após ajustes:          │ │  Após refatorar:│
 │                         │ │  →git diff HEAD         │ │  →git diff HEAD  │
 │  Se FALHOU →            │ │  →Registrar aprendizados │ │  →Perguntar      │
 │  - Mostrar erros        │ │  →/verify-patterns       │ │    "Revisar      │
 │  - Pedir instruções    │ │  →Registrar + Commit    │ │   novamente?"    │
 └─────────────────────────┘ └─────────────────────────┘ └──────────────────┘
-                                    │
-                                    ▼
+                                     │
+                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  REGISTRAR APRENDIZADOS NO PROGRESS.MD                                      │
 ├─────────────────────────────────────────────────────────────────────────────┤
@@ -183,8 +158,8 @@ Este é um **SUBAGENT** ativado via menção:
 │  3. Destilar para linguagem alto nível                                      │
 │  4. Adicionar entrada com data                                              │
 └─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
+                                     │
+                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  COMMIT (após iteração)                                                     │
 ├─────────────────────────────────────────────────────────────────────────────┤
@@ -197,26 +172,34 @@ Este é um **SUBAGENT** ativado via menção:
 │    feat(avatar): implement small size variant                               │
 │    test(avatar): implement size sm test                                     │
 └─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
+                                     │
+                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  📋 CHECKPOINT 3: "Próximo teste?"                                         │
-│  ⚠️ OBRIGATÓRIO - usar ferramenta question                                   │
+│  📋 CHECKPOINT 3: "Próximo teste?"                                          │
+│  ⚠️ OBRIGATÓRIO - usar ferramenta question                                  │
 │                                                                              │
 │  Opções:                                                                     │
-│    ├─ SIM → loop (volta para DETECTAR PRÓXIMO TESTE)                       │
+│    ├─ SIM → loop (volta para DETECTAR PRÓXIMO TESTE)                      │
 │    └─ NÃO → ENCERRAR                                                         │
 └─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                    ┌──────────────┴──────────────┐
-                    ▼                             ▼
-             ┌──────────────┐              ┌──────────────┐
-             │     SIM      │              │     NÃO      │
-             │              │              │              │
-             │ Loop:        │              │    FIM       │
-             │ +1 iteração │              │              │
-             └──────────────┘              └──────────────┘
+                                     │
+                     ┌──────────────┴──────────────┐
+                     ▼                             ▼
+              ┌──────────────┐              ┌──────────────┐
+              │     SIM      │              │     NÃO      │
+              │              │              │              │
+              │ Loop:        │              │    FIM       │
+              │ +1 iteração │              │              │
+              └──────────────┘              └──────────────┘
 ```
+
+---
+
+## Pré-requisitos
+
+- Worktree criada com branch da feature (ou branch ativa)
+- Arquivo `frontend/tests/features/[nome]/[nome].spec.ts` existente com `test.skip()`
+- Arquivo `specs/features/[nome]/features/[nome].feature` existente
 
 ---
 

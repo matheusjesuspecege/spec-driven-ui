@@ -17,7 +17,7 @@ Branch: feat/button
 
 Para usar:
   cd ../spec-driven-ui-button
-  @implement-tasks button
+  /implement-tasks button
 ```
 
 ## Validações

@@ -194,5 +194,5 @@ Arquivo gerado:
 Próximos passos:
 1. Revise o globals.css gerado
 2. Ajuste tokens se necessário
-3. Execute @implement-tasks para implementar componentes
+3. Execute /implement-tasks para implementar componentes
 ```
