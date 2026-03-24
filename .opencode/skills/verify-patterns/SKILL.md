@@ -23,8 +23,6 @@ Execute esta skill como parte do **GATE de validação** após o TDD passar:
 Gate de Validação:
   1. TDD (tdd-playwright)
   2. Verify Patterns (esta skill) ←
-  3. Typecheck
-  4. Lint
 ```
 
 Também pode ser executada pelo **pre-commit hook** em modo não-interativo.
