@@ -22,6 +22,8 @@ export const getComputedStyles = async (page: Page, selector: string) => {
       outlineColor: styles.outlineColor,
       width: parseInt(styles.width),
       display: styles.display,
+      alignItems: styles.alignItems,
+      justifyContent: styles.justifyContent,
       border: styles.border,
       borderWidth: parseInt(styles.borderWidth),
       screenWidth: window.screen.width

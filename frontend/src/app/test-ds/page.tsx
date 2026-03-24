@@ -10,6 +10,11 @@ export default function TestDS() {
       <Buttons />
       <Form />
       <Avatar initials="MR" />
+      <Avatar initials="AB" size="sm" data-testid="avatar-sm" />
+      <Avatar initials="CD" size="lg" data-testid="avatar-lg" />
+      <Avatar initials="EF" size="xl" data-testid="avatar-xl" />
+      <Avatar initials="GH" size="md" backgroundColor="#FF0000" textColor="#FFFFFF" data-testid="avatar-custom" />
+      <Avatar initials="JD" aria-label="Foto de João Silva" data-testid="avatar-aria" />
     </>
   );
 }

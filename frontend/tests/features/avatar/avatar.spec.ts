@@ -56,43 +56,77 @@ test.describe('Avatar', () => {
     expect(styles?.color).toBe(hexToRgb(TOKENS.avatar.default.textColor));
   });
 
-  test.skip('Avatar small renderiza com tamanho correto', async ({ page }) => {
-    // TODO: Implementar teste para size="sm"
+  test('Avatar small renderiza com tamanho correto', async ({ page }) => {
+    const avatar = page.locator('[data-testid="avatar-sm"]');
+    await expect(avatar).toBeVisible();
+    const styles = await getComputedStyles(page, '[data-testid="avatar-sm"]');
+    expect(styles?.width).toBe(TOKENS.avatar.sizes.sm.width);
+    expect(styles?.height).toBe(TOKENS.avatar.sizes.sm.height);
   });
 
-  test.skip('Avatar medium renderiza com tamanho correto', async ({ page }) => {
-    // TODO: Implementar teste para size="md"
+  test('Avatar medium renderiza com tamanho correto', async ({ page }) => {
+    const avatar = page.locator('[data-testid="avatar-custom"]');
+    await expect(avatar).toBeVisible();
+    const styles = await getComputedStyles(page, '[data-testid="avatar-custom"]');
+    expect(styles?.width).toBe(TOKENS.avatar.sizes.md.width);
+    expect(styles?.height).toBe(TOKENS.avatar.sizes.md.height);
   });
 
-  test.skip('Avatar large renderiza com tamanho correto', async ({ page }) => {
-    // TODO: Implementar teste para size="lg"
+  test('Avatar large renderiza com tamanho correto', async ({ page }) => {
+    const avatar = page.locator('[data-testid="avatar-lg"]');
+    await expect(avatar).toBeVisible();
+    const styles = await getComputedStyles(page, '[data-testid="avatar-lg"]');
+    expect(styles?.width).toBe(TOKENS.avatar.sizes.lg.width);
+    expect(styles?.height).toBe(TOKENS.avatar.sizes.lg.height);
   });
 
-  test.skip('Avatar extra-large renderiza com tamanho correto', async ({ page }) => {
-    // TODO: Implementar teste para size="xl"
+  test('Avatar extra-large renderiza com tamanho correto', async ({ page }) => {
+    const avatar = page.locator('[data-testid="avatar-xl"]');
+    await expect(avatar).toBeVisible();
+    const styles = await getComputedStyles(page, '[data-testid="avatar-xl"]');
+    expect(styles?.width).toBe(TOKENS.avatar.sizes.xl.width);
+    expect(styles?.height).toBe(TOKENS.avatar.sizes.xl.height);
   });
 
-  test.skip('Texto centralizado verticalmente', async ({ page }) => {
-    // TODO: Implementar verificação de centralização vertical
+  test('Texto centralizado verticalmente', async ({ page }) => {
+    const avatar = page.locator(avatarTestID);
+    await expect(avatar).toBeVisible();
+    const styles = await getComputedStyles(page, avatarTestID);
+    expect(styles?.display).toBe('flex');
+    expect(styles?.alignItems).toBe('center');
   });
 
-  test.skip('Texto centralizado horizontalmente', async ({ page }) => {
-    // TODO: Implementar verificação de centralização horizontal
+  test('Texto centralizado horizontalmente', async ({ page }) => {
+    const avatar = page.locator(avatarTestID);
+    await expect(avatar).toBeVisible();
+    const styles = await getComputedStyles(page, avatarTestID);
+    expect(styles?.display).toBe('flex');
+    expect(styles?.justifyContent).toBe('center');
   });
 
-  test.skip('Avatar aceita cor de fundo customizada', async ({ page }) => {
-    // TODO: Implementar teste com backgroundColor="#FF0000"
+  test('Avatar aceita cor de fundo customizada', async ({ page }) => {
+    const avatar = page.locator('[data-testid="avatar-custom"]');
+    await expect(avatar).toBeVisible();
+    const styles = await getComputedStyles(page, '[data-testid="avatar-custom"]');
+    expect(styles?.backgroundColor).toBe(hexToRgb('#FF0000'));
   });
 
-  test.skip('Avatar aceita cor do texto customizada', async ({ page }) => {
-    // TODO: Implementar teste com textColor="#FFFFFF"
+  test('Avatar aceita cor do texto customizada', async ({ page }) => {
+    const avatar = page.locator('[data-testid="avatar-custom"]');
+    await expect(avatar).toBeVisible();
+    const styles = await getComputedStyles(page, '[data-testid="avatar-custom"]');
+    expect(styles?.color).toBe(hexToRgb('#FFFFFF'));
   });
 
-  test.skip('Avatar renderiza com aria-label quando fornecido', async ({ page }) => {
-    // TODO: Implementar teste de aria-label
+  test('Avatar renderiza com aria-label quando fornecido', async ({ page }) => {
+    const avatar = page.locator('[data-testid="avatar-aria"]');
+    await expect(avatar).toBeVisible();
+    await expect(avatar).toHaveAttribute('aria-label', 'Foto de João Silva');
   });
 
-  test.skip('Avatar usa role="img" para acessibilidade', async ({ page }) => {
-    // TODO: Implementar teste de role="img"
+  test('Avatar usa role="img" para acessibilidade', async ({ page }) => {
+    const avatar = page.locator(avatarTestID);
+    await expect(avatar).toBeVisible();
+    await expect(avatar).toHaveAttribute('role', 'img');
   });
 });
