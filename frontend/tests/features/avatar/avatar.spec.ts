@@ -99,8 +99,11 @@ test.describe('Avatar', () => {
     expect(styles?.alignItems).toBe('center');
   });
 
-  test.skip('Texto centralizado horizontalmente', async ({ page }) => {
-    // TODO: Implementar verificação de centralização horizontal
+  test('Texto centralizado horizontalmente', async ({ page }) => {
+    const avatar = page.locator(avatarTestID);
+    await expect(avatar).toBeVisible();
+    const styles = await getComputedStyles(page, avatarTestID);
+    expect(styles?.justifyContent).toBe('center');
   });
 
   test.skip('Avatar aceita cor de fundo customizada', async ({ page }) => {
