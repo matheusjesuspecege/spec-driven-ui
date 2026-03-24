@@ -1,0 +1,14 @@
+{
+  "incidents": [
+    {
+      "timestamp": "2026-03-23T17:50:00Z",
+      "description": "não executar comando bash vazio",
+      "category": "comando_errado"
+    },
+    {
+      "timestamp": "2026-03-23T17:58:00Z",
+      "description": "não executar write sem ler arquivo primeiro",
+      "category": "comando_errado"
+    }
+  ]
+}

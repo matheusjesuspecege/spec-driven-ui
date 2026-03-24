@@ -31,8 +31,8 @@ Execute esta skill quando o usuário solicitar:
 
 | Categoria | Descrição |
 |-----------|-----------|
-| `comando_errado` | Comando executado incorretamente |
-| `correcao_humana` | Correção feita por humano |
+| `comando_errado` | Regra violada ao executar comando incorretamente |
+| `correcao_humana` | Correção feita por humano que o agente deveria ter feito |
 
 ## Formato do Arquivo
 
@@ -42,7 +42,7 @@ Execute esta skill quando o usuário solicitar:
   "incidents": [
     {
       "timestamp": "2026-03-23T14:01:00Z",
-      "description": "Executei npm run dev sem verificar servidor",
+      "description": "não executar comando sem verificar",
       "category": "comando_errado"
     }
   ]
