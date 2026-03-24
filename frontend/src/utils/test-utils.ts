@@ -20,7 +20,7 @@ export const getComputedStyles = async (page: Page, selector: string) => {
       borderRadius: parseInt(styles.borderRadius),
       outlineWidth: parseInt(styles.outlineWidth),
       outlineColor: styles.outlineColor,
-      width: styles.width,
+      width: parseInt(styles.width),
       display: styles.display,
       border: styles.border,
       borderWidth: parseInt(styles.borderWidth),

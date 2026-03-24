@@ -1,5 +1,6 @@
 "use client";
 
+import { Avatar } from "@/components/avatar/avatar";
 import { Button } from "@/components/button/button";
 import { useState } from "react";
 
@@ -8,19 +9,35 @@ export default function TestDS() {
     <>
       <Buttons />
       <Form />
+      <Avatar initials="MR" />
     </>
   );
 }
 
 const Buttons = () => (
   <div className="flex flex-col gap-5 w-screen">
-    <Button data-testid="button-inverse" variant="inverse" fullWidth className="upgrade-btn">
+    <Button
+      data-testid="button-inverse"
+      variant="inverse"
+      fullWidth
+      className="upgrade-btn"
+    >
       Upgrade Now
     </Button>
-    <Button data-testid="button-disabled-inverse" variant="inverse" fullWidth disabled>
+    <Button
+      data-testid="button-disabled-inverse"
+      variant="inverse"
+      fullWidth
+      disabled
+    >
       Upgrade Now
     </Button>
-    <Button data-testid="button-loading-inverse" variant="inverse" fullWidth loading>
+    <Button
+      data-testid="button-loading-inverse"
+      variant="inverse"
+      fullWidth
+      loading
+    >
       Upgrade Now
     </Button>
     <ButtonWithLoading />
@@ -47,7 +64,10 @@ const Form = () => {
   return (
     <form
       data-testid="form-submitted"
-      onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }}
+      onSubmit={(e) => {
+        e.preventDefault();
+        setSubmitted(true);
+      }}
     >
       <Button data-testid="button-inverse-form" variant="inverse" type="button">
         Submit
