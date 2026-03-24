@@ -119,7 +119,8 @@ test.describe('Avatar', () => {
     await expect(avatar).toHaveAttribute('aria-label', 'Foto de João Silva');
   });
 
-  test.skip('Avatar usa role="img" para acessibilidade', async ({ page }) => {
-    // TODO: Implementar teste de role="img"
+  test('Avatar usa role="img" para acessibilidade', async ({ page }) => {
+    const avatar = page.locator(avatarTestID);
+    await expect(avatar).toHaveAttribute('role', 'img');
   });
 });
