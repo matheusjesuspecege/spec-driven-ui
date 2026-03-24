@@ -107,7 +107,7 @@ test.describe('Avatar', () => {
   });
 
   test.skip('Avatar aceita cor de fundo customizada', async ({ page }) => {
-    // TODO: Implementar teste com backgroundColor="#FF0000"
+    // TODO: Implementar teste com backgroundColor - aguardando token no design system
   });
 
   test.skip('Avatar aceita cor do texto customizada', async ({ page }) => {
