@@ -111,11 +111,12 @@ test.describe('Avatar', () => {
   });
 
   test.skip('Avatar aceita cor do texto customizada', async ({ page }) => {
-    // TODO: Implementar teste com textColor="#FFFFFF"
+    // TODO: Aguardando token no design system
   });
 
-  test.skip('Avatar renderiza com aria-label quando fornecido', async ({ page }) => {
-    // TODO: Implementar teste de aria-label
+  test('Avatar renderiza com aria-label quando fornecido', async ({ page }) => {
+    const avatar = page.locator(avatarTestID);
+    await expect(avatar).toHaveAttribute('aria-label', 'Foto de João Silva');
   });
 
   test.skip('Avatar usa role="img" para acessibilidade', async ({ page }) => {

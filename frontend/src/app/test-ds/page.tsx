@@ -16,7 +16,7 @@ export default function TestDS() {
 
 const AvatarTest = () => (
   <div className="flex gap-4">
-    <Avatar initials="MR" data-testid="avatar" />
+    <Avatar initials="MR" data-testid="avatar" aria-label="Foto de João Silva" />
     <Avatar initials="MR" data-testid="avatar-sm" size="sm" />
     <Avatar initials="MR" data-testid="avatar-md" size="md" />
     <Avatar initials="MR" data-testid="avatar-lg" size="lg" />
