@@ -22,6 +22,7 @@ const TOKENS = {
 const avatarTestID = '[data-testid="avatar"]';
 const avatarTestID_sm = '[data-testid="avatar-sm"]'
 const avatarTestID_md = '[data-testid="avatar-md"]'
+const avatarTestID_lg = '[data-testid="avatar-lg"]'
 
 test.describe('Avatar', () => {
   test.beforeEach(async ({page}) => {
@@ -74,8 +75,12 @@ test.describe('Avatar', () => {
     expect(styles?.height).toBe(TOKENS.avatar.sizes.md.height);
   });
 
-  test.skip('Avatar large renderiza com tamanho correto', async ({ page }) => {
-    // TODO: Implementar teste para size="lg"
+  test('Avatar large renderiza com tamanho correto', async ({ page }) => {
+    const avatar = page.locator(avatarTestID_lg);
+    await expect(avatar).toBeVisible();
+    const styles = await getComputedStyles(page, avatarTestID_lg);
+    expect(styles?.width).toBe(TOKENS.avatar.sizes.lg.width);
+    expect(styles?.height).toBe(TOKENS.avatar.sizes.lg.height);
   });
 
   test.skip('Avatar extra-large renderiza com tamanho correto', async ({ page }) => {

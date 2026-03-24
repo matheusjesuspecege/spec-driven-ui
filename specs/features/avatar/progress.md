@@ -8,6 +8,9 @@
 - lg: size-12 text-base
 - xl: size-16 text-xl
 
+### [2026-03-24] Test Instance
+- Adicionar apenas instâncias necessárias no test-ds para o teste específico
+
 ## Accessibility
 
 ## Component
