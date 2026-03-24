@@ -18,6 +18,7 @@ const AvatarTest = () => (
   <div className="flex gap-4">
     <Avatar initials="MR" data-testid="avatar" />
     <Avatar initials="MR" data-testid="avatar-sm" size="sm" />
+    <Avatar initials="MR" data-testid="avatar-md" size="md" />
   </div>
 );
 

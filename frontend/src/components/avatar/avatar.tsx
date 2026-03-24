@@ -14,8 +14,9 @@ export const Avatar = ({ initials, size = "md", ...props }: AvatarProps) => (
     {initials}
   </div>
 );
-
 const sizeClasses = {
   sm: "size-6 text-(--font-size-3xs)",
   md: "size-9 text-[12px]",
+  lg: "size-12 text-base",
+  xl: "size-16 text-xl",
 };
