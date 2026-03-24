@@ -34,7 +34,7 @@ Execute esta skill quando o usuário solicitar:
 2. Verificar se .spec.ts já existe (perguntar sobrescrita)
 3. Verificar pré-requisitos (research.md, plan.md, .feature)
 4. Ler cenários do arquivo .feature
-5. Gerar .spec.ts com padrão: 1º ativo, 2º-3º skip com código, demais skip como placeholder
+5. Gerar .spec.ts com padrão: 1º ativo, 2º skip com código, demais skip como placeholder
 6. Gerar .spec.docs.md completo com todos os snippets
 7. Salvar arquivos em frontend/tests/features/[feature]/
 
