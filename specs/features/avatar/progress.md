@@ -18,10 +18,3 @@
 ### [2026-03-24] Avatar Props
 - initials (obrigatório)
 - size?: 'sm' | 'md' | 'lg' | 'xl'
-- Usar template literal para classes condicionais
-- Constantes não reativas abaixo do componente
-
-## React
-
-### [2026-03-24] Size Props
-- Usar string literal para size props
