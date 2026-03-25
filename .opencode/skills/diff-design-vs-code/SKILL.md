@@ -1,10 +1,10 @@
 ---
 name: diff-design-vs-code
-description: "Compara design tokens e componentes entre o Pencil (via pencil_id na spec) e o código. Suporta modo individual (--component) e em massa (--all). Retorna exit code: 0 = synced, 1 = diff."
+description: "Compara design tokens e componentes entre o Pencil (via pencil_id na spec) e o código. Suporta modo individual (--component) e em massa (--all). Retorna lista selecionável de mudanças para update-bdd."
 license: MIT
 compatibility: "agent:opencode >= 1.0"
 metadata:
-  version: "1.0"
+  version: "1.1"
   user-invocable: true
   triggers:
     - "diff design vs código"
@@ -104,6 +104,89 @@ else
   echo "❌ Design dessincronizado"
   exit 1
 fi
+```
+
+---
+
+## Saída Selecionável para update-bdd
+
+O diff-design-vs-code gera uma lista de mudanças que pode ser passada diretamente para `update-bdd`.
+
+### Formato da Saída
+
+```
+Avatar - Divergências detectadas:
+
+[1] ☐ MODIFICAR: fill
+    Código: #2A2A2E
+    Pencil: #00FF00 (verde)
+    Cenário: "Avatar usa cores padrão"
+
+[2] ☑ MODIFICAR: size
+    Código: 36px
+    Pencil: 48px
+    Cenário: "Avatar medium"
+
+[3] ☐ ADICIONAR: shadow
+    Pencil: shadow com blur 8px
+    Novo cenário: "Avatar aceita sombra"
+
+─────────────────────────────────────────────
+Selecione as mudanças para aplicar ao BDD:
+  update-bdd --component=avatar --changes=1,2,3
+  (padrão: nenhum selecionado)
+─────────────────────────────────────────────
+```
+
+### Opções de Saída
+
+| Flag | Comportamento |
+|------|---------------|
+| `--list` | Lista todas as mudanças numeradas (padrão) |
+| `--json` | Saída em JSON para automação |
+| `--all` | Seleciona todas automaticamente |
+| `--type=modify` | Lista apenas modificações |
+| `--type=add` | Lista apenas adições |
+
+### Exemplo de Saída JSON
+
+```bash
+diff-design-vs-code --component=avatar --json
+```
+
+```json
+{
+  "component": "avatar",
+  "pencilId": "sYLr4",
+  "changes": [
+    {
+      "id": 1,
+      "type": "modify",
+      "property": "fill",
+      "codeValue": "#2A2A2E",
+      "pencilValue": "#00FF00",
+      "scenario": "Avatar usa cores padrão"
+    },
+    {
+      "id": 2,
+      "type": "modify",
+      "property": "size",
+      "codeValue": "36px",
+      "pencilValue": "48px",
+      "scenario": "Avatar medium"
+    },
+    {
+      "id": 3,
+      "type": "add",
+      "property": "shadow",
+      "pencilValue": "blur 8px",
+      "newScenarioName": "Avatar aceita sombra"
+    }
+  ],
+  "total": 3,
+  "modifications": 2,
+  "additions": 1
+}
 ```
 
 ## Referências

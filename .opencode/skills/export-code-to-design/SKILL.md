@@ -1,12 +1,12 @@
 ---
 name: export-code-to-design
-description: "Envia código React para o Pencil como PROPOSTA. Cria NOVO componente no Pencil (não altera o original) para revisão e aprovação do designer. Segue fluxo spec-driven."
+description: "Envia código React para o Pencil como PROPOSTA. Cria NOVO componente no Pencil (não altera o original) para revisão e aprovação do designer. Relaciona proposta com original via ID. Segue fluxo spec-driven."
 license: MIT
 compatibility:
   opencode: ">= 0.1.0"
   pencil: ">= 1.0.0"
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   user-invocable: true
   triggers:
     - "exportar código para design"
@@ -105,7 +105,34 @@ const proposalId = `${pencilId}_PROPOSTA_${Date.now()}`;
    - ID: `[id]_PROPOSTA_[timestamp]`
    - Propriedades visuais baseadas no código
 
-### Etapa 7: Confirmar e informar
+### Etapa 7: Registrar na Spec
+
+Após criar a proposta, atualizar o .feature com:
+
+```typescript
+interface ProposalMetadata {
+  proposal_id: string;      // ex: "btn001_PROPOSTA_1711001234567"
+  proposal_status: string;   // ex: "pending"
+  proposal_created_at: string; // ex: "2026-03-25"
+  proposal_approved_by?: string;
+}
+```
+
+No .feature, adicionar/atualizar seção PENCIL_IDS:
+
+```gherkin
+# ═══════════════════════════════════════════════════════════
+# PENCIL_IDS (Source: research.md)
+# btn001: Button component
+# ═══════════════════════════════════════════════════════════
+              **pencil_id:** "btn001"
+              **proposal_id:** "btn001_PROPOSTA_1711001234567"
+              **proposal_status:** "pending"
+              **proposal_created_at:** "2026-03-25"
+              **proposal_approved_by:** ""
+```
+
+### Etapa 8: Confirmar e informar
 
 Retornar resumo da proposta criada para revisão do designer.
 
@@ -126,6 +153,56 @@ A skill classifica o elemento exportado:
 ## Workflow de Aprovação
 
 ```
+1. DEV executa export-code-to-design
+   → Nova proposta criada no Pencil
+   → Spec atualizada com proposal_id e status="pending"
+   
+2. Designer abre Pencil
+   → Vê componente "[Nome] [PROPOSTA]"
+   → Revisa e decide: Aprovar / Modificar / Rejeitar
+   
+3. Se aprovar/modificar:
+   → Designer renomeia frame para "[APROVADO] DDMMYYYY by:Nome"
+   → Spec atualizada com status="approved"
+   → Dev executa import-design-to-code
+   
+4. Se rejeitar:
+   → Designer renomeia frame para "[REJEITADO] DDMMYYYY by:Nome - motivo"
+   → Spec atualizada com status="rejected"
+   → Dev ajusta código e re-exporta
+```
+
+---
+
+## Instruções para o Designer
+
+### Como aprovar uma proposta:
+1. Abra o arquivo .pen no Pencil
+2. Encontre o frame com nome `[NOME] [PROPOSTA]`
+3. Revise visualmente o componente
+4. **Se aprovado**: Renomeie o frame para `[NOME] [APROVADO] DDMMYYYY by:SeuNome`
+5. **Se rejeitado**: Renomeie para `[NOME] [REJEITADO] DDMMYYYY by:SeuNome - motivo`
+
+### Exemplos de renomeação:
+
+```
+// Antes (proposta pendente)
+Avatar [PROPOSTA] 25032026
+
+// Depois (aprovado)
+Avatar [APROVADO] 25032026 by:Ana
+
+// Depois (rejeitado)
+Avatar [REJEITADO] 25032026 by:Ana - cores não seguem o design system
+```
+
+### Convenções de nomenclatura:
+
+| Status | Formato | Exemplo |
+|--------|---------|---------|
+| Proposta criada | `[NOME] [PROPOSTA] [DDMMYYYY]` | `Avatar [PROPOSTA] 25032026` |
+| Aprovado | `[NOME] [APROVADO] [DDMMYYYY] by:[NOME]` | `Avatar [APROVADO] 25032026 by:Ana` |
+| Rejeitado | `[NOME] [REJEITADO] [DDMMYYYY] by:[NOME] - [MOTIVO]` | `Avatar [REJEITADO] 25032026 by:Ana - usar cor mais escura` |
 1. Dev executa export-code-to-design
    → Nova proposta criada no Pencil
    

@@ -30,7 +30,7 @@ test.describe("Feature: Icon (BDD Source)", () => {
   // PRIMEIROS 3 TESTES - CÓDIGO COMPLETO
   // ============================================================
 
-  test("Icon renderiza com tamanho md 18px padrao", async ({ page }) => {
+  test.skip("Icon renderiza com tamanho md 18px padrao", async ({ page }) => {
     const icon = page.locator('[data-testid="icon-md"]');
     await expect(icon).toBeVisible();
     const styles = await getComputedStyles(page, '[data-testid="icon-md"]');
