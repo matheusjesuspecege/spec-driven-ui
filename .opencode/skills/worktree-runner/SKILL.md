@@ -31,8 +31,8 @@ Exemplo: `@worktree-runner button`
 ## Pré-requisitos
 
 1. Estar no diretório principal do projeto (spec-driven-ui)
-2. Estar na branch main (não em worktree)
-3. git limpo (sem changes pendentes)
+2. git pode estar dirty (será feito stash automático)
+3. Branch atual será usada como base para a nova branch
 
 ---
 
@@ -46,24 +46,37 @@ Exemplo: `@worktree-runner button`
    - Branch `feat/[feature]` não existe
    - Diretório `../spec-driven-ui-[feature]` não existe
 
-3. Se alguma validação falhar:
+3. Se git tiver changes pendentes:
+   - Executar `git stash push -m "worktree-runner backup"` automaticamente
+
+4. Se alguma validação falhar (exceto git dirty):
    - Informar erro e abortar
 
 ### Passo 2: Setup do Worktree
 
-1. Criar worktree:
+1. Obter branch atual:
    ```bash
-   git worktree add ../spec-driven-ui-[feature] -b feat/[feature]
+   CURRENT_BRANCH=$(git branch --show-current)
    ```
 
-2. Instalar dependências:
+2. Criar worktree basada na branch atual:
+   ```bash
+   git worktree add ../spec-driven-ui-[feature] -b feat/[feature] ${CURRENT_BRANCH}
+   ```
+
+3. Instalar dependências:
    ```bash
    cd ../spec-driven-ui-[feature] && pnpm install
    ```
 
-3. Confirmar criação
+4. Restaurar changes (se houver stash):
+   ```bash
+   cd ../spec-driven-ui-[feature] && git stash pop || true
+   ```
 
-### Passo 3: Como Usar
+5. Confirmar criação
+
+### Passo 4: Como Usar
 
 Após o setup:
 

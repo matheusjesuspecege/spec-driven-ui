@@ -4,7 +4,7 @@ description: "Implementa código via TDD seguindo fluxo estruturado: 1 teste por
 license: MIT
 compatibility: opencode
 metadata:
-  version: "1.0"
+  version: "1.2"
   user-invocable: true
   triggers:
     - "implementar"
@@ -108,11 +108,19 @@ Execute esta skill quando:
 │  REFACTOR: Melhorar código se necessário                                   │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
+                                      │
+                                      ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  GIT STASH (após GREEN, antes da revisão)                                  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  1. git stash push -m "implement-tasks: [nome-teste]"                     │
+│  2. Armazenar nome do stash para comparação posterior                      │
+└─────────────────────────────────────────────────────────────────────────────┘
                                      │
                                      ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  📋 CHECKPOINT 2: "Revisar código gerado?"                                 │
-│  ⚠️ OBRIGATÓRIO - usar ferramenta question                                 │
+│  📋 REVISAR CÓDIGO GERADO                                                  │
+│  ⚠️ OBRIGATÓRIO - usar ferramenta question                                   │
 │                                                                              │
 │  Mostrar:                                                                    │
 │  - Código atual do componente                                              │
@@ -120,30 +128,32 @@ Execute esta skill quando:
 │  - Pendente implementar                                                    │
 │                                                                              │
 │  Opções:                                                                     │
-│    ├─ APROVAR                                                               │
-│    ├─ APROVAR COM RESSALVA (ajustes pontuais)                              │
-│    ├─ REJEITAR                                                              │
-│    └─ SAIR                                                                  │
+│    ├─ ✅ OK          → Confirmar e continuar                                │
+│    ├─ 🔧 FAZER AJUSTES→ Corrigir o código gerado                          │
+│    ├─ ↩️ REFAZER     → Descartar e reimplementar                          │
+│    └─ ⏹️ SAIR        → Encerrar sessão                                     │
 └─────────────────────────────────────────────────────────────────────────────┘
-                                     │
-               ┌─────────────────────┼─────────────────────┐
-               ▼                     ▼                     ▼
-        ┌──────────────┐      ┌──────────────┐      ┌──────────────┐
-        │   APROVAR    │      │  RESSALVA     │      │   REJEITAR   │
-        │              │      │              │      │              │
-        └──────┬───────┘      └──────┬───────┘      └──────────────┘
-               │                     │                     │
-               ▼                     ▼                     ▼
-┌─────────────────────────┐ ┌─────────────────────────┐ ┌──────────────────┐
-│  /verify-patterns (Skill)│ │ IMPLEMENTAR AJUSTES     │ │  REFATORAR       │
-│                         │ │  solicitadas            │ │  CÓDIGO          │
-│  Se OK → Registrar +    │ │                         │ │                  │
-│  Commit                 │ │  Após ajustes:          │ │  Após refatorar:│
-│                         │ │  →git diff HEAD         │ │  →git diff HEAD  │
-│  Se FALHOU →            │ │  →Registrar aprendizados │ │  →Perguntar      │
-│  - Mostrar erros        │ │  →/verify-patterns       │ │    "Revisar      │
-│  - Pedir instruções    │ │  →Registrar + Commit    │ │   novamente?"    │
-└─────────────────────────┘ └─────────────────────────┘ └──────────────────┘
+                                      │
+                 ┌─────────────────────┼─────────────────────┐
+                 ▼                     ▼                     ▼
+          ┌──────────────┐      ┌──────────────┐      ┌──────────────┐
+          │     ✅ OK    │      │ 🔧 FAZER     │      │ ↩️ REFAZER   │
+          │              │      │   AJUSTES    │      │              │
+          └──────┬───────┘      └──────┬───────┘      └──────┬───────┘
+                 │                     │                     │
+                 ▼                     ▼                     ▼
+┌─────────────────────────┐ ┌─────────────────────────────────────────────┐ ┌──────────────────┐
+│  /verify-patterns       │ │  INSTRUÇÕES PARA CORREÇÕES                  │ │  REFATORAR       │
+│                         │ │                                             │ │  CÓDIGO          │
+│  Se OK → Registrar +    │ │  1. Faça as correções nos arquivos         │ │                  │
+│  Commit                 │ │  2. Quando terminar, digite "PRONTO"       │ │  Após refatorar: │
+│                         │ │                                             │ │  →Perguntar      │
+│  Se FALHOU →            │ │  Após "PRONTO":                            │ │    "Revisar      │
+│  - Mostrar erros        │ │  1. Comparar código IA vs seu código       │ │   novamente?"    │
+│  - Pedir instruções    │ │  2. Atualizar progress.md                   │ │                  │
+│                         │ │  3. Verificar padrões                      │ │                  │
+│                         │ │  4. Commit                                 │ │                  │
+└─────────────────────────┘ └─────────────────────────────────────────────┘ └──────────────────┘
                                      │
                                      ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -235,18 +245,6 @@ Arquivo: `specs/features/[nome-da-feature]/progress.md`
 ### [YYYY-MM-DD] [Nome do Pattern]
 - Props tipadas com interfaces descritivas
 - Sem `any`, usar inferência de tipos
-
-## Aprendizados Comparativos
-
-### [YYYY-MM-DD] [Nome do Teste]
-**Antes (agente):** `disabled={true}`
-**Depois (humano):** `aria-disabled="true"`
-**Regra:** Usar aria-disabled para estados desabilitados (melhor a11y)
-
-### [YYYY-MM-DD] [Nome do Teste]
-**Antes (agente):** `className="btn-primary"`
-**Depois (humano):** `className="btn btn-primary"`
-**Regra:** Sempre incluir prefixo do componente na className
 ```
 
 ### Como Registrar
@@ -254,6 +252,16 @@ Arquivo: `specs/features/[nome-da-feature]/progress.md`
 1. Identificar categoria (CSS | A11y | Component | React)
 2. Destilar aprendizado para linguagem alto nível
 3. Adicionar ao progress.md com data
+
+### Substituição de Registro (FONTE DE VERDADE = HUMANO)
+
+Quando o humano faz ajustes no código:
+
+1. Comparar código IA (stash) vs código humano (HEAD)
+2. Identificar o tema/tópico da mudança
+3. Se já existir registro sobre o mesmo tema no progress → REMOVER
+4. INSERIR nova entrada com a regra definida pelo humano
+5. NÃO registrar "antes/depois" - só a regra final do humano
 
 ---
 
@@ -300,10 +308,39 @@ Arquivo: `specs/features/[nome-da-feature]/progress.md`
 - Pendente implementar
 
 Opções:
-  ├─ APROVAR → continuar para /verify-patterns
-  ├─ APROVAR COM RESSALVA → implementar ajustes pontuais
-  ├─ REJEITAR → refatorar código
-  └─ SAIR → encerrar sessão
+  ├─ ✅ OK → Confirmar e continuar
+  ├─ 🔧 FAZER AJUSTES → Corrigir o código gerado
+  ├─ ↩️ REFAZER → Descartar e reimplementar
+  └─ ⏹️ SAIR → Encerrar sessão
+```
+
+### CHECKPOINT 2: Instruções pós-seleção "FAZER AJUSTES"
+
+Quando o usuário selecionar "🔧 FAZER AJUSTES":
+
+1. Mostrar mensagem clara:
+```
+╔════════════════════════════════════════════════════════════╗
+║  🔧 FAÇA SUAS CORREÇÕES NOS ARQUIVOS                   ║
+╠════════════════════════════════════════════════════════════╣
+║                                                            ║
+║  Edite os arquivos necessários no seu editor.             ║
+║                                                            ║
+║  Quando TERMINAR, digite: "PRONTO"                       ║
+║                                                            ║
+╚════════════════════════════════════════════════════════════╝
+```
+
+2. Aguardar usuário digitar "PRONTO"
+
+3. Após "PRONTO", executar fluxo de comparação:
+   - git stash (salvar código humano)
+   - git stash pop (recuperar código IA)
+   - git diff (comparar)
+   - Atualizar progress.md
+   - /verify-patterns
+   - git stash pop (restaurar código humano)
+   - Commit
 ```
 
 ### CHECKPOINT 3: Próximo teste
@@ -355,6 +392,45 @@ Opções:
    
    Exemplos:
    ```
+   feat(avatar): implement size sm
+   test(avatar): implement size sm test
+   ```
+
+### Após "FAZER AJUSTES" (comparação código IA vs humano)
+
+1. **Aguardar usuário digitar "PRONTO"**
+
+2. **Salvar código humano atual**
+   ```
+   git stash push -m "implement-tasks: código humano"
+   ```
+
+3. **Recuperar código IA do stash**
+   ```
+   git stash pop
+   ```
+
+4. **Comparar mudanças**
+   ```
+   git diff stash@{0} HEAD -- [arquivos-alterados]
+   ```
+
+5. **Atualizar progress.md (FONTE DE VERDADE = HUMANO)**
+   - Ler progress.md atual
+   - Para cada mudança identificada:
+     - Se tema já existe no progress → REMOVER entrada anterior
+     - INSERIR nova entrada com regra do humano
+   - Mostrar ao usuário o que será registrado
+
+6. **Executar /verify-patterns**
+
+7. **Restaurar código humano**
+   ```
+   git stash pop
+   ```
+
+8. **Commit com Conventional Commits**
+   ```
    feat(avatar): implement small size variant
    test(avatar): implement size sm test
    ```
@@ -369,14 +445,20 @@ Opções:
 □ Remover skip do teste?
 □ Implementar teste (1 por iteração)?
 □ TDD completo: RED → GREEN → REFACTOR?
-□ Checkpoint 2: question "Revisar código?" chamado?
-□   Se APROVAR COM RESSALVA:
-□     □ Implementar ajustes solicitados
-□     □ git diff HEAD executado
-□ Gate: /verify-patterns (Skill) executado?
+□ Git stash após GREEN (antes da revisão)
+□ Checkpoint 2: "Revisar código gerado?" chamado?
+□   Se 🔧 FAZER AJUSTES:
+□     □ Mostrar instruções "FAÇA SUAS CORREÇÕES"
+□     □ Aguardar usuário digitar "PRONTO"
+□     □ Comparar código IA vs código humano
+□     □ Atualizar progress: tema existente → REMOVER + INSERIR nova regra
+□     □ /verify-patterns executado
+□     □ Commit criado
+□   Se ✅ OK:
+□     □ /verify-patterns executado
 □ Registros salvos no progress.md?
 □ Commit criado?
-□ Checkpoint 3: question "Próximo?" chamado?
+□ Checkpoint 3: "Próximo teste?" chamado?
 
 SE QUALQUER □ ESTIVER VAZIO:
   → PARAR E EXECUTAR O CHECKPOINT FALTANTE
@@ -397,7 +479,8 @@ SE QUALQUER □ ESTIVER VAZIO:
 | **Encerrar** | Só quando não houver mais SKIP |
 | **NUNCA use `task`** | Use @ menção direta para subagents |
 | **SEM EXCEÇÕES** | NUNCA pular checkpoints - são OBRIGATÓRIOS |
-| **Comparativo** | Ajuste manual → análise diff → registrar |
+| **Stash após GREEN** | Git stash antes da revisão humana |
+| **Fonte de verdade** | Código do humano substitui registro anterior no progress |
 | **Pausa explícita** | Após "SIM" em P1, aguardar confirmação antes de continuar |
 
 ---
@@ -444,12 +527,10 @@ Se não existe test.skip() no spec.ts:
 - backgroundColor?: string
 - textColor?: string
 
-## Aprendizados Comparativos
+## React
 
-### [2024-01-20] Size Small Test
-**Antes (agente):** `size={small}`
-**Depois (humano):** `size="sm"`
-**Regra:** Usar string literal para size props
+### [2024-01-20] Size Props
+- Usar string literal para size props
 ```
 
 ### Commits Exemplo
